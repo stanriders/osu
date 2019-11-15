@@ -75,10 +75,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             bool isSotarks = false;
             bool isLesserSotarks = false;
-            var sotarkses = new[] { "sotarks", "fieryrage", "nevo", "fatfan kolek", "taeyang", "reform", "a r m i n", "bibbity bill" };
-            var lesserSotarkses = new[] { "seni", "monstrata", "snownino_", "xexxar", "lami", "akitoshi", "doormat" };
+            var sotarkses = new[] { "sotarks", "fieryrage", "fiery", "nevo", "fatfan kolek", "taeyang", "reform", "a r m i n", "bibbity bill", "log off now", "azunyan-", "azunyan", "dendyhere" };
+            var lesserSotarkses = new[] { "seni", "monstrata", "snownino_", "xexxar", "lami", "akitoshi", "doormat", "kencho" };
 
-            if (sotarkses.Contains(Beatmap.Metadata.AuthorString.ToLower()))
+            if (Beatmap.Metadata.AuthorString == "Nakagawa-Kanon" &&
+                (mods.Any(x => x.Acronym == "HD") && mods.Any(x => x.Acronym == "HR")))
+            {
+                // cookiezi must be number one or else rebalance is bad
+                totalValue *= 1.95;
+            }
+            else if (sotarkses.Contains(Beatmap.Metadata.AuthorString.ToLower()))
             {
                 isSotarks = true;
             }

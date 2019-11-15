@@ -73,6 +73,43 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                     Math.Pow(accuracyValue, 1.1f), 1.0f / 1.1f
                 ) * multiplier;
 
+            bool isSotarks = false;
+            bool isLesserSotarks = false;
+            var sotarkses = new[] { "sotarks", "fieryrage", "nevo", "fatfan kolek", "taeyang", "reform", "a r m i n", "bibbity bill" };
+            var lesserSotarkses = new[] { "seni", "monstrata", "snownino_", "xexxar", "lami", "akitoshi", "doormat" };
+
+            if (sotarkses.Contains(Beatmap.Metadata.AuthorString.ToLower()))
+            {
+                isSotarks = true;
+            }
+            else
+            {
+                if (lesserSotarkses.Contains(Beatmap.Metadata.AuthorString.ToLower()))
+                {
+                    isLesserSotarks = true;
+                }
+                else
+                {
+                    foreach (var sotarks in sotarkses)
+                        if (Beatmap.BeatmapInfo.Version.ToLower().Contains(sotarks))
+                            isSotarks = true;
+
+                    foreach (var sotarks in lesserSotarkses)
+                        if (Beatmap.BeatmapInfo.Version.ToLower().Contains(sotarks))
+                            isLesserSotarks = true;
+                }
+            }
+
+            const double sotarks_multiplier = 0.7;
+            const double lesser_sotarks_multiplier = 0.85;
+            const double non_sotarks_multiplier = 1.05;
+            if (isSotarks)
+                totalValue *= sotarks_multiplier;
+            else if (isLesserSotarks)
+                totalValue *= lesser_sotarks_multiplier;
+            else
+                totalValue *= non_sotarks_multiplier;
+
             if (categoryRatings != null)
             {
                 categoryRatings.Add("Aim", aimValue);

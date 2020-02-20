@@ -35,6 +35,10 @@ namespace osu.Game.Scoring
         [JsonIgnore]
         public string DisplayAccuracy => Accuracy.FormatAccuracy();
 
+        [JsonProperty("modifiedaccuracy")]
+        [Column(TypeName = "DECIMAL(1,4)")]
+        public double ModifiedAccuracy { get; set; }
+
         [JsonProperty(@"pp")]
         public double? PP { get; set; }
 

@@ -82,7 +82,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 (mods.Any(x => x.Acronym == "HD") && mods.Any(x => x.Acronym == "HR")))
             {
                 // cookiezi must be number one or else rebalance is bad
-                totalValue *= 1.95;
+                totalValue *= 5.00;
             }
             else if (sotarkses.Contains(Beatmap.Metadata.AuthorString.ToLower()))
             {

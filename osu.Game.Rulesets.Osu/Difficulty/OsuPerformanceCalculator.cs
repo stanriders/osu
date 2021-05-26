@@ -75,8 +75,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             bool isSotarks = false;
             bool isLesserSotarks = false;
-            var sotarkses = new[] { "sotarks", "fieryrage", "fiery", "nevo", "fatfan kolek", "taeyang", "reform", "a r m i n", "bibbity bill", "log off now", "azunyan-", "azunyan", "dendyhere" };
-            var lesserSotarkses = new[] { "seni", "monstrata", "snownino_", "xexxar", "lami", "akitoshi", "doormat", "kencho" };
+            var sotarkses = new[] { "sotarks", "fieryrage", "fiery", "nevo", "fatfan kolek", "taeyang", "reform", "a r m i n", "bibbity bill", "log off now", "azunyan-", "azunyan", "dendyhere", "browiec", "emu1337", "fall", "onlybiscuit" };
+            var lesserSotarkses = new[] { "seni", "monstrata", "snownino_", "xexxar", "lami", "akitoshi", "doormat", "kencho", "kowari", "skyflame" };
 
             if (Beatmap.Metadata.AuthorString == "Nakagawa-Kanon" &&
                 (mods.Any(x => x.Acronym == "HD") && mods.Any(x => x.Acronym == "HR")))

@@ -36,6 +36,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double aimRating = Math.Sqrt(skills[0].DifficultyValue()) * difficulty_multiplier;
             double speedRating = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
             double flashlightRating = Math.Sqrt(skills[2].DifficultyValue()) * difficulty_multiplier;
+            double visualRating = Math.Sqrt(skills[3].DifficultyValue()) * difficulty_multiplier;
 
             if (mods.Any(h => h is OsuModRelax))
                 speedRating = 0.0;
@@ -43,6 +44,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double baseAimPerformance = Math.Pow(5 * Math.Max(1, aimRating / 0.0675) - 4, 3) / 100000;
             double baseSpeedPerformance = Math.Pow(5 * Math.Max(1, speedRating / 0.0675) - 4, 3) / 100000;
             double baseFlashlightPerformance = 0.0;
+            double baseVisualRating = Math.Pow(visualRating, 2.0) * 25.0;
 
             if (mods.Any(h => h is OsuModFlashlight))
                 baseFlashlightPerformance = Math.Pow(flashlightRating, 2.0) * 25.0;
@@ -51,7 +53,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 Math.Pow(
                     Math.Pow(baseAimPerformance, 1.1) +
                     Math.Pow(baseSpeedPerformance, 1.1) +
-                    Math.Pow(baseFlashlightPerformance, 1.1), 1.0 / 1.1
+                    Math.Pow(baseFlashlightPerformance, 1.1) +
+                    Math.Pow(baseVisualRating, 1.1), 1.0 / 1.1
                 );
 
             double starRating = basePerformance > 0.00001 ? Math.Cbrt(1.12) * 0.027 * (Math.Cbrt(100000 / Math.Pow(2, 1 / 1.1) * basePerformance) + 4) : 0;
@@ -73,6 +76,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 AimStrain = aimRating,
                 SpeedStrain = speedRating,
                 FlashlightRating = flashlightRating,
+                VisualRating = visualRating,
                 ApproachRate = preempt > 1200 ? (1800 - preempt) / 120 : (1200 - preempt) / 150 + 5,
                 OverallDifficulty = (80 - hitWindowGreat) / 6,
                 DrainRate = drainRate,
@@ -93,7 +97,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 var last = beatmap.HitObjects[i - 1];
                 var current = beatmap.HitObjects[i];
 
-                yield return new OsuDifficultyHitObject(current, lastLast, last, clockRate);
+                double preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
+                var visibleObjects = beatmap.HitObjects.Where(x => x.StartTime > current.StartTime && x.StartTime < current.StartTime + preempt);
+
+                yield return new OsuDifficultyHitObject(current, lastLast, last, clockRate, visibleObjects, preempt);
             }
         }
 
@@ -108,7 +115,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             {
                 new Aim(mods),
                 new Speed(mods, hitWindowGreat),
-                new Flashlight(mods)
+                new Flashlight(mods),
+                new Visual(mods)
             };
         }
 

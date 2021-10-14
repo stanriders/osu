@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
@@ -37,16 +38,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double? Angle { get; private set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public double NoteDensity { get; private set; }
+
         private readonly OsuHitObject lastLastObject;
         private readonly OsuHitObject lastObject;
+        private readonly IEnumerable<OsuHitObject> visibleObjects;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate, IEnumerable<HitObject> visibleObjects, double preempt)
             : base(hitObject, lastObject, clockRate)
         {
             this.lastLastObject = (OsuHitObject)lastLastObject;
             this.lastObject = (OsuHitObject)lastObject;
+            this.visibleObjects = visibleObjects.Cast<OsuHitObject>();
 
             setDistances();
+            setNoteDensity(preempt, visibleObjects);
 
             // Capped to 25ms to prevent difficulty calculation breaking from simulatenous objects.
             StrainTime = Math.Max(DeltaTime, 25);
@@ -136,6 +145,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             return pos;
+        }
+
+        private void setNoteDensity(double preempt, IEnumerable<HitObject> window)
+        {
+            NoteDensity = 1;
+
+            foreach (var hitObject in window)
+                NoteDensity += 1 - Math.Abs(hitObject.StartTime - BaseObject.StartTime) / preempt;
         }
     }
 }

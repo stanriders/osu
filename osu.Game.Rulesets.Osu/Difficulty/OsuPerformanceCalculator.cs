@@ -107,8 +107,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (Attributes.MaxCombo > 0)
                 aimValue *= Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(Attributes.MaxCombo, 0.8), 1.0);
 
+            double approachRateFactor = 0.0;
+            if (Attributes.ApproachRate > 10.33)
+                approachRateFactor = Attributes.ApproachRate - 10.33;
+
+            double approachRateTotalHitsFactor = 1.0 / (1.0 + Math.Exp(-(0.007 * (totalHits - 400))));
+
+            double approachRateBonus = 1.0 + (0.03 + 0.37 * approachRateTotalHitsFactor) * approachRateFactor;
+
             if (mods.Any(m => m is OsuModBlinds))
                 aimValue *= 1.3 + (totalHits * (0.0016 / (1 + 2 * countMiss)) * Math.Pow(accuracy, 16)) * (1 - 0.003 * Attributes.DrainRate * Attributes.DrainRate);
+
+            aimValue *= approachRateBonus;
 
             // Scale the aim value with accuracy _slightly_.
             aimValue *= 0.5 + accuracy / 2.0;
@@ -134,6 +144,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Combo scaling.
             if (Attributes.MaxCombo > 0)
                 speedValue *= Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(Attributes.MaxCombo, 0.8), 1.0);
+
+            double approachRateFactor = 0.0;
+            if (Attributes.ApproachRate > 10.33)
+                approachRateFactor = Attributes.ApproachRate - 10.33;
+
+            double approachRateTotalHitsFactor = 1.0 / (1.0 + Math.Exp(-(0.007 * (totalHits - 400))));
+
+            speedValue *= 1.0 + (0.03 + 0.37 * approachRateTotalHitsFactor) * approachRateFactor;
 
             if (mods.Any(m => m is OsuModBlinds))
             {

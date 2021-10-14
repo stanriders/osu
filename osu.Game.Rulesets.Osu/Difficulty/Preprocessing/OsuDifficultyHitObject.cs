@@ -43,16 +43,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double NoteDensity { get; private set; }
 
+        public List<OsuHitObject> visibleObjects { get; private set; }
+
         private readonly OsuHitObject lastLastObject;
         private readonly OsuHitObject lastObject;
-        private readonly IEnumerable<OsuHitObject> visibleObjects;
 
         public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate, IEnumerable<HitObject> visibleObjects, double preempt)
             : base(hitObject, lastObject, clockRate)
         {
             this.lastLastObject = (OsuHitObject)lastLastObject;
             this.lastObject = (OsuHitObject)lastObject;
-            this.visibleObjects = visibleObjects.Cast<OsuHitObject>();
+            this.visibleObjects = visibleObjects.Cast<OsuHitObject>().ToList();
 
             setDistances();
             setNoteDensity(preempt, visibleObjects);

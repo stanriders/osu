@@ -2,10 +2,14 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
+using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
+using osuTK;
+using System.Collections.Generic;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -28,10 +32,42 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (current.BaseObject is Spinner)
                 return 0;
 
+            if (Previous.Count == 0)
+                return 0;
+
             var osuCurrent = (OsuDifficultyHitObject)current;
             var osuHitObject = (OsuHitObject)(osuCurrent.BaseObject);
+            var visibleObjects = osuCurrent.visibleObjects;
 
-            var result = 0.01 * Math.Pow(osuCurrent.NoteDensity - 1, 8);
+            var result = 0.1;
+
+            if (Mods.Any(m => m is OsuModHidden))
+                result *= 2.0;
+
+            OsuHitObject lastObject = osuHitObject;
+            double overlaps = 0;
+            double totalDistance = 0;
+
+            foreach(var Object in visibleObjects)
+            {
+                totalDistance += (Object.Position - lastObject.Position).Length;
+
+                lastObject = Object;
+            }
+
+            for (int i = 0; i < visibleObjects.Count - 1; i++)
+            {
+                for (int j = i + 1; j < visibleObjects.Count; j++)
+                {
+                    var overlapness = (visibleObjects[i].Position - visibleObjects[j].Position).Length / osuHitObject.Radius;
+                    overlaps += 1 - Math.Min(overlapness, 1);
+                }
+            }
+
+            //Console.WriteLine((osuCurrent.StartTime / 1000.0).ToString() + " " + osuCurrent.NoteDensity.ToString());
+            //Console.WriteLine((osuCurrent.StartTime / 1000.0).ToString() + " " + overlaps.ToString());
+
+            result *= Math.Pow((osuCurrent.NoteDensity - 1), 4);
 
             return result;
         }

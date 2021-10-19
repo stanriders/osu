@@ -116,7 +116,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 new Aim(mods),
                 new Speed(mods, hitWindowGreat),
                 new Flashlight(mods),
-                new Visual(mods)
+                new Visual(mods, clockRate)
             };
         }
 

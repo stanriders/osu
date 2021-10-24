@@ -24,12 +24,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             this.clockRate = clockRate;
         }
-        private const double rhythm_multiplier = 45.0;
+        private const double rhythm_multiplier = 0.3;
         private const double aim_multiplier = 10.0;
 
         private double skillMultiplier => 1.2;
         private double strainDecayBase => 0.15;
         private double currentStrain = 1;
+
+        protected override int HistoryLength => 2;
 
         private double clockRate { get; }
 
@@ -38,7 +40,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (current.BaseObject is Spinner)
                 return 0;
 
-            if (Previous.Count == 0)
+            if (Previous.Count < 2)
                 return 0;
 
             var osuCurrent = (OsuDifficultyHitObject)current;
@@ -51,11 +53,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             {
                 var visibleObjects = osuCurrent.visibleObjects;
 
-                rhythmReadingComplexity = calculateRhythmReading(visibleObjects, (OsuHitObject)Previous[0].BaseObject, osuHitObject, visibleObjects[0], clockRate) * rhythm_multiplier;
+                rhythmReadingComplexity = calculateRhythmReading(visibleObjects, (OsuHitObject)Previous[1].BaseObject, (OsuHitObject)Previous[0].BaseObject, osuHitObject, visibleObjects[0], clockRate) * rhythm_multiplier;
                 aimReadingComplexity = calculateAimReading(visibleObjects, osuHitObject, visibleObjects[0]) * aim_multiplier;
             }
 
-            var strain = (rhythmReadingComplexity + aimReadingComplexity) * 8.0 * (Mods.Any(h => h is OsuModHidden) ? 1 + (osuCurrent.NoteDensity / 10) : 1.0);
+            var strain = (rhythmReadingComplexity + aimReadingComplexity) * 8.0 * (Mods.Any(h => h is OsuModHidden) ? 1 + (osuCurrent.NoteDensity / 8) : 1.0);
 
             //if (strain > 20)
             //    Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
@@ -64,53 +66,61 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         }
 
         private double calculateRhythmReading(List<OsuHitObject> visibleObjects,
+                                                     OsuHitObject secondPrevObject,
                                                      OsuHitObject prevObject,
                                                      OsuHitObject currentObject,
                                                      OsuHitObject nextObject,
                                                      double clockRate)
         {
+            if ((prevObject.StartTime - secondPrevObject.StartTime) - (currentObject.StartTime - prevObject.StartTime) < 20)
+                return 0;
+
             var overlapness = 0.0;
-            var prevPosition = prevObject.StackedPosition;
 
             var currentPosition = currentObject.StackedPosition;
-            var prevCurrDistance = (currentPosition - prevPosition).Length / (currentObject.Radius * 2);
-
-            var nextPosition = nextObject.StackedPosition;
-            var currNextDistance = (nextPosition - currentPosition).Length / (currentObject.Radius * 2);
-
-            // buff overlapness if previous object was also overlapping
-            overlapness += logistic((0.5 - prevCurrDistance) / 0.1) - 0.2;
 
             // calculate if rhythm change correlates to spacing change
-            var tPrevCurr = (currentObject.StartTime - prevObject.StartTime) / clockRate;
-            var tCurrNext = (nextObject.StartTime - currentObject.StartTime) / clockRate;
-            var tRatio = tCurrNext / (tPrevCurr + 1e-10);
+            var tPrevCurr = -1.0;
+            var prevCurrDistance = -1.0;
 
-            // calculate how much visible objects overlap current object
+            var lastVisibleObject = currentObject;
+
+            // calculate how much visible objects overlap the previous
             for (int i = 0; i < visibleObjects.Count; i++)
             {
                 var visibleObject = visibleObjects[i];
                 var visibleObjectPosition = visibleObject.StackedPosition;
-                var visibleDistance = (currentPosition - visibleObjectPosition).Length / (currentObject.Radius * 2);
+                var lastVisiblePosition = lastVisibleObject.StackedPosition;
+                var currNextDistance = (visibleObjectPosition - currentPosition).Length / (currentObject.Radius * 2);
 
-                overlapness += (logistic((0.5 - visibleDistance) / 0.1) - 0.2);
+                var tCurrNext = (visibleObject.StartTime - currentObject.StartTime) / clockRate;
+                var tRatio = Math.Max(tCurrNext / (tPrevCurr + 1e-10), tPrevCurr / (tCurrNext + 1e-10));
 
-                // this is temp until sliders get proper reading impl
-                if (visibleObject is Slider)
-                    overlapness /= 2.0;
+                if (tPrevCurr == -1)
+                {
+                    lastVisibleObject = visibleObject;
+                    tPrevCurr = tCurrNext;
+                    continue;
+                }
 
-                overlapness *= visibleObject.GetVisibiltyAtTime(currentObject.StartTime);
+                var distanceRatio = currNextDistance / (prevCurrDistance + 1e-10);
+                var changeRatio = distanceRatio * tRatio;
 
+                var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
+
+                var visibleDistance = (lastVisiblePosition - visibleObjectPosition).Length / (currentObject.Radius * 2);
+
+                overlapness += (logistic((0.3 - visibleDistance) / 0.1));
+
+                overlapness *= spacingChange * visibleObject.GetVisibiltyAtTime(currentObject.StartTime);
+                
                 overlapness = Math.Max(0, overlapness);
+
+                lastVisibleObject = visibleObject;
+                tPrevCurr = tCurrNext;
             }
-            overlapness /= visibleObjects.Count / 2.0;
 
-            var distanceRatio = currNextDistance / (prevCurrDistance + 1e-10);
-
-            var changeRatio = distanceRatio * tRatio;
-            var spacingChange = Math.Min(0.0, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(0.0, Math.Pow(distanceRatio - 1, 2) * 1000);
-
-            return overlapness * spacingChange;
+            return overlapness;
         }
 
         private double calculateAimReading(List<OsuHitObject> visibleObjects, OsuHitObject currentObject, OsuHitObject nextObject)
@@ -132,11 +142,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 var visibleToNextDistance = (nextPosition - visibleObjectPosition).Length / (currentObject.Radius * 2);
                 var prevVisibleToVisible = (prevVisualObjectPosition - visibleObjectPosition).Length / (currentObject.Radius * 2);
 
-                //Console.WriteLine(visibleObject.GetVisibiltyAtTime(currentObject.StartTime));
-
-                //Console.WriteLine((currentObject.StartTime / 1000.0).ToString() + " " + (visibleObject.StartTime / 1000.0).ToString() + " " + checkMovementIntersect(currentObject.StackedPosition, nextObject.StackedPosition, visibleObject.StackedPosition, currentObject.Radius).ToString());
-                //Console.WriteLine(movementDistance);
-
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
                 var intersectionBonus = checkMovementIntersect(currentObject.StackedPosition, nextObject.StackedPosition, visibleObject.StackedPosition, currentObject.Radius) *
                                         logistic((movementDistance - 1.5) / 0.5) *
@@ -145,8 +150,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                                         logistic((prevVisibleToVisible - 1.5) / 0.5) *
                                         visibleObject.GetVisibiltyAtTime(currentObject.StartTime) *
                                         (visibleObject.StartTime - currentObject.StartTime) / 500;
-
-                //Console.WriteLine(visibleToNextDistance);
 
                 // TODO: approach circle intersections
 

@@ -22,16 +22,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         public Visual(Mod[] mods)
             : base(mods)
         {   }
-        private const double rhythm_multiplier = 10.0;
-        private const double aim_multiplier = 2.0;
+        private const double rhythm_multiplier = 11.0;
+        private const double aim_multiplier = 9.0;
 
-        private double skillMultiplier => 0.4;
+        private double skillMultiplier => 0.5;
         private double strainDecayBase => 0.0;
         private double currentStrain = 1;
 
         protected override int HistoryLength => 2;
-
-        private double clockRate { get; }
 
         private double strainValueOf(DifficultyHitObject current)
         {
@@ -69,6 +67,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             var overlapness = 0.0;
 
+            //Console.WriteLine(Math.Round((currentObject.StartTime / 1000.0), 3) + " " + currentObject.JumpDistance);
+
             // calculate how much visible objects overlap the previous
             for (int i = 1; i < visibleObjects.Count; i++)
             {
@@ -81,7 +81,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
 
-                overlapness += logistic((0.3 - visibleObjects[i].JumpDistance) / 0.1);
+                overlapness += logistic((18 - visibleObjects[i].JumpDistance) / 5);
 
                 overlapness *= spacingChange * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
                 
@@ -106,10 +106,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
                 var intersectionBonus = checkMovementIntersect(currentObject, nextObject, visibleObjects[i]) *
-                                        logistic((movementDistance - 1.5) / 0.5) *
-                                        logistic((visibleToCurrentDistance - 1.5) / 0.5) *
-                                        logistic((visibleToNextDistance - 1.5) / 0.5) *
-                                        logistic((prevVisibleToVisible - 1.5) / 0.5) *
+                                        logistic((movementDistance - 78) / 26) *
+                                        logistic((visibleToCurrentDistance - 78) / 26) *
+                                        logistic((visibleToNextDistance - 78) / 26) *
+                                        logistic((prevVisibleToVisible - 78) / 26) *
                                         visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime) *
                                         (visibleObjects[i].StartTime - currentObject.StartTime) / 500;
 

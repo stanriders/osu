@@ -43,17 +43,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double NoteDensity { get; private set; }
 
-        public List<OsuHitObject> visibleObjects { get; private set; }
+        public List<OsuDifficultyHitObject> visibleObjects { get; private set; }
 
         private readonly OsuHitObject lastLastObject;
         private readonly OsuHitObject lastObject;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate, IEnumerable<HitObject> visibleObjects, double preempt)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate, IEnumerable<OsuDifficultyHitObject> visibleObjects, double preempt)
             : base(hitObject, lastObject, clockRate)
         {
             this.lastLastObject = (OsuHitObject)lastLastObject;
             this.lastObject = (OsuHitObject)lastObject;
-            this.visibleObjects = visibleObjects.Cast<OsuHitObject>().ToList();
+            this.visibleObjects = visibleObjects.ToList();
 
             setDistances();
             setNoteDensity(preempt, visibleObjects);
@@ -61,6 +61,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             // Capped to 25ms to prevent difficulty calculation breaking from simulatenous objects.
             StrainTime = Math.Max(DeltaTime, 25);
         }
+
+        public double GetVisibilityAtTime(double t) => BaseObject.GetVisibiltyAtTime(t);
+
+        public double NormalisedDistanceTo(OsuDifficultyHitObject targetObject) => (BaseObject.StackedPosition * (52 / (float)BaseObject.Radius) - targetObject.BaseObject.Position * (52 / (float)BaseObject.Radius)).Length;
 
         private void setDistances()
         {
@@ -148,7 +152,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             return pos;
         }
 
-        private void setNoteDensity(double preempt, IEnumerable<HitObject> window)
+        private void setNoteDensity(double preempt, IEnumerable<OsuDifficultyHitObject> window)
         {
             NoteDensity = 1;
 

@@ -9,6 +9,7 @@ using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
+using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Skills;
 using osu.Game.Rulesets.Osu.Mods;
@@ -22,6 +23,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
     {
         private const double difficulty_multiplier = 0.0675;
         private double hitWindowGreat;
+        private double preempt;
 
         public OsuDifficultyCalculator(Ruleset ruleset, WorkingBeatmap beatmap)
             : base(ruleset, beatmap)
@@ -59,7 +61,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double starRating = basePerformance > 0.00001 ? Math.Cbrt(1.12) * 0.027 * (Math.Cbrt(100000 / Math.Pow(2, 1 / 1.1) * basePerformance) + 4) : 0;
 
-            double preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
             double drainRate = beatmap.Difficulty.DrainRate;
 
             int maxCombo = beatmap.HitObjects.Count;
@@ -89,6 +90,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, double clockRate)
         {
+            preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
+
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < beatmap.HitObjects.Count; i++)
@@ -97,10 +100,22 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 var last = beatmap.HitObjects[i - 1];
                 var current = beatmap.HitObjects[i];
 
-                double preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
-                var visibleObjects = beatmap.HitObjects.Where(x => x.StartTime > current.StartTime && x.StartTime < current.StartTime + preempt);
+                var visibleObjectsRaw = beatmap.HitObjects.Where(x => x.StartTime > current.StartTime && x.StartTime < current.StartTime + preempt).ToList();
+                var visibleObjects = CreateDifficultyHitObjects(visibleObjectsRaw, clockRate);
 
                 yield return new OsuDifficultyHitObject(current, lastLast, last, clockRate, visibleObjects, preempt);
+            }
+        }
+
+        protected IEnumerable<OsuDifficultyHitObject> CreateDifficultyHitObjects(List<HitObject> hitObjects, double clockRate)
+        {
+            for (int i = 1; i < hitObjects.Count; i++)
+            {
+                var lastLast = i > 1 ? hitObjects[i - 2] : null;
+                var last = hitObjects[i - 1];
+                var current = hitObjects[i];
+
+                yield return new OsuDifficultyHitObject(current, lastLast, last, clockRate, Enumerable.Empty<OsuDifficultyHitObject>(), preempt);
             }
         }
 
@@ -116,7 +131,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 new Aim(mods),
                 new Speed(mods, hitWindowGreat),
                 new Flashlight(mods),
-                new Visual(mods, clockRate)
+                new Visual(mods)
             };
         }
 

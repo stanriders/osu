@@ -47,6 +47,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         private readonly OsuHitObject lastLastObject;
         private readonly OsuHitObject lastObject;
+        private readonly double clockRate;
 
         public OsuDifficultyHitObject(HitObject hitObject, HitObject lastLastObject, HitObject lastObject, double clockRate, IEnumerable<OsuDifficultyHitObject> visibleObjects, double preempt)
             : base(hitObject, lastObject, clockRate)
@@ -54,6 +55,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             this.lastLastObject = (OsuHitObject)lastLastObject;
             this.lastObject = (OsuHitObject)lastObject;
             this.visibleObjects = visibleObjects.ToList();
+            this.clockRate = clockRate;
 
             setDistances();
             setNoteDensity(preempt, visibleObjects);
@@ -62,7 +64,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             StrainTime = Math.Max(DeltaTime, 25);
         }
 
-        public double GetVisibilityAtTime(double t) => BaseObject.GetVisibiltyAtTime(t);
+        public double GetVisibilityAtTime(double t) => Math.Max(0, Math.Min(1, (1 / BaseObject.TimeFadeIn) * (t - (StartTime - BaseObject.TimePreempt))));
 
         public double NormalisedDistanceTo(OsuDifficultyHitObject targetObject) => (BaseObject.StackedPosition * (52 / (float)BaseObject.Radius) - targetObject.BaseObject.Position * (52 / (float)BaseObject.Radius)).Length;
 
@@ -157,7 +159,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             NoteDensity = 1;
 
             foreach (var hitObject in window)
-                NoteDensity += 1 - Math.Abs(hitObject.StartTime - BaseObject.StartTime) / preempt;
+                NoteDensity += 1 - Math.Abs(hitObject.StartTime - StartTime) / preempt;
         }
     }
 }

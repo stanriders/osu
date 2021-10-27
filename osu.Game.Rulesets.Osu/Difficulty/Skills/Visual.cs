@@ -44,7 +44,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             var rhythmReadingComplexity = 0.0;
             var aimReadingComplexity = 0.0;
 
-            if(osuCurrent.NoteDensity > 1.1)
+            if(osuCurrent.NoteDensity > 1)
             {
                 var visibleObjects = osuCurrent.visibleObjects;
 
@@ -55,7 +55,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             var strain = (rhythmReadingComplexity + aimReadingComplexity) * 8.0 * (Mods.Any(h => h is OsuModHidden) ? 1 + (osuCurrent.NoteDensity / 8) : 1.0);
 
             //if (strain > 20)
-            //    Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
+            //   Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
         }
@@ -66,8 +66,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 return 0;
 
             var overlapness = 0.0;
-
-            //Console.WriteLine(Math.Round((currentObject.StartTime / 1000.0), 3) + " " + currentObject.JumpDistance);
+            var rhythmChanges = 0.0;
 
             // calculate how much visible objects overlap the previous
             for (int i = 1; i < visibleObjects.Count; i++)
@@ -76,6 +75,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 var tPrevCurr = visibleObjects[i - 1].StrainTime;
 
                 var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
+                if (Math.Abs(1 - tRatio) > 0.01)
+                    rhythmChanges += 1;
+
                 var distanceRatio = visibleObjects[i].JumpDistance / (visibleObjects[i - 1].JumpDistance + 1e-10);
                 var changeRatio = distanceRatio * tRatio;
 
@@ -84,11 +86,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 overlapness += logistic((18 - visibleObjects[i].JumpDistance) / 5);
 
                 overlapness *= spacingChange * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
-                
+
+                Console.WriteLine(Math.Round((visibleObjects[i].StartTime / 1000.0), 3).ToString() + "  " + visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime));
+
                 overlapness = Math.Max(0, overlapness);
             }
 
-            return overlapness;
+            return overlapness + (rhythmChanges / 4);
         }
 
         private double calculateAimReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject, OsuDifficultyHitObject nextObject)

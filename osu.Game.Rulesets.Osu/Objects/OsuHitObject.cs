@@ -61,8 +61,6 @@ namespace osu.Game.Rulesets.Osu.Objects
 
         public Vector2 StackOffset => new Vector2(StackHeight * Scale * -6.4f);
 
-        public double GetVisibiltyAtTime(double t) => Math.Max(0, Math.Min(1, (1 / TimeFadeIn) * (t - ( StartTime - TimePreempt))));
-
         public double Radius => OBJECT_RADIUS * Scale;
 
         public readonly Bindable<float> ScaleBindable = new BindableFloat(1);

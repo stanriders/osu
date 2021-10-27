@@ -64,7 +64,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             StrainTime = Math.Max(DeltaTime, 25);
         }
 
-        public double GetVisibilityAtTime(double t) => Math.Max(0, Math.Min(1, (1 / BaseObject.TimeFadeIn) * (t - (StartTime - BaseObject.TimePreempt))));
+        public double GetVisibilityAtTime(double t) => Math.Max(0, Math.Min(1, (clockRate / BaseObject.TimeFadeIn) * (t - (StartTime - BaseObject.TimePreempt / clockRate))));
 
         public double NormalisedDistanceTo(OsuDifficultyHitObject targetObject) => (BaseObject.StackedPosition * (52 / (float)BaseObject.Radius) - targetObject.BaseObject.Position * (52 / (float)BaseObject.Radius)).Length;
 

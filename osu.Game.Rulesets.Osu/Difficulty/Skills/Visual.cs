@@ -76,7 +76,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
                 if (Math.Abs(1 - tRatio) > 0.01)
-                    rhythmChanges += 1;
+                    rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
 
                 var distanceRatio = visibleObjects[i].JumpDistance / (visibleObjects[i - 1].JumpDistance + 1e-10);
                 var changeRatio = distanceRatio * tRatio;
@@ -86,8 +86,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 overlapness += logistic((18 - visibleObjects[i].JumpDistance) / 5);
 
                 overlapness *= spacingChange * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
-
-                Console.WriteLine(Math.Round((visibleObjects[i].StartTime / 1000.0), 3).ToString() + "  " + visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime));
 
                 overlapness = Math.Max(0, overlapness);
             }

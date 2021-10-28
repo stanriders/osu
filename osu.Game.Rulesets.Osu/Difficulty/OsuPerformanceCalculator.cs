@@ -245,6 +245,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double visualValue = Math.Pow(rawVisual, 2.0) * 25.0;
 
+            if (mods.Any(m => m is OsuModTouchDevice))
+                visualValue = Math.Pow(visualValue, 0.8);
+
+            // Scale the visual value with accuracy _harshly_.
+            visualValue *= Math.Pow(accuracy, 8);
+            // It is important to also consider accuracy difficulty when doing that.
+            visualValue *= 0.98 + Math.Pow(Attributes.OverallDifficulty, 2) / 2500;
+
             return visualValue;
         }
 

@@ -25,7 +25,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private const double rhythm_multiplier = 11.0;
         private const double aim_multiplier = 9.0;
 
-        private double skillMultiplier => 0.5;
+        private double skillMultiplier => 0.2;
         private double strainDecayBase => 0.0;
         private double currentStrain = 1;
 
@@ -52,10 +52,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 aimReadingComplexity = calculateAimReading(visibleObjects, osuCurrent, visibleObjects[0]) * aim_multiplier;
             }
 
-            var strain = (rhythmReadingComplexity + aimReadingComplexity) * 8.0 * (Mods.Any(h => h is OsuModHidden) ? 1 + (osuCurrent.NoteDensity / 8) : 1.0);
+            var strain = Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
             //if (strain > 20)
-            //   Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
+            //    Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
         }

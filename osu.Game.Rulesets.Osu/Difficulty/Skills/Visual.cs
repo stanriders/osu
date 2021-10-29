@@ -23,15 +23,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             : base(mods)
         {   }
 
-        private const double rhythm_multiplier = 1.2;
-        private const double aim_multiplier = 1.0;
+        private const double rhythm_multiplier = 0.5;
+        private const double aim_multiplier = 1.2;
 
         private const double reading_window_backwards = 500.0;
         private const double reading_window_forwards = 2500.0;
 
-        private double skillMultiplier => 0.04;
-        private double strainDecayBase => 0.15;
-        protected override double DecayWeight => 1.0;
+        private double skillMultiplier => 3;
+        private double strainDecayBase => 0.0;
         private double currentStrain = 1;
 
         protected override int HistoryLength => 32;
@@ -70,22 +69,25 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 aimReadingComplexity = calculateAimReading(readingWindow, osuCurrent, osuCurrent.visibleObjects[0]) * aim_multiplier;
             }
 
-            var readingDensityStrain = readingWindow.Count * 2 + osuCurrent.NoteDensity;
+            // Reading density strain represents the amount of *stuff* on screen.
+            // Higher weighting given to objects within the reading window.
+            var readingDensityStrain = (readingWindow.Count * 2 + osuCurrent.NoteDensity) / 16;
+            readingDensityStrain *= logistic((osuCurrent.JumpDistance - 78) / 26);
+
+            if (Mods.Any(h => h is OsuModHidden))
+                readingDensityStrain *= readingWindow.Count * 2;
 
             var strain = readingDensityStrain + Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
-            //if (strain > 20)
-            //   Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
+            if (strain > 0.5)
+                Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "  " + Math.Round(readingDensityStrain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
         }
 
         private double calculateRhythmReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject prevObject, OsuDifficultyHitObject currentObject)
         {
-            if (prevObject.StrainTime - currentObject.StrainTime < 20)
-                return 0;
-
-            var overlapness = 0.0;
+            var overlapnessTotal = 0.0;
             var rhythmChanges = 0.0;
 
             // calculate how much visible objects overlap the previous
@@ -103,17 +105,31 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
 
-                overlapness += logistic((18 - visibleObjects[i].JumpDistance) / 5);
+                var overlapness = logistic((18 - visibleObjects[i].JumpDistance) / 5);
+
+                if (Math.Abs(1 - tRatio) > 0.01)
+                {
+                    rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
+                }
+                else
+                {
+                    overlapness = 0.0;
+                }
 
                 overlapness *= spacingChange;
-
                 overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
 
-                overlapness = Math.Max(0, overlapness);
+                if (Mods.Any(h => h is OsuModHidden))
+                    overlapness *= 2;
+
+                //if (overlapness > 0.5)
+                //    Console.WriteLine(Math.Round(currentObject.StartTime / 1000.0, 3).ToString() + "->" + Math.Round(visibleObjects[i].StartTime / 1000.0, 3).ToString() + " = " + Math.Round(overlapness, 3).ToString());
+
+                overlapnessTotal += Math.Max(0, overlapness);
             }
 
             //return overlapness * (1 + (rhythmChanges / 4));
-            return overlapness * (1 + (rhythmChanges / 16));
+            return overlapnessTotal * (1 + (rhythmChanges / 16));
         }
 
         private double calculateAimReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject, OsuDifficultyHitObject nextObject)
@@ -127,20 +143,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             {
                 var visibleToCurrentDistance = currentObject.NormalisedDistanceTo(visibleObjects[i]);
                 var visibleToNextDistance = nextObject.NormalisedDistanceTo(visibleObjects[i]);
-                var prevVisibleToVisible = visibleObjects[i - 1].NormalisedDistanceTo(visibleObjects[i]);
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
                 var intersectionBonus = checkMovementIntersect(currentObject, nextObject, visibleObjects[i]) *
                                         logistic((movementDistance - 78) / 26) *
                                         logistic((visibleToCurrentDistance - 78) / 26) *
                                         logistic((visibleToNextDistance - 78) / 26) *
-                                        logistic((prevVisibleToVisible - 78) / 26) *
                                         visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime) *
+                                        nextObject.GetVisibilityAtTime(currentObject.StartTime) *
+                                        windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime) *
                                         Math.Abs(visibleObjects[i].StartTime - currentObject.StartTime) / 1000;
 
                 // TODO: approach circle intersections
-
-                intersectionBonus *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
 
                 intersections += intersectionBonus;
             }

@@ -43,6 +43,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double NoteDensity { get; private set; }
 
+        public bool NewCombo => BaseObject.NewCombo;
+
         public List<OsuDifficultyHitObject> visibleObjects { get; private set; }
 
         private readonly OsuHitObject lastLastObject;

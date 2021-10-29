@@ -23,14 +23,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             : base(mods)
         {   }
 
-        private const double rhythm_multiplier = 11.0;
-        private const double aim_multiplier = 9.0;
+        private const double rhythm_multiplier = 1.2;
+        private const double aim_multiplier = 1.0;
 
         private const double reading_window_backwards = 500.0;
         private const double reading_window_forwards = 2500.0;
 
-        private double skillMultiplier => 0.2;
-        private double strainDecayBase => 0.0;
+        private double skillMultiplier => 0.04;
+        private double strainDecayBase => 0.15;
+        protected override double DecayWeight => 1.0;
         private double currentStrain = 1;
 
         protected override int HistoryLength => 32;
@@ -111,7 +112,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 overlapness = Math.Max(0, overlapness);
             }
 
-            return overlapness * (1 + (rhythmChanges / 4));
+            //return overlapness * (1 + (rhythmChanges / 4));
+            return overlapness * (1 + (rhythmChanges / 16));
         }
 
         private double calculateAimReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject, OsuDifficultyHitObject nextObject)

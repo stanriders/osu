@@ -79,14 +79,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             var strain = readingDensityStrain + Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
-            if (strain > 0.5)
-                Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "  " + Math.Round(readingDensityStrain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
+            //if (strain > 0.5)
+            //    Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "  " + Math.Round(readingDensityStrain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
         }
 
         private double calculateRhythmReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject prevObject, OsuDifficultyHitObject currentObject)
         {
+
             var overlapnessTotal = 0.0;
             var rhythmChanges = 0.0;
 
@@ -96,25 +97,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 var tCurrNext = visibleObjects[i].StrainTime;
                 var tPrevCurr = visibleObjects[i - 1].StrainTime;
                 var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
+                var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow(tRatio - 1, 2) + 1);
 
                 if (Math.Abs(1 - tRatio) > 0.01)
                     rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
 
                 var distanceRatio = visibleObjects[i].JumpDistance / (visibleObjects[i - 1].JumpDistance + 1e-10);
                 var changeRatio = distanceRatio * tRatio;
-
                 var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
 
-                var overlapness = logistic((18 - visibleObjects[i].JumpDistance) / 5);
-
-                if (Math.Abs(1 - tRatio) > 0.01)
-                {
-                    rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
-                }
-                else
-                {
-                    overlapness = 0.0;
-                }
+                var overlapness = logistic((18 - visibleObjects[i].JumpDistance) / 5) *
+                                  constantRhythmNerf;
 
                 overlapness *= spacingChange;
                 overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
@@ -143,12 +136,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             {
                 var visibleToCurrentDistance = currentObject.NormalisedDistanceTo(visibleObjects[i]);
                 var visibleToNextDistance = nextObject.NormalisedDistanceTo(visibleObjects[i]);
+                var prevVisibleToVisible = visibleObjects[i - 1].NormalisedDistanceTo(visibleObjects[i]);
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
                 var intersectionBonus = checkMovementIntersect(currentObject, nextObject, visibleObjects[i]) *
                                         logistic((movementDistance - 78) / 26) *
                                         logistic((visibleToCurrentDistance - 78) / 26) *
                                         logistic((visibleToNextDistance - 78) / 26) *
+                                        logistic((prevVisibleToVisible - 78) / 26) *
                                         visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime) *
                                         nextObject.GetVisibilityAtTime(currentObject.StartTime) *
                                         windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime) *

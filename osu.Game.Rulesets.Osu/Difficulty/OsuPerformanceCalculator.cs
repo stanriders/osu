@@ -248,6 +248,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (mods.Any(m => m is OsuModTouchDevice))
                 visualValue = Math.Pow(visualValue, 0.8);
 
+            // Penalize misses by assessing # of misses relative to the total # of objects. Default a 3% reduction for any # of misses.
+            if (countMiss > 0)
+                visualValue *= 0.97 * Math.Pow(1 - Math.Pow((double)countMiss / totalHits, 0.775), countMiss);
+
+            // Combo scaling.
+            if (Attributes.MaxCombo > 0)
+                visualValue *= Math.Min(Math.Pow(scoreMaxCombo, 0.8) / Math.Pow(Attributes.MaxCombo, 0.8), 1.0);
+
             // Scale the visual value with accuracy _harshly_.
             visualValue *= Math.Pow(accuracy, 8);
             // It is important to also consider accuracy difficulty when doing that.

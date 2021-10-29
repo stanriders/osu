@@ -61,7 +61,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double starRating = basePerformance > 0.00001 ? Math.Cbrt(1.12) * 0.027 * (Math.Cbrt(100000 / Math.Pow(2, 1 / 1.1) * basePerformance) + 4) : 0;
 
-            Console.WriteLine(starRating);
+            //Console.WriteLine(starRating);
 
             double drainRate = beatmap.Difficulty.DrainRate;
 

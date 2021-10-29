@@ -22,21 +22,22 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         public Visual(Mod[] mods)
             : base(mods)
         {   }
+
         private const double rhythm_multiplier = 11.0;
         private const double aim_multiplier = 9.0;
+
+        private const double reading_window_backwards = 500.0;
+        private const double reading_window_forwards = 2500.0;
 
         private double skillMultiplier => 0.2;
         private double strainDecayBase => 0.0;
         private double currentStrain = 1;
 
-        protected override int HistoryLength => 2;
+        protected override int HistoryLength => 32;
 
         private double strainValueOf(DifficultyHitObject current)
         {
-            if (current.BaseObject is Spinner)
-                return 0;
-
-            if (Previous.Count < 2)
+            if (current.BaseObject is Spinner || Previous.Count < 2)
                 return 0;
 
             var osuCurrent = (OsuDifficultyHitObject)current;
@@ -44,18 +45,36 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             var rhythmReadingComplexity = 0.0;
             var aimReadingComplexity = 0.0;
 
-            if(osuCurrent.NoteDensity > 1)
-            {
-                var visibleObjects = osuCurrent.visibleObjects;
+            // the reading window represents the player's focus when processing the screen
+            // we include the previous 500ms of objects, and the next 3000ms worth of visual objects
+            // previous 500ms: previous objects influence the readibility of current
+            // next 3000ms: next objects influence the readibility of current
+            List<OsuDifficultyHitObject> readingWindow = new List<OsuDifficultyHitObject>();
 
-                rhythmReadingComplexity = calculateRhythmReading(visibleObjects, (OsuDifficultyHitObject)Previous[0], osuCurrent) * rhythm_multiplier;
-                aimReadingComplexity = calculateAimReading(visibleObjects, osuCurrent, visibleObjects[0]) * aim_multiplier;
+            foreach (OsuDifficultyHitObject hitObject in Previous.Reverse())
+            {
+                if (osuCurrent.StartTime - hitObject.StartTime <= reading_window_backwards)
+                    readingWindow.Add(hitObject);
             }
 
-            var strain = Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
+            foreach (OsuDifficultyHitObject hitObject in osuCurrent.visibleObjects)
+            {
+                if (hitObject.StartTime - osuCurrent.StartTime <= reading_window_forwards)
+                    readingWindow.Add(hitObject);
+            }
+
+            if (osuCurrent.NoteDensity > 1)
+            {
+                rhythmReadingComplexity = calculateRhythmReading(readingWindow, (OsuDifficultyHitObject)Previous[0], osuCurrent) * rhythm_multiplier;
+                aimReadingComplexity = calculateAimReading(readingWindow, osuCurrent, osuCurrent.visibleObjects[0]) * aim_multiplier;
+            }
+
+            var readingDensityStrain = readingWindow.Count * 2 + osuCurrent.NoteDensity;
+
+            var strain = readingDensityStrain + Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
             //if (strain > 20)
-            //    Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
+            //   Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
         }
@@ -73,8 +92,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             {
                 var tCurrNext = visibleObjects[i].StrainTime;
                 var tPrevCurr = visibleObjects[i - 1].StrainTime;
-
                 var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
+
                 if (Math.Abs(1 - tRatio) > 0.01)
                     rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
 
@@ -85,12 +104,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 overlapness += logistic((18 - visibleObjects[i].JumpDistance) / 5);
 
-                overlapness *= spacingChange * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
+                overlapness *= spacingChange;
+
+                overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
 
                 overlapness = Math.Max(0, overlapness);
             }
 
-            return overlapness + (rhythmChanges / 4);
+            return overlapness * (1 + (rhythmChanges / 4));
         }
 
         private double calculateAimReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject, OsuDifficultyHitObject nextObject)
@@ -113,9 +134,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                                         logistic((visibleToNextDistance - 78) / 26) *
                                         logistic((prevVisibleToVisible - 78) / 26) *
                                         visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime) *
-                                        (visibleObjects[i].StartTime - currentObject.StartTime) / 500;
+                                        Math.Abs(visibleObjects[i].StartTime - currentObject.StartTime) / 1000;
 
                 // TODO: approach circle intersections
+
+                intersectionBonus *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
 
                 intersections += intersectionBonus;
             }
@@ -139,6 +162,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             return 1 - Math.Min(1, (numerator / denominator) / radius);
         }
+
+        private double windowFalloff(double currentTime, double visualTime)
+        {
+            if (currentTime > visualTime)
+                return windowBackwardsFalloff(currentTime, visualTime);
+            else if (currentTime < visualTime)
+                return windowForwardsFalloff(currentTime, visualTime);
+
+            return 1.0;
+        }
+
+        private double windowBackwardsFalloff(double currentTime, double visualTime) => (reading_window_backwards - (currentTime - visualTime)) / reading_window_backwards;
+
+        private double windowForwardsFalloff(double currentTime, double visualTime) => (- Math.Pow(visualTime - currentTime, 3) / Math.Pow(reading_window_forwards, 3)) + 1;
 
         private double logistic(double x) => 1 / (1 + Math.Pow(Math.E, -x));
 

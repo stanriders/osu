@@ -74,9 +74,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             var readingDensityStrain = (readingWindow.Count * 2 + osuCurrent.NoteDensity) / 16;
             readingDensityStrain *= logistic((osuCurrent.JumpDistance - 78) / 26);
 
-            if (Mods.Any(h => h is OsuModHidden))
-                readingDensityStrain *= readingWindow.Count * 2;
-
             var strain = readingDensityStrain + Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
             //if (strain > 0.5)
@@ -111,9 +108,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 overlapness *= spacingChange;
                 overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
-
-                if (Mods.Any(h => h is OsuModHidden))
-                    overlapness *= 2;
 
                 //if (overlapness > 0.5)
                 //    Console.WriteLine(Math.Round(currentObject.StartTime / 1000.0, 3).ToString() + "->" + Math.Round(visibleObjects[i].StartTime / 1000.0, 3).ToString() + " = " + Math.Round(overlapness, 3).ToString());

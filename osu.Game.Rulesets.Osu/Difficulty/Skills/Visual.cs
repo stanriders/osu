@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             : base(mods)
         {   }
 
-        private const double rhythm_multiplier = 0.5;
+        private const double rhythm_multiplier = 0.8;
         private const double aim_multiplier = 1.2;
 
         private const double reading_window_backwards = 500.0;

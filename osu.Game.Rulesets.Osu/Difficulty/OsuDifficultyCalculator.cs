@@ -102,7 +102,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 var last = beatmap.HitObjects[i - 1];
                 var current = beatmap.HitObjects[i];
 
-                var visibleObjectsRaw = beatmap.HitObjects.Where(x => x.StartTime / clockRate > current.StartTime / clockRate && x.StartTime / clockRate < current.StartTime / clockRate + preempt).ToList();
+                var visibleObjectsRaw = beatmap.HitObjects.Where(x => x.StartTime / clockRate >= current.StartTime / clockRate && x.StartTime / clockRate < current.StartTime / clockRate + preempt).ToList();
                 var visibleObjects = CreateDifficultyHitObjects(visibleObjectsRaw, clockRate);
 
                 yield return new OsuDifficultyHitObject(current, lastLast, last, clockRate, visibleObjects, preempt);

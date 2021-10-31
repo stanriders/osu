@@ -11,31 +11,32 @@ using osu.Game.Rulesets.Osu.Objects;
 using osuTK;
 using osu.Framework.Utils;
 using System.Collections.Generic;
+using osu.Game.Rulesets.Difficulty.Skills;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     /// <summary>
     /// Represents the skill required to read every object in the map.
     /// </summary>
-    public class Visual : OsuStrainSkill
+    public class Visual : Skill
     {
         public Visual(Mod[] mods)
             : base(mods)
         {   }
 
-        private const double rhythm_multiplier = 0.8;
-        private const double aim_multiplier = 1.2;
+        private const double rhythm_multiplier = 1.6;
+        private const double aim_multiplier = 2.8;
 
-        private const double reading_window_backwards = 500.0;
-        private const double reading_window_forwards = 2500.0;
+        private const double reading_window_backwards = 250.0;
+        private const double reading_window_forwards = 3000.0;
 
         private double skillMultiplier => 3;
-        private double strainDecayBase => 0.0;
-        private double currentStrain = 1;
 
         protected override int HistoryLength => 32;
 
-        private double strainValueOf(DifficultyHitObject current)
+        private List<double> difficultyValues = new List<double>();
+
+        private double difficultyValueOf(DifficultyHitObject current)
         {
             if (current.BaseObject is Spinner || Previous.Count < 2)
                 return 0;
@@ -48,14 +49,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             // the reading window represents the player's focus when processing the screen
             // we include the previous 500ms of objects, and the next 3000ms worth of visual objects
             // previous 500ms: previous objects influence the readibility of current
-            // next 3000ms: next objects influence the readibility of current
+            // next 2500ms: next objects influence the readibility of current
             List<OsuDifficultyHitObject> readingWindow = new List<OsuDifficultyHitObject>();
 
-            foreach (OsuDifficultyHitObject hitObject in Previous.Reverse())
+            foreach (OsuDifficultyHitObject hitObject in Previous)
             {
                 if (osuCurrent.StartTime - hitObject.StartTime <= reading_window_backwards)
-                    readingWindow.Add(hitObject);
+                    readingWindow.Insert(0, hitObject);
             }
+
+            readingWindow.Add(osuCurrent);
 
             foreach (OsuDifficultyHitObject hitObject in osuCurrent.visibleObjects)
             {
@@ -71,12 +74,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             // Reading density strain represents the amount of *stuff* on screen.
             // Higher weighting given to objects within the reading window.
-            var readingDensityStrain = (readingWindow.Count * 2 + osuCurrent.NoteDensity) / 16;
+            var readingDensityStrain = (readingWindow.Count * 2 + osuCurrent.NoteDensity) / 32;
             readingDensityStrain *= logistic((osuCurrent.JumpDistance - 78) / 26);
 
             var strain = readingDensityStrain + Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 1.2) * 8.0;
 
-            //if (strain > 0.5)
+            //if (strain > 10)
             //    Console.WriteLine( Math.Round((current.StartTime / 1000.0), 3).ToString() + "  " + Math.Round(strain, 3).ToString() + "  " + Math.Round(readingDensityStrain, 3).ToString() + "   " + Math.Round(rhythmReadingComplexity, 3).ToString() + "  " + Math.Round(aimReadingComplexity, 3).ToString());
 
             return strain;
@@ -84,39 +87,46 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double calculateRhythmReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject prevObject, OsuDifficultyHitObject currentObject)
         {
-
             var overlapnessTotal = 0.0;
             var rhythmChanges = 0.0;
 
             // calculate how much visible objects overlap the previous
             for (int i = 1; i < visibleObjects.Count; i++)
             {
-                var tCurrNext = visibleObjects[i].StrainTime;
-                var tPrevCurr = visibleObjects[i - 1].StrainTime;
-                var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
-                var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow(tRatio - 1, 2) + 1);
+                var overlapness = 0.0;
 
-                if (Math.Abs(1 - tRatio) > 0.01)
-                    rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
+                for (int w = 1; w < i; w++)
+                {
+                    var tCurrNext = visibleObjects[i].StrainTime;
+                    var tPrevCurr = visibleObjects[w].StrainTime;
+                    var tRatio = Math.Max(tCurrNext / tPrevCurr, tPrevCurr / tCurrNext);
+                    var constantRhythmNerf = 1 - Math.Max(0, -100 * Math.Pow(tRatio - 1, 2) + 1);
 
-                var distanceRatio = visibleObjects[i].JumpDistance / (visibleObjects[i - 1].JumpDistance + 1e-10);
-                var changeRatio = distanceRatio * tRatio;
-                var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
+                    if (Math.Abs(1 - tRatio) > 0.01)
+                        rhythmChanges += 1 * visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
 
-                var overlapness = logistic((18 - visibleObjects[i].JumpDistance) / 5) *
-                                  constantRhythmNerf;
+                    var distanceRatio = visibleObjects[i].JumpDistance / (visibleObjects[w].JumpDistance + 1e-10);
+                    var changeRatio = distanceRatio * tRatio;
+                    var spacingChange = Math.Min(1.2, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.0, Math.Pow(distanceRatio - 1, 2) * 1000);
 
-                overlapness *= spacingChange;
-                overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
+                    overlapness += logistic((18 - visibleObjects[i].NormalisedDistanceTo(visibleObjects[w])) / 5) *
+                                      constantRhythmNerf;
 
-                //if (overlapness > 0.5)
-                //    Console.WriteLine(Math.Round(currentObject.StartTime / 1000.0, 3).ToString() + "->" + Math.Round(visibleObjects[i].StartTime / 1000.0, 3).ToString() + " = " + Math.Round(overlapness, 3).ToString());
+                    overlapness *= spacingChange;
+                    overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[i].StartTime);
+                    overlapness *= windowFalloff(currentObject.StartTime, visibleObjects[w].StartTime);
+                    overlapness *= visibleObjects[i].GetVisibilityAtTime(currentObject.StartTime);
+                    overlapness *= visibleObjects[w].GetVisibilityAtTime(currentObject.StartTime);
+                    overlapness *= Math.Abs(1 + i - w) / 4.0; 
+                }
+
+                    //if (overlapness > 0.5)
+                    //    Console.WriteLine(Math.Round(currentObject.StartTime / 1000.0, 3).ToString() + ": " + Math.Round(visibleObjects[i - 1].StartTime / 1000.0, 3).ToString() + " + " + Math.Round(visibleObjects[i].StartTime / 1000.0, 3).ToString() + " = " + Math.Round(overlapness, 3).ToString());
 
                 overlapnessTotal += Math.Max(0, overlapness);
             }
 
-            //return overlapness * (1 + (rhythmChanges / 4));
-            return overlapnessTotal * (1 + (rhythmChanges / 16));
+            return overlapnessTotal;
         }
 
         private double calculateAimReading(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject, OsuDifficultyHitObject nextObject)
@@ -180,20 +190,32 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double windowBackwardsFalloff(double currentTime, double visualTime) => (reading_window_backwards - (currentTime - visualTime)) / reading_window_backwards;
 
-        private double windowForwardsFalloff(double currentTime, double visualTime) => (- Math.Pow(visualTime - currentTime, 3) / Math.Pow(reading_window_forwards, 3)) + 1;
+        private double windowForwardsFalloff(double currentTime, double visualTime) => (reading_window_forwards - (visualTime - currentTime)) / reading_window_forwards;
+        //private double windowForwardsFalloff(double currentTime, double visualTime) => (- Math.Pow(visualTime - currentTime, 3) / Math.Pow(reading_window_forwards, 3)) + 1;
 
         private double logistic(double x) => 1 / (1 + Math.Pow(Math.E, -x));
 
-        private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
-
-        protected override double CalculateInitialStrain(double time) => currentStrain * strainDecay(time - Previous[0].StartTime);
-
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override void Process(DifficultyHitObject current)
         {
-            currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += strainValueOf(current) * skillMultiplier;
-
-            return currentStrain;
+            difficultyValues.Add(difficultyValueOf(current) * skillMultiplier);
         }
+
+        public override double DifficultyValue()
+        {
+            double difficulty = 0;
+            double weight = 1;
+
+            // Difficulty is the weighted sum of the highest strains from every section.
+            // We're sorting from highest to lowest strain.
+            foreach (double value in difficultyValues.OrderByDescending(d => d))
+            {
+                difficulty += value * weight;
+                weight *= 0.9;
+            }
+
+            return difficulty;
+        }
+
+        
     }
 }

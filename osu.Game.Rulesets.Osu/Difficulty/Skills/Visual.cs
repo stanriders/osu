@@ -49,7 +49,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             // the reading window represents the player's focus when processing the screen
             // we include the previous 500ms of objects, and the next 3000ms worth of visual objects
             // previous 500ms: previous objects influence the readibility of current
-            // next 2500ms: next objects influence the readibility of current
+            // next 3000ms: next objects influence the readibility of current
             List<OsuDifficultyHitObject> readingWindow = new List<OsuDifficultyHitObject>();
 
             foreach (OsuDifficultyHitObject hitObject in Previous)
@@ -120,9 +120,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                     overlapness *= Math.Abs(1 + i - w) / 4.0; 
                 }
 
-                    //if (overlapness > 0.5)
-                    //    Console.WriteLine(Math.Round(currentObject.StartTime / 1000.0, 3).ToString() + ": " + Math.Round(visibleObjects[i - 1].StartTime / 1000.0, 3).ToString() + " + " + Math.Round(visibleObjects[i].StartTime / 1000.0, 3).ToString() + " = " + Math.Round(overlapness, 3).ToString());
-
                 overlapnessTotal += Math.Max(0, overlapness);
             }
 
@@ -191,7 +188,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double windowBackwardsFalloff(double currentTime, double visualTime) => (reading_window_backwards - (currentTime - visualTime)) / reading_window_backwards;
 
         private double windowForwardsFalloff(double currentTime, double visualTime) => (reading_window_forwards - (visualTime - currentTime)) / reading_window_forwards;
-        //private double windowForwardsFalloff(double currentTime, double visualTime) => (- Math.Pow(visualTime - currentTime, 3) / Math.Pow(reading_window_forwards, 3)) + 1;
 
         private double logistic(double x) => 1 / (1 + Math.Pow(Math.E, -x));
 
@@ -215,7 +211,5 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             return difficulty;
         }
-
-        
     }
 }

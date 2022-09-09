@@ -9,6 +9,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
+using osu.Game.Rulesets.Osu.UI;
 using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
@@ -178,7 +179,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 // Thus, the player is assumed to jump the minimum of these two distances in all cases.
                 //
 
-                float tailJumpDistance = Vector2.Subtract(lastSlider.TailCircle.StackedPosition, BaseObject.StackedPosition).Length * scalingFactor;
+                float tailJumpDistance = Vector2.Subtract(clampPositionToPlayfield(lastSlider.TailCircle.StackedPosition), BaseObject.StackedPosition).Length * scalingFactor;
                 MinimumJumpDistance = Math.Max(0, Math.Min(LazyJumpDistance - (maximum_slider_radius - assumed_slider_radius), tailJumpDistance - maximum_slider_radius));
             }
 
@@ -209,15 +210,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             else
                 endTimeMin %= 1;
 
-            slider.LazyEndPosition = slider.StackedPosition + slider.Path.PositionAt(endTimeMin); // temporary lazy end position until a real result can be derived.
-            var currCursorPosition = slider.StackedPosition;
+            slider.LazyEndPosition = clampPositionToPlayfield(slider.StackedPosition + slider.Path.PositionAt(endTimeMin)); // temporary lazy end position until a real result can be derived.
+            var currCursorPosition = clampPositionToPlayfield(slider.StackedPosition);
             double scalingFactor = NORMALISED_RADIUS / slider.Radius; // lazySliderDistance is coded to be sensitive to scaling, this makes the maths easier with the thresholds being used.
 
             for (int i = 1; i < slider.NestedHitObjects.Count; i++)
             {
                 var currMovementObj = (OsuHitObject)slider.NestedHitObjects[i];
 
-                Vector2 currMovement = Vector2.Subtract(currMovementObj.StackedPosition, currCursorPosition);
+                Vector2 currMovement = Vector2.Subtract(clampPositionToPlayfield(currMovementObj.StackedPosition), currCursorPosition);
                 double currMovementLength = scalingFactor * currMovement.Length;
 
                 // Amount of movement required so that the cursor position needs to be updated.
@@ -257,7 +258,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         private Vector2 getEndCursorPosition(OsuHitObject hitObject)
         {
-            Vector2 pos = hitObject.StackedPosition;
+            Vector2 pos = clampPositionToPlayfield(hitObject.StackedPosition);
 
             if (hitObject is Slider slider)
             {
@@ -266,6 +267,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             return pos;
+        }
+
+        private Vector2 clampPositionToPlayfield(Vector2 pos)
+        {
+            float radius = (float)BaseObject.Radius;
+            return new Vector2(
+                Math.Clamp(pos.X, 0.0f - radius, OsuPlayfield.BASE_SIZE.X + radius),
+                Math.Clamp(pos.Y, 0.0f - radius, OsuPlayfield.BASE_SIZE.Y + radius)
+            );
         }
     }
 }

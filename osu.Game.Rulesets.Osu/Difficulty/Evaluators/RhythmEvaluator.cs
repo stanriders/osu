@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (current.BaseObject is Spinner)
                 return 0;
 
-            rhythm_multiplier = 0.75;
+            rhythm_multiplier = 1.0;
 
             int previousIslandSize = 0;
 
@@ -67,7 +67,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         if (islandSize < 7)
                             islandSize++; // island is still progressing, count size.
                     }
-                    else
+                    else if (islandSize > 1)
                     {
                         if (currObj.BaseObject is Slider) // bpm change is into slider, this is easy acc window
                             effectiveRatio *= 0.125;
@@ -76,15 +76,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                             effectiveRatio *= 0.25;
 
                         if (previousIslandSize == islandSize) // repeated island size (ex: triplet -> triplet)
-                            effectiveRatio *= 0.15;
+                            effectiveRatio *= 0.25;
 
                         if (previousIslandSize % 2 == islandSize % 2) // repeated island polartiy (2 -> 4, 3 -> 5)
-                            effectiveRatio *= 0.25;
+                            effectiveRatio *= 0.5;
 
                         if (lastDelta > prevDelta + 10 && prevDelta > currDelta + 10) // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
                             effectiveRatio *= 0.125;
 
-                        rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay /** Math.Sqrt(4 + islandSize) / 2 * Math.Sqrt(4 + previousIslandSize) / 2*/;
+                        rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay/* * logistic(islandSize, 1, 0.75, 5.5)*/;//Math.Sqrt(16 + islandSize) / 4 * Math.Sqrt(16 + previousIslandSize) / 4;
 
                         startRatio = effectiveRatio;
 
@@ -110,5 +110,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             return Math.Sqrt(4 + rhythmComplexitySum * rhythm_multiplier) / 2; //produces multiplier that can be applied to strain. range [1, infinity) (not really though)
         }
+
+        private static double logistic(double x, double maxValue, double multiplier, double offset) => 1 + (maxValue / (1 + Math.Pow(Math.E, offset - multiplier * x)));
     }
 }

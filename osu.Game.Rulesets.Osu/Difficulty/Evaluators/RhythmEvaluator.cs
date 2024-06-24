@@ -77,7 +77,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                             effectiveRatio *= 0.25;
 
                         if (previousIslandSize % 2 == islandSize % 2) // repeated island polartiy (2 -> 4, 3 -> 5)
-                            effectiveRatio *= 0.5;
+                            effectiveRatio *= 0.50;
 
                         if (lastDelta > prevDelta + 10 && prevDelta > currDelta + 10) // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
                             effectiveRatio *= 0.125;

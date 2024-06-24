@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     public static class RhythmEvaluator
     {
         private const int history_time_max = 5000; // 5 seconds of calculatingRhythmBonus max.
-        private static double rhythm_multiplier = 0.9;
+        private static double rhythm_multiplier = 1.0;
 
         /// <summary>
         /// Calculates a rhythm multiplier for the difficulty of the tap associated with historic data of the current <see cref="OsuDifficultyHitObject"/>.
@@ -20,8 +20,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             if (current.BaseObject is Spinner)
                 return 0;
-
-            rhythm_multiplier = 1.0;
 
             int previousIslandSize = 0;
 
@@ -84,7 +82,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         if (lastDelta > prevDelta + 10 && prevDelta > currDelta + 10) // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
                             effectiveRatio *= 0.125;
 
-                        rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay/* * logistic(islandSize, 1, 0.75, 5.5)*/;//Math.Sqrt(16 + islandSize) / 4 * Math.Sqrt(16 + previousIslandSize) / 4;
+                        rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay;
 
                         startRatio = effectiveRatio;
 
@@ -110,7 +108,5 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             return Math.Sqrt(4 + rhythmComplexitySum * rhythm_multiplier) / 2; //produces multiplier that can be applied to strain. range [1, infinity) (not really though)
         }
-
-        private static double logistic(double x, double maxValue, double multiplier, double offset) => 1 + (maxValue / (1 + Math.Pow(Math.E, offset - multiplier * x)));
     }
 }

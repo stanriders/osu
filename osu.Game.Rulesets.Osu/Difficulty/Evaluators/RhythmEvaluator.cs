@@ -21,8 +21,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (current.BaseObject is Spinner)
                 return 0;
 
-            rhythm_multiplier = 1.47181;
-
             int previousIslandSize = 0;
 
             double rhythmComplexitySum = 0;

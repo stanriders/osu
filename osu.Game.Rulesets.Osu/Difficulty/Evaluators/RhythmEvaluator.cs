@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -11,15 +12,22 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     public static class RhythmEvaluator
     {
         private const int history_time_max = 5000; // 5 seconds of calculatingRhythmBonus max.
-        private static double rhythm_multiplier = 1.1;
+        private static double rhythm_multiplier = 1.15;
+
+        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        {
+            return EvaluateDifficultyOfLOL(current).Item1;
+        }
 
         /// <summary>
         /// Calculates a rhythm multiplier for the difficulty of the tap associated with historic data of the current <see cref="OsuDifficultyHitObject"/>.
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        public static (double, int) EvaluateDifficultyOfLOL(DifficultyHitObject current)
         {
+            Dictionary<int, int> islandCounts = new Dictionary<int, int>();
+
             if (current.BaseObject is Spinner)
-                return 0;
+                return (0, 0);
 
             int previousIslandSize = 0;
 
@@ -65,7 +73,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         if (islandSize < 7)
                             islandSize++; // island is still progressing, count size.
                     }
-                    else if (islandSize > 1)
+                    else //if (islandSize > 1)
                     {
                         if (currObj.BaseObject is Slider) // bpm change is into slider, this is easy acc window
                             effectiveRatio *= 0.125;
@@ -73,14 +81,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         if (prevObj.BaseObject is Slider) // bpm change was from a slider, this is easier typically than circle -> circle
                             effectiveRatio *= 0.25;
 
-                        if (previousIslandSize == islandSize) // repeated island size (ex: triplet -> triplet)
-                            effectiveRatio *= 0.25;
+                        //if (previousIslandSize == islandSize) // repeated island size (ex: triplet -> triplet)
+                        //    effectiveRatio *= 0.25;
 
                         if (previousIslandSize % 2 == islandSize % 2) // repeated island polartiy (2 -> 4, 3 -> 5)
                             effectiveRatio *= 0.50;
 
                         if (lastDelta > prevDelta + 10 && prevDelta > currDelta + 10) // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
                             effectiveRatio *= 0.125;
+
+                        if (islandCounts.ContainsKey(islandSize))
+                        {
+                            islandCounts[islandSize]++;
+                            effectiveRatio *= Math.Pow(1.0 / islandCounts[islandSize], 2.0);
+                        }
+                        else
+                        {
+                            islandCounts.Add(islandSize, 1);
+                        }
 
                         rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay;
 
@@ -106,7 +124,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 prevObj = currObj;
             }
 
-            return Math.Sqrt(4 + rhythmComplexitySum * rhythm_multiplier) / 2; //produces multiplier that can be applied to strain. range [1, infinity) (not really though)
+            return (Math.Sqrt(4 + rhythmComplexitySum * rhythm_multiplier) / 2, islandSize); //produces multiplier that can be applied to strain. range [1, infinity) (not really though)
         }
     }
 }

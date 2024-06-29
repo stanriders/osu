@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -11,8 +12,47 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class RhythmEvaluator
     {
+        private readonly struct Island : IEquatable<Island>
+        {
+            public Island()
+            {
+            }
+
+            public List<long> Deltas { get; } = new List<long>();
+
+            public void AddDelta(int delta)
+            {
+                var existingDelta = Deltas.FirstOrDefault(x => Math.Abs(x - delta) >= 1);
+
+                if (existingDelta == default)
+                {
+                    Deltas.Add(delta);
+                }
+                else
+                {
+                    Deltas.Add(existingDelta);
+                }
+            }
+
+            public override int GetHashCode()
+            {
+                var joinedDeltas = string.Join(string.Empty, Deltas.Select(x => x).ToArray());
+                return joinedDeltas.GetHashCode();
+            }
+
+            public bool Equals(Island other)
+            {
+                return other.GetHashCode() == GetHashCode();
+            }
+
+            public override bool Equals(object? obj)
+            {
+                return obj?.GetHashCode() == GetHashCode();
+            }
+        }
+
         private const int history_time_max = 5000; // 5 seconds of calculatingRhythmBonus max.
-        private static double rhythm_multiplier = 1.15;
+        private static double rhythm_multiplier = 1.0;
 
         public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
@@ -24,7 +64,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// </summary>
         public static (double, int) EvaluateDifficultyOfLOL(DifficultyHitObject current)
         {
-            Dictionary<int, int> islandCounts = new Dictionary<int, int>();
+            Dictionary<Island, int> islandCounts = new Dictionary<Island, int>();
 
             if (current.BaseObject is Spinner)
                 return (0, 0);
@@ -33,6 +73,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double rhythmComplexitySum = 0;
             int islandSize = 1;
+            var island = new Island();
             double startRatio = 0; // store the ratio of the current start of an island to buff for tighter rhythms
 
             bool firstDeltaSwitch = false;
@@ -71,7 +112,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     if (!(prevDelta > 1.25 * currDelta || prevDelta * 1.25 < currDelta))
                     {
                         if (islandSize < 7)
+                        {
+                            island.AddDelta((int)currDelta);
                             islandSize++; // island is still progressing, count size.
+                        }
                     }
                     else //if (islandSize > 1)
                     {
@@ -90,14 +134,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         if (lastDelta > prevDelta + 10 && prevDelta > currDelta + 10) // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
                             effectiveRatio *= 0.125;
 
-                        if (islandCounts.ContainsKey(islandSize))
+                        if (islandCounts.ContainsKey(island))
                         {
-                            islandCounts[islandSize]++;
-                            effectiveRatio *= Math.Pow(1.0 / islandCounts[islandSize], 2.0);
+                            islandCounts[island]++;
+                            effectiveRatio *= Math.Pow(1.0 / islandCounts[island], 2.0);
                         }
                         else
                         {
-                            islandCounts.Add(islandSize, 1);
+                            islandCounts.Add(island, 1);
                         }
 
                         rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay;
@@ -110,6 +154,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                             firstDeltaSwitch = false; // if we're speeding up, this stays true and  we keep counting island size.
 
                         islandSize = 1;
+                        island = new Island();
+                        island.AddDelta((int)currDelta);
                     }
                 }
                 else if (prevDelta > 1.25 * currDelta) // we want to be speeding up.
@@ -118,6 +164,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     firstDeltaSwitch = true;
                     startRatio = effectiveRatio;
                     islandSize = 1;
+                    island = new Island();
+                    island.AddDelta((int)currDelta);
                 }
 
                 lastObj = prevObj;

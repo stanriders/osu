@@ -36,7 +36,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             public override int GetHashCode()
             {
-                var joinedDeltas = string.Join(string.Empty, Deltas.Select(x => x).ToArray());
+                string joinedDeltas = string.Join(string.Empty, Deltas.Select(x => x).ToArray());
                 return joinedDeltas.GetHashCode();
             }
 
@@ -52,7 +52,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         }
 
         private const int history_time_max = 5000; // 5 seconds of calculatingRhythmBonus max.
-        private static double rhythm_multiplier = 1.0;
+        private static double rhythm_multiplier = 1.12;
 
         public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {

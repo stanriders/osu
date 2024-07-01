@@ -34,7 +34,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 }
             }
 
-            public double AverageDelta() => Deltas.Average();
+            public double AverageDelta() => Math.Max(Deltas.Average(), 25); // min_delta_time from ODHO
 
             public override int GetHashCode()
             {
@@ -71,7 +71,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (current.BaseObject is Spinner)
                 return (0, 0);
 
-            rhythm_multiplier = 1.15;
+            rhythm_multiplier = 1.14;
 
             int previousIslandSize = 0;
 
@@ -113,7 +113,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 double effectiveRatio = windowPenalty * currRatio;
 
-                double deltaDifferenceEpsilone = currObj.HitWindowGreat * 0.2;
+                double deltaDifferenceEpsilone = currObj.HitWindowGreat * 0.3;
 
                 if (firstDeltaSwitch)
                 {
@@ -149,7 +149,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         if (islandCounts.ContainsKey(island))
                         {
                             islandCounts[island]++;
-                            var power = logistic(island.AverageDelta(), 3, 0.15, 9);
+                            double power = Math.Max(0.75, logistic(island.AverageDelta(), 3, 0.15, 9));
                             effectiveRatio *= Math.Pow(1.0 / islandCounts[island], power);//  Math.Sqrt(0.02 * island.AverageDelta()));
                         }
                         else
@@ -163,7 +163,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                         previousIslandSize = islandSize; // log the last island size.
                         previousIsland = island;
-
+                        
                         if (prevDelta + deltaDifferenceEpsilone < currDelta) // we're slowing down, stop counting
                             firstDeltaSwitch = false; // if we're speeding up, this stays true and  we keep counting island size.
 

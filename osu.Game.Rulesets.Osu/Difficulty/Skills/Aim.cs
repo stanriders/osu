@@ -5,6 +5,7 @@ using System;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -26,12 +27,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double skillMultiplier => 23.55;
         private double strainDecayBase => 0.15;
 
+        private double objectPrecisionBonus = 1;
+
+        protected override double ReducedStrainBaseline => 0.75 / objectPrecisionBonus;
+
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
+            objectPrecisionBonus = Math.Max(objectPrecisionBonus, ((OsuDifficultyHitObject)current).SmallCircleBonus);
+
             currentStrain *= strainDecay(current.DeltaTime);
             currentStrain += AimEvaluator.EvaluateDifficultyOf(current, withSliders) * skillMultiplier;
 

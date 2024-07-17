@@ -74,7 +74,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // Rewarding angles, take the smaller velocity as base.
                     double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                    wideAngleBonus = calcWideAngleBonus(lastAngle);
+                    wideAngleBonus = calcWideAngleBonus(currAngle);
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
                     if (osuCurrObj.StrainTime > 100) // Only buff deltaTime exceeding 300 bpm 1/2.
@@ -88,20 +88,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     }
 
                     // Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
-                    wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastLastAngle), 3)));
+                    wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
                     acuteAngleBonus *= 0.5 + 0.5 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
 
                     // If objects just go back and forth through a middle point - don't give as much wide bonus
-                    var lastLastBaseObject = (OsuHitObject)osuLastLastObj.BaseObject;
-                    var currBaseObject = (OsuHitObject)osuCurrObj.BaseObject;
+                    var last2BaseObject = (OsuHitObject)osuLastLastObj.Previous(0).BaseObject;
+                    var last0BaseObject = (OsuHitObject)osuLastObj.BaseObject;
 
-                    float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)currBaseObject.Radius;
-                    float distance = (lastLastBaseObject.StackedPosition * scalingFactor - currBaseObject.StackedPosition * scalingFactor).Length;
+                    float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)last0BaseObject.Radius;
+                    float distance = (last0BaseObject.StackedPosition * scalingFactor - last2BaseObject.StackedPosition * scalingFactor).Length;
 
                     if (distance < 1)
                     {
-                        wideAngleBonus *= 1 - 0.35 * (1 - distance);
+                        wideAngleBonus *= 1 - 0.5 * (1 - distance);
                     }
                 }
             }

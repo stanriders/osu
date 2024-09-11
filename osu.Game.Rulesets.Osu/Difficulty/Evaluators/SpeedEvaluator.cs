@@ -61,15 +61,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double adjustedDistanceScale = 1.0;
 
-            if (osuCurrObj.Angle.HasValue &&
-                osuPrevObj?.Angle != null &&
-                Math.Abs(osuCurrObj.DeltaTime - osuPrevObj.DeltaTime) < 10)
+            if (osuCurrObj.Angle != null && osuPrevObj?.Angle != null &&
+                Math.Abs(osuCurrObj.DeltaTime - osuPrevObj.DeltaTime) < 25)
             {
                 double angleDifference = Math.Abs(osuCurrObj.Angle.Value - osuPrevObj.Angle.Value);
                 double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
                 double angularVelocity = angleDifferenceAdjusted / (0.1 * strainTime);
-                double angularVelocityBonus = Math.Max(0.0, Math.Pow(angularVelocity, 0.4) - 1.0); //Math.Max(0.0, 1.0 - 1.0 / angularVelocity);
-                adjustedDistanceScale = 0.65 + angularVelocityBonus * 0.45;
+                double angularVelocityBonus = Math.Max(0.0, 0.55 * Math.Log10(angularVelocity));
+
+                double distanceDifference = Math.Abs(osuCurrObj.MinimumJumpDistance - osuPrevObj.MinimumJumpDistance);
+                double distanceDifferenceScaling = Math.Max(0, 1.0 - distanceDifference / 30.0);
+                adjustedDistanceScale = Math.Min(1.0, 0.65 + distanceDifference / 30.0) + angularVelocityBonus * distanceDifferenceScaling;
             }
 
             return (speedBonus + speedBonus * (Math.Pow(distance / single_spacing_threshold, 3.5)) * adjustedDistanceScale) * doubletapness / strainTime;

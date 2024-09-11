@@ -2,6 +2,9 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using osu.Framework.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -67,14 +70,31 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double angleDifference = Math.Abs(osuCurrObj.Angle.Value - osuPrevObj.Angle.Value);
                 double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
                 double angularVelocity = angleDifferenceAdjusted / (0.1 * strainTime);
-                double angularVelocityBonus = Math.Max(0.0, 0.55 * Math.Log10(angularVelocity));
+                double angularVelocityBonus = Math.Max(0.0, 0.65 * Math.Log10(angularVelocity));
 
-                double distanceDifference = Math.Abs(osuCurrObj.MinimumJumpDistance - osuPrevObj.MinimumJumpDistance);
-                double distanceDifferenceScaling = Math.Max(0, 1.0 - distanceDifference / 30.0);
-                adjustedDistanceScale = Math.Min(1.0, 0.65 + distanceDifference / 30.0) + angularVelocityBonus * distanceDifferenceScaling;
+                // ensure that distance is consistent
+                var distances = new List<double>();
+
+                for (int i = 0; i < 16; i++)
+                {
+                    var obj = current.Index > i ? (OsuDifficultyHitObject)current.Previous(i) : null;
+                    var objPrev = current.Index > i + 1 ? (OsuDifficultyHitObject)current.Previous(i + 1) : null;
+
+                    if (obj != null && objPrev != null)
+                    {
+                        if (Math.Abs(obj.DeltaTime - objPrev.DeltaTime) > 25)
+                            break;
+
+                        distances.Add(Math.Abs(obj.MinimumJumpDistance - objPrev.MinimumJumpDistance));
+                    }
+                }
+
+                double averageDistanceDifference = distances.Count > 0 ? distances.Average() : 0;
+                double distanceDifferenceScaling = Math.Max(0, 1.0 - averageDistanceDifference / 30.0);
+                adjustedDistanceScale = Math.Min(1.0, 0.6 + averageDistanceDifference / 30.0) + angularVelocityBonus * distanceDifferenceScaling;
             }
 
-            return (speedBonus + speedBonus * (Math.Pow(distance / single_spacing_threshold, 3.5)) * adjustedDistanceScale) * doubletapness / strainTime;
+            return (speedBonus + speedBonus * (Math.Pow(distance / single_spacing_threshold, 3.5) * adjustedDistanceScale)) * doubletapness / strainTime;
         }
     }
 }

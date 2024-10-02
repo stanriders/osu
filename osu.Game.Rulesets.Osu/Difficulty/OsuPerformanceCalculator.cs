@@ -177,7 +177,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double relevantAccuracy = attributes.SpeedNoteCount == 0 ? 0 : (relevantCountGreat * 6.0 + relevantCountOk * 2.0 + relevantCountMeh) / (attributes.SpeedNoteCount * 6.0);
 
             // Scale the speed value with accuracy and OD.
-            speedValue *= (0.95 + Math.Pow(attributes.OverallDifficulty, 2) / 750) * Math.Pow((accuracy + relevantAccuracy) / 2.0, (14.5 - Math.Max(attributes.OverallDifficulty, 8)) / 2);
+
+            double odScaling = 45 - 45.0 / (1 + Math.Exp(1.5 - 0.365 * attributes.OverallDifficulty));
+            speedValue *= Math.Pow((accuracy + relevantAccuracy) / 2.0, odScaling / 2.0);
+            speedValue *= 0.95 + Math.Pow(attributes.OverallDifficulty, 2.0) / 750.0;
 
             // Scale the speed value with # of 50s to punish doubletapping.
             speedValue *= Math.Pow(0.99, countMeh < totalHits / 500.0 ? 0 : countMeh - totalHits / 500.0);

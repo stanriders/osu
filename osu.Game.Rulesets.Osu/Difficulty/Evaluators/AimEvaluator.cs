@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     public static class AimEvaluator
     {
         private const double wide_angle_multiplier = 1.5;
-        private const double acute_angle_multiplier = 1.95;
+        private const double acute_angle_multiplier = 1.25;
         private const double slider_multiplier = 1.35;
         private const double velocity_change_multiplier = 0.75;
 
@@ -91,6 +91,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
                     acuteAngleBonus *= 0.5 + 0.5 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
+
+                    // Buff angle changes from acute to wide and vise versa
+                    acuteAngleBonus *= 1 + 25.0 *
+                        smootherstep(currAngle, double.DegreesToRadians(1), double.DegreesToRadians(5)) * // ~0 angle means back-n-forth jump which shouldn't count towards angle changing
+                        smootherstep(Math.Abs(calcWideAngleBonus(currAngle) - calcWideAngleBonus(lastAngle)), 0.1, 1);
                 }
             }
 
@@ -131,5 +136,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calcWideAngleBonus(double angle) => Math.Pow(Math.Sin(3.0 / 4 * (Math.Min(5.0 / 6 * Math.PI, Math.Max(Math.PI / 6, angle)) - Math.PI / 6)), 2);
 
         private static double calcAcuteAngleBonus(double angle) => 1 - calcWideAngleBonus(angle);
+
+        /// <summary>
+        /// Smootherstep function
+        /// </summary>
+        /// <param name="x">Value to interpolate by</param>
+        /// <param name="start">Value at which function returns 0</param>
+        /// <param name="end">Value at which function returns 1</param>
+        private static double smootherstep(double x, double start, double end)
+        {
+            x = Math.Clamp((x - start) / (end - start), 0.0, 1.0);
+
+            return x * x * x * (x * (6.0 * x - 15.0) + 10.0);
+        }
     }
 }

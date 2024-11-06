@@ -84,8 +84,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     else
                     {
                         acuteAngleBonus *= calcAcuteAngleBonus(lastAngle) // Multiply by previous angle, we don't want to buff unless this is a wiggle type pattern.
-                                           * Math.Min(angleBonus, 125 / osuCurrObj.StrainTime) // The maximum velocity we buff is equal to 125 / strainTime
-                                           * Math.Pow(Math.Sin(Math.PI / 2 * Math.Min(1, (100 - osuCurrObj.StrainTime) / 25)), 2) // scale buff from 150 bpm 1/4 to 200 bpm 1/4
+                                           * Math.Min(angleBonus, diameter * 1.25 / osuCurrObj.StrainTime) // The maximum velocity we buff is equal to 1.5x diameter / strainTime
+                                           * smootherstep(osuCurrObj.StrainTime, 100, 75) // Scale from 300 bpm 1/2 to 400 bpm 1/2
                                            * smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2); // Buff distance exceeding diameter.
                     }
 
@@ -95,9 +95,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     acuteAngleBonus *= 0.5 + 0.5 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
 
                     // Buff angle changes from acute to wide and vise versa
-                    acuteAngleBonus *= 1 + 25.0 *
+                    acuteAngleBonus *= 1 + 27.0 *
                         smootherstep(currAngle, double.DegreesToRadians(1), double.DegreesToRadians(5)) * // ~0 angle means back-n-forth jump which shouldn't count towards angle changing
-                        smootherstep(Math.Abs(calcWideAngleBonus(currAngle) - calcWideAngleBonus(lastAngle)), 0.1, 1);
+                        smootherstep(Math.Abs(calcWideAngleBonus(currAngle) - calcWideAngleBonus(lastAngle)), 0.1, 1) *
+                        (osuLastObj.BaseObject is Slider ? 0.5 : 1); // Sliders mess up angles so we don't want to buff them too much
                 }
             }
 

@@ -29,6 +29,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
                 return 0;
 
+            var osuNextObj = (OsuDifficultyHitObject)current.Next(0);
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
@@ -95,9 +96,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     acuteAngleBonus *= 0.5 + 0.5 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
 
                     // Buff angle changes from acute to wide and vise versa
-                    acuteAngleBonus *= 1 + 27.0 *
+                    acuteAngleBonus *= 1 + 30.0 *
                         smootherstep(currAngle, double.DegreesToRadians(1), double.DegreesToRadians(5)) * // ~0 angle means back-n-forth jump which shouldn't count towards angle changing
-                        smootherstep(Math.Abs(calcWideAngleBonus(currAngle) - calcWideAngleBonus(lastAngle)), 0.1, 1) *
+                        smootherstep(Math.Abs(currAngle - lastAngle), double.DegreesToRadians(60), double.DegreesToRadians(90)) * // Difference of 90 degrees is guaranteed to be a switch from acute to wide
+                        smootherstep(osuNextObj?.LazyJumpDistance ?? 0, diameter * 1.25, diameter * 2) * // Don't calculate the bonus if current object is the final in the jump section
                         (osuLastObj.BaseObject is Slider ? 0.5 : 1); // Sliders mess up angles so we don't want to buff them too much
                 }
             }

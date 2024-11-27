@@ -30,7 +30,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
                 return 0;
 
-            var osuNextObj = (OsuDifficultyHitObject)current.Next(0);
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
@@ -129,6 +128,5 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calcWideAngleBonus(double angle) => Math.Pow(Math.Sin(3.0 / 4 * (Math.Min(5.0 / 6 * Math.PI, Math.Max(Math.PI / 6, angle)) - Math.PI / 6)), 2);
 
         private static double calcAcuteAngleBonus(double angle) => 1 - calcWideAngleBonus(angle);
-
     }
 }

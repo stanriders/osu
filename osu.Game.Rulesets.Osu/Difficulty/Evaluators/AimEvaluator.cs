@@ -35,7 +35,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
 
-            const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;
             const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
 
             // Calculate the velocity to the current hitobject, which starts with a base distance / time assuming the last object is a hitcircle.
@@ -80,29 +79,25 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     double angleBonus = Math.Min(currVelocity, prevVelocity);
 
                     wideAngleBonus = calcWideAngleBonus(currAngle);
-                    acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
-                    if (DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2) < 300) // Only buff deltaTime exceeding 300 bpm 1/2.
-                        acuteAngleBonus = 0;
-                    else
-                    {
-                        acuteAngleBonus *= calcAcuteAngleBonus(lastAngle) // Multiply by previous angle, we don't want to buff unless this is a wiggle type pattern.
-                                           * Math.Min(angleBonus, diameter * 1.25 / osuCurrObj.StrainTime) // The maximum velocity we buff is equal to 1.5x diameter / strainTime
-                                           * smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2), 300, 400) // Scale from 300 bpm 1/2 to 400 bpm 1/2
-                                           * smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2); // Buff distance exceeding diameter.
-                    }
+                    acuteAngleBonus = calcAcuteAngleBonus(currAngle) * angleBonus //* Math.Min(angleBonus, diameter * 1.25 / osuCurrObj.StrainTime) // The maximum velocity we buff is equal to 1.5x diameter / strainTime
+                                                                     * DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2), 300, 400) // Scale from 300 bpm 1/2 to 400 bpm 1/2
+                                                                     * DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2); // Buff distance exceeding diameter.
+                    //acuteAngleBonus *= calcAcuteAngleBonus(lastAngle); // Multiply by previous angle, we don't want to buff unless this is a wiggle type pattern.
 
                     // Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
                     wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
-                    acuteAngleBonus *= 0.5 + 0.5 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
+                    acuteAngleBonus *= 1 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
 
                     // Buff angle changes from acute to wide and vise versa
-                    acuteAngleBonus *= 1 + 30.0 *
-                        smootherstep(currAngle, double.DegreesToRadians(1), double.DegreesToRadians(5)) * // ~0 angle means back-n-forth jump which shouldn't count towards angle changing
-                        smootherstep(Math.Abs(currAngle - lastAngle), double.DegreesToRadians(60), double.DegreesToRadians(90)) * // Difference of 90 degrees is guaranteed to be a switch from acute to wide
-                        smootherstep(osuNextObj?.LazyJumpDistance ?? 0, diameter * 1.25, diameter * 2) * // Don't calculate the bonus if current object is the final in the jump section
-                        (osuLastObj.BaseObject is Slider ? 0.5 : 1); // Sliders mess up angles so we don't want to buff them too much
+                    /*acuteAngleBonus *= 1 + 14.0 *
+                        DifficultyCalculationUtils.Smootherstep(currAngle, double.DegreesToRadians(1), double.DegreesToRadians(10)) * // ~0 angle means back-n-forth jump which shouldn't count towards angle changing
+                        DifficultyCalculationUtils.Smootherstep(Math.Abs(currAngle - lastAngle), double.DegreesToRadians(60), double.DegreesToRadians(90)) * // Difference of 90 degrees is guaranteed to be a switch from acute to wide
+                        DifficultyCalculationUtils.Smootherstep(osuNextObj?.LazyJumpDistance ?? 0, diameter * 1.25, diameter * 2) * // Don't calculate the bonus if current object is the final in a jump section
+                        DifficultyCalculationUtils.Smootherstep(osuLastLastObj.LazyJumpDistance, diameter * 1.25, diameter * 2) * // Don't calculate the bonus if current object is the start of a jump section
+                        (osuCurrObj.BaseObject is Slider ? 0.5 : 1) * 
+                        (osuLastObj.BaseObject is Slider ? 0.5 : 1); // Sliders mess up angles so we don't want to buff them too much*/
                 }
             }
 
@@ -131,7 +126,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             }
 
             // Add in acute angle bonus or wide angle bonus + velocity change bonus, whichever is larger.
-            aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier + velocityChangeBonus * velocity_change_multiplier);
+            aimStrain += Math.Max(acuteAngleBonus * 2.5, wideAngleBonus * wide_angle_multiplier + velocityChangeBonus * velocity_change_multiplier);
 
             // Add in additional slider velocity bonus.
             if (withSliderTravelDistance)
@@ -144,17 +139,5 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
         private static double calcAcuteAngleBonus(double angle) => 1 - calcWideAngleBonus(angle);
 
-        /// <summary>
-        /// Smootherstep function
-        /// </summary>
-        /// <param name="x">Value to interpolate by</param>
-        /// <param name="start">Value at which function returns 0</param>
-        /// <param name="end">Value at which function returns 1</param>
-        private static double smootherstep(double x, double start, double end)
-        {
-            x = Math.Clamp((x - start) / (end - start), 0.0, 1.0);
-
-            return x * x * x * (x * (6.0 * x - 15.0) + 10.0);
-        }
     }
 }

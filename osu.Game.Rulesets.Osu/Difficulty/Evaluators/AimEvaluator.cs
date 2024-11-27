@@ -80,24 +80,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                     wideAngleBonus = calcWideAngleBonus(currAngle);
 
-                    acuteAngleBonus = calcAcuteAngleBonus(currAngle) * angleBonus //* Math.Min(angleBonus, diameter * 1.25 / osuCurrObj.StrainTime) // The maximum velocity we buff is equal to 1.5x diameter / strainTime
-                                                                     * DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2), 300, 400) // Scale from 300 bpm 1/2 to 400 bpm 1/2
-                                                                     * DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2); // Buff distance exceeding diameter.
-                    //acuteAngleBonus *= calcAcuteAngleBonus(lastAngle); // Multiply by previous angle, we don't want to buff unless this is a wiggle type pattern.
+                    acuteAngleBonus = calcAcuteAngleBonus(currAngle) *
+                                      angleBonus *
+                                      DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2), 300, 400) * // Scale from 300 bpm 1/2 to 400 bpm 1/2
+                                      DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2); // Buff distance exceeding diameter.
 
                     // Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
                     wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
                     acuteAngleBonus *= 1 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
-
-                    // Buff angle changes from acute to wide and vise versa
-                    /*acuteAngleBonus *= 1 + 14.0 *
-                        DifficultyCalculationUtils.Smootherstep(currAngle, double.DegreesToRadians(1), double.DegreesToRadians(10)) * // ~0 angle means back-n-forth jump which shouldn't count towards angle changing
-                        DifficultyCalculationUtils.Smootherstep(Math.Abs(currAngle - lastAngle), double.DegreesToRadians(60), double.DegreesToRadians(90)) * // Difference of 90 degrees is guaranteed to be a switch from acute to wide
-                        DifficultyCalculationUtils.Smootherstep(osuNextObj?.LazyJumpDistance ?? 0, diameter * 1.25, diameter * 2) * // Don't calculate the bonus if current object is the final in a jump section
-                        DifficultyCalculationUtils.Smootherstep(osuLastLastObj.LazyJumpDistance, diameter * 1.25, diameter * 2) * // Don't calculate the bonus if current object is the start of a jump section
-                        (osuCurrObj.BaseObject is Slider ? 0.5 : 1) * 
-                        (osuLastObj.BaseObject is Slider ? 0.5 : 1); // Sliders mess up angles so we don't want to buff them too much*/
                 }
             }
 

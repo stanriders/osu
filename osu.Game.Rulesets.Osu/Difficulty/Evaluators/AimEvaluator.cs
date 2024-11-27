@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     public static class AimEvaluator
     {
         private const double wide_angle_multiplier = 1.5;
-        private const double acute_angle_multiplier = 1.25;
+        private const double acute_angle_multiplier = 2.5;
         private const double slider_multiplier = 1.35;
         private const double velocity_change_multiplier = 0.75;
 
@@ -88,7 +88,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
                     wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
-                    acuteAngleBonus *= 1 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
+                    acuteAngleBonus *= 1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3));
                 }
             }
 
@@ -117,7 +117,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             }
 
             // Add in acute angle bonus or wide angle bonus + velocity change bonus, whichever is larger.
-            aimStrain += Math.Max(acuteAngleBonus * 2.5, wideAngleBonus * wide_angle_multiplier + velocityChangeBonus * velocity_change_multiplier);
+            aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier + velocityChangeBonus * velocity_change_multiplier);
 
             // Add in additional slider velocity bonus.
             if (withSliderTravelDistance)

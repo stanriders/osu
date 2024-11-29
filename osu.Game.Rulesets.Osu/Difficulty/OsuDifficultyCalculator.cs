@@ -48,15 +48,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimDifficultyStrainCount = ((OsuStrainSkill)skills[0]).CountTopWeightedStrains();
             double speedDifficultyStrainCount = ((OsuStrainSkill)skills[2]).CountTopWeightedStrains();
+
             if (mods.Any(m => m is OsuModTouchDevice))
             {
                 aimRating = Math.Pow(aimRating, 0.8);
+                aimRatingNoSliders = Math.Pow(aimRatingNoSliders, 0.8);
                 flashlightRating = Math.Pow(flashlightRating, 0.8);
             }
 
             if (mods.Any(h => h is OsuModRelax))
             {
                 aimRating *= 0.9;
+                aimRatingNoSliders *= 0.9;
                 speedRating = 0.0;
                 flashlightRating *= 0.7;
             }

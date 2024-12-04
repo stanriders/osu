@@ -11,9 +11,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AimEvaluator
     {
-        private const double wide_angle_multiplier = 1.5;
+        private const double wide_angle_multiplier = 1.25;
         private const double acute_angle_multiplier = 1.95;
-        private const double slider_multiplier = 1.35;
+        private const double slider_multiplier = 1.2;
         private const double velocity_change_multiplier = 0.75;
 
         /// <summary>
@@ -78,7 +78,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // Rewarding angles, take the smaller velocity as base.
                     double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                    wideAngleBonus = calcWideAngleBonus(currAngle);
+                    wideAngleBonus = calcWideAngleBonus(currAngle) *
+                                     angleBonus *
+                                     Smootherstep(osuCurrObj.LazyJumpDistance, radius, diameter * 2);
+
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
                     if (DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2) < 300) // Only buff deltaTime exceeding 300 bpm 1/2.
@@ -92,7 +95,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     }
 
                     // Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
-                    wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
+                    wideAngleBonus *= 0.75 + 0.25 * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
                     acuteAngleBonus *= 0.5 + 0.5 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
                 }
@@ -135,5 +138,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calcWideAngleBonus(double angle) => Math.Pow(Math.Sin(3.0 / 4 * (Math.Min(5.0 / 6 * Math.PI, Math.Max(Math.PI / 6, angle)) - Math.PI / 6)), 2);
 
         private static double calcAcuteAngleBonus(double angle) => 1 - calcWideAngleBonus(angle);
+
+        /// <summary>
+        /// Smootherstep function (https://en.wikipedia.org/wiki/Smoothstep#Variations)
+        /// </summary>
+        /// <param name="x">Value to calculate the function for</param>
+        /// <param name="start">Value at which function returns 0</param>
+        /// <param name="end">Value at which function returns 1</param>
+        public static double Smootherstep(double x, double start, double end)
+        {
+            x = Math.Clamp((x - start) / (end - start), 0.0, 1.0);
+
+            return x * x * x * (x * (6.0 * x - 15.0) + 10.0);
+        }
     }
 }

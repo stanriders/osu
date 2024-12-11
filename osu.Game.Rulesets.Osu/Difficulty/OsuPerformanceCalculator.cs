@@ -45,6 +45,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
         }
 
+        public const double ANOTHER_PERFORMANCE_BASE_MULTIPLIER = 1.096;
+
         protected override PerformanceAttributes CreatePerformanceAttributes(ScoreInfo score, DifficultyAttributes attributes)
         {
             var osuAttributes = (OsuDifficultyAttributes)attributes;
@@ -90,7 +92,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             effectiveMissCount = Math.Max(countMiss, effectiveMissCount);
             effectiveMissCount = Math.Min(totalHits, effectiveMissCount);
 
-            double multiplier = 1.11;
+            double james = 1.41;
+            double multiplier = 1.0677; multiplier = 1.2; multiplier = 1.11;
+            double tsunyoku = 0.2;
 
             if (score.Mods.Any(m => m is OsuModNoFail))
                 multiplier *= Math.Max(0.90, 1.0 - 0.02 * effectiveMissCount);

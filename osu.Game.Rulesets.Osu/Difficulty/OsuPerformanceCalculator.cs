@@ -113,11 +113,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                                                  \______/                            
              */
             double james = 1.12;
-            double multiplier = 1.0677;
-            multiplier = 1.2; multiplier = 1.11;
-            multiplier = 1.5; multiplier = 1.61; multiplier = 1.77;
-            multiplier = 1.8; multiplier = 1.21; multiplier = 1.55; multiplier = 1.10;
+                                        double multiplier = 1.0677;
+                                    multiplier = 1.2; multiplier = 1.11;
+                            multiplier = 1.5; multiplier = 1.61; multiplier = 1.77;
+                    multiplier = 1.8; multiplier = 1.21; multiplier = 1.55; multiplier = 1.10;
             multiplier = 1.6; multiplier = 1.14; multiplier = 1.15; multiplier = 1.01; multiplier = 1.11;
+                    multiplier = 1.8; multiplier = 1.21; multiplier = 1.55; multiplier = 1.10;
+                            multiplier = 1.5; multiplier = 1.61; multiplier = 1.77;
+                                    multiplier = 1.2; multiplier = 1.11;
+                                                multiplier = 1.11;
             double tsunyoku = 0.996;
 
             if (score.Mods.Any(m => m is OsuModNoFail))

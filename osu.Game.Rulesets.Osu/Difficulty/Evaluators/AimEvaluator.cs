@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AimEvaluator
     {
-        private const double wide_angle_multiplier = 1.5;
+        private const double wide_angle_multiplier = 1.1;
         private const double acute_angle_multiplier = 1.95;
         private const double slider_multiplier = 1.35;
         private const double velocity_change_multiplier = 0.75;
@@ -73,12 +73,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 {
                     double currAngle = osuCurrObj.Angle.Value;
                     double lastAngle = osuLastObj.Angle.Value;
-                    double lastLastAngle = osuLastLastObj.Angle.Value;
 
                     // Rewarding angles, take the smaller velocity as base.
                     double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                    wideAngleBonus = calcWideAngleBonus(currAngle);
+                    wideAngleBonus = calcWideAngleBonus(currAngle) *
+                                     angleBonus *
+                                     Smootherstep(osuCurrObj.LazyJumpDistance, radius, diameter * 2);
+
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
                     if (DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2) < 300) // Only buff deltaTime exceeding 300 bpm 1/2.
@@ -88,13 +90,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         acuteAngleBonus *= calcAcuteAngleBonus(lastAngle) // Multiply by previous angle, we don't want to buff unless this is a wiggle type pattern.
                                            * Math.Min(angleBonus, diameter * 1.25 / osuCurrObj.StrainTime) // The maximum velocity we buff is equal to 125 / strainTime
                                            * Math.Pow(Math.Sin(Math.PI / 2 * Math.Min(1, (100 - osuCurrObj.StrainTime) / 25)), 2) // scale buff from 150 bpm 1/4 to 200 bpm 1/4
-                                           * Math.Pow(Math.Sin(Math.PI / 2 * (Math.Clamp(osuCurrObj.LazyJumpDistance, radius, diameter) - radius) / radius), 2); // Buff distance exceeding radius up to diameter.
+                                           * Math.Pow(Math.Sin(Math.PI / 2 * (Math.Clamp(osuCurrObj.LazyJumpDistance, radius, diameter) - radius) / radius),
+                                               2); // Buff distance exceeding radius up to diameter.
                     }
 
-                    // Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
-                    wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
-                    // Penalize acute angles if they're repeated, reducing the penalty as the lastLastAngle gets more obtuse.
-                    acuteAngleBonus *= 0.5 + 0.5 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastLastAngle), 3)));
+                    double angleDifference = Math.Abs(osuCurrObj.Angle.Value - osuLastObj.Angle.Value);
+                    double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
+                    double angularVelocity = angleDifferenceAdjusted / (0.1 * osuCurrObj.StrainTime);
+                    double angularVelocityBonus = Math.Max(0.0, 0.65 * Math.Log10(angularVelocity));
+
+                    wideAngleBonus *= 0.7 + angularVelocityBonus * 0.3;
+                    acuteAngleBonus *= 0.3 + angularVelocityBonus * 0.7;
                 }
             }
 
@@ -135,5 +141,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calcWideAngleBonus(double angle) => Math.Pow(Math.Sin(3.0 / 4 * (Math.Min(5.0 / 6 * Math.PI, Math.Max(Math.PI / 6, angle)) - Math.PI / 6)), 2);
 
         private static double calcAcuteAngleBonus(double angle) => 1 - calcWideAngleBonus(angle);
+
+        /// <summary>
+        /// Smootherstep function (https://en.wikipedia.org/wiki/Smoothstep#Variations)
+        /// </summary>
+        /// <param name="x">Value to calculate the function for</param>
+        /// <param name="start">Value at which function returns 0</param>
+        /// <param name="end">Value at which function returns 1</param>
+        public static double Smootherstep(double x, double start, double end)
+        {
+            x = Math.Clamp((x - start) / (end - start), 0.0, 1.0);
+
+            return x * x * x * (x * (6.0 * x - 15.0) + 10.0);
+        }
     }
 }

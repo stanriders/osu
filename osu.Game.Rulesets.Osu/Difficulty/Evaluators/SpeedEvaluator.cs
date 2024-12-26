@@ -51,10 +51,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double distance = travelDistance + osuCurrObj.MinimumJumpDistance;
 
             // Cap distance at single_spacing_threshold
-            distance = Math.Min(distance, single_spacing_threshold);
+            distance = Math.Max(OsuDifficultyHitObject.NORMALISED_RADIUS, Math.Min(distance, single_spacing_threshold));
 
             // Max distance bonus is 1 * `distance_multiplier` at single_spacing_threshold
-            double distanceBonus = Math.Pow(distance / single_spacing_threshold, 3.95) * distance_multiplier;
+            double distanceBonus = Math.Min(1.0, Math.Pow((distance - OsuDifficultyHitObject.NORMALISED_RADIUS) / (single_spacing_threshold - OsuDifficultyHitObject.NORMALISED_RADIUS), 2.3)) * distance_multiplier;
 
             // Base difficulty with all bonuses
             double difficulty = (1 + speedBonus + distanceBonus) * 1000 / strainTime;

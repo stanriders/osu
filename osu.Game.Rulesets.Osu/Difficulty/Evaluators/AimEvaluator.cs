@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AimEvaluator
     {
-        private const double wide_angle_multiplier = 1.15;
+        private const double wide_angle_multiplier = 2.1;
         private const double acute_angle_multiplier = 2.8;
         private const double slider_multiplier = 1.35;
         private const double velocity_change_multiplier = 0.75;
@@ -81,7 +81,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                     wideAngleBonus = calcWideAngleBonus(currAngle) *
                                      angleBonus *
-                                     Math.Pow(DifficultyCalculationUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, 50, 125), 3);
+                                     Math.Pow(DifficultyCalculationUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, radius, 1.25 * diameter), 3);
 
                     // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle) *
@@ -89,9 +89,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                                       DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2), 300, 400) *
                                       DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2);
 
-                    double angleRepetitionDistanceMultiplier = DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, 2 * diameter);
-                    wideAngleBonus *= 0.5 + 0.5 * (angleRepetitionDistanceMultiplier + (1 - angleRepetitionDistanceMultiplier) *
-                        DifficultyCalculationUtils.Smootherstep(double.RadiansToDegrees(Math.Abs(currAngle - lastAngle)), 0, 15));
+                    double angleDifference = Math.Abs(currAngle - lastAngle);
+                    double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
+                    double angularVelocity = angleDifferenceAdjusted / (0.1 * osuCurrObj.StrainTime);
+                    double angularVelocityBonus = Math.Max(0.0, 0.2 * Math.Sqrt(angularVelocity));
+
+                    double angleRepetitionDistanceMultiplier = DifficultyCalculationUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, 1.25 * diameter, 4 * diameter) * 0.5;
+                    wideAngleBonus *= angleRepetitionDistanceMultiplier + (1 - angleRepetitionDistanceMultiplier) *
+                        angularVelocityBonus;
 
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastAngle gets more obtuse.
                     acuteAngleBonus *= 0.05 + 0.95 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));

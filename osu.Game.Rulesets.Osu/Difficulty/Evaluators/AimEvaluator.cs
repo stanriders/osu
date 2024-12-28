@@ -90,8 +90,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                                       DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2);
 
                     double angleRepetitionDistanceMultiplier = DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, 2 * diameter);
-                    wideAngleBonus *= angleRepetitionDistanceMultiplier + (1 - angleRepetitionDistanceMultiplier) *
-                        DifficultyCalculationUtils.Smootherstep(double.RadiansToDegrees(Math.Abs(currAngle - lastAngle)), 0, 15);
+                    wideAngleBonus *= 0.5 + 0.5 * (angleRepetitionDistanceMultiplier + (1 - angleRepetitionDistanceMultiplier) *
+                        DifficultyCalculationUtils.Smootherstep(double.RadiansToDegrees(Math.Abs(currAngle - lastAngle)), 0, 15));
 
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastAngle gets more obtuse.
                     acuteAngleBonus *= 0.05 + 0.95 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));

@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AimEvaluator
     {
-        private const double wide_angle_multiplier = 2.1;
+        private const double wide_angle_multiplier = 1.25;
         private const double acute_angle_multiplier = 2.8;
         private const double slider_multiplier = 1.35;
         private const double velocity_change_multiplier = 0.75;
@@ -91,12 +91,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                     double angleDifference = Math.Abs(currAngle - lastAngle);
                     double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
-                    double angularVelocity = angleDifferenceAdjusted / (0.1 * osuCurrObj.StrainTime);
-                    double angularVelocityBonus = Math.Max(0.0, 0.2 * Math.Sqrt(angularVelocity));
+                    double angularDifferenceVelocity = angleDifferenceAdjusted / (0.1 * osuCurrObj.StrainTime);
+                    double angularDifferenceVelocityBonus = Math.Max(0.0, angularDifferenceVelocity < 10 ? angularDifferenceVelocity / 10 : Math.Log10(angularDifferenceVelocity));
 
-                    double angleRepetitionDistanceMultiplier = DifficultyCalculationUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, 1.25 * diameter, 4 * diameter) * 0.5;
-                    wideAngleBonus *= angleRepetitionDistanceMultiplier + (1 - angleRepetitionDistanceMultiplier) *
-                        angularVelocityBonus;
+                    //double angleRepetitionDistanceMultiplier = DifficultyCalculationUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, 1.25 * diameter, 4 * diameter);
+                    double angleTightnessMultiplier = DifficultyCalculationUtils.Smootherstep(currAngle, double.DegreesToRadians(130), double.DegreesToRadians(90));
+                    wideAngleBonus *= //angleRepetitionDistanceMultiplier + (1 - angleRepetitionDistanceMultiplier) *
+                        angleTightnessMultiplier + (1 - angleTightnessMultiplier) *
+                        (0.5 + 0.75 * angularDifferenceVelocityBonus);
 
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastAngle gets more obtuse.
                     acuteAngleBonus *= 0.05 + 0.95 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));

@@ -11,8 +11,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AimEvaluator
     {
-        private const double wide_angle_multiplier = 1.5;
-        private const double acute_angle_multiplier = 2.7;
+        private const double wide_angle_multiplier = 0.45;
+        private const double acute_angle_multiplier = 2.9;
         private const double slider_multiplier = 1.35;
         private const double velocity_change_multiplier = 0.75;
         private const double wiggle_multiplier = 1.02;
@@ -79,7 +79,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // Rewarding angles, take the smaller velocity as base.
                     double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                    wideAngleBonus = calcWideAngleBonus(currAngle);
+                    wideAngleBonus = calcWideAngleBonus(currAngle) *
+                                     angleBonus *
+                                     DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, radius, 1.25 * diameter);
 
                     // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle) *
@@ -87,10 +89,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                                       DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.StrainTime, 2), 300, 400) *
                                       DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2);
 
-                    // Penalize wide angles if they're repeated, reducing the penalty as the lastAngle gets more acute.
-                    wideAngleBonus *= angleBonus * (1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3)));
+                    double angleRepetitionDistanceMultiplier = DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, 1 * diameter, 2 * diameter);
+                    wideAngleBonus *= angleRepetitionDistanceMultiplier + (1 - angleRepetitionDistanceMultiplier) *
+                        DifficultyCalculationUtils.Smootherstep(double.RadiansToDegrees(Math.Abs(currAngle - lastAngle)), 0, 20);
+
                     // Penalize acute angles if they're repeated, reducing the penalty as the lastAngle gets more obtuse.
-                    acuteAngleBonus *= 0.03 + 0.97 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));
+                    acuteAngleBonus *= 0.05 + 0.95 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));
 
                     // Apply wiggle bonus for jumps that are [radius, 3*diameter] in distance, with < 110 angle
                     // https://www.desmos.com/calculator/dp0v0nvowc

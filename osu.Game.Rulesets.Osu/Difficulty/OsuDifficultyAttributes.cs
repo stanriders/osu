@@ -20,6 +20,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         [JsonProperty("aim_difficulty")]
         public double AimDifficulty { get; set; }
 
+        [JsonProperty("aim_worst_case_difficulty")]
+        public double AimWorstCaseDifficulty { get; set; }
+
         /// <summary>
         /// The number of <see cref="Slider"/>s weighted by difficulty.
         /// </summary>

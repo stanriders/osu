@@ -38,28 +38,31 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimRating = Math.Sqrt(skills[0].DifficultyValue()) * difficulty_multiplier;
             double aimRatingNoSliders = Math.Sqrt(skills[1].DifficultyValue()) * difficulty_multiplier;
-            double speedRating = Math.Sqrt(skills[2].DifficultyValue()) * difficulty_multiplier;
-            double speedNotes = ((Speed)skills[2]).RelevantNoteCount();
+            double aimRatingWorstCase = Math.Sqrt(skills[2].DifficultyValue()) * difficulty_multiplier;
+            double speedRating = Math.Sqrt(skills[3].DifficultyValue()) * difficulty_multiplier;
+            double speedNotes = ((Speed)skills[3]).RelevantNoteCount();
             double difficultSliders = ((Aim)skills[0]).GetDifficultSliders();
             double flashlightRating = 0.0;
 
             if (mods.Any(h => h is OsuModFlashlight))
-                flashlightRating = Math.Sqrt(skills[3].DifficultyValue()) * difficulty_multiplier;
+                flashlightRating = Math.Sqrt(skills[4].DifficultyValue()) * difficulty_multiplier;
 
             double sliderFactor = aimRating > 0 ? aimRatingNoSliders / aimRating : 1;
 
             double aimDifficultyStrainCount = ((OsuStrainSkill)skills[0]).CountTopWeightedStrains();
-            double speedDifficultyStrainCount = ((OsuStrainSkill)skills[2]).CountTopWeightedStrains();
+            double speedDifficultyStrainCount = ((OsuStrainSkill)skills[3]).CountTopWeightedStrains();
 
             if (mods.Any(m => m is OsuModTouchDevice))
             {
                 aimRating = Math.Pow(aimRating, 0.8);
+                aimRatingWorstCase = Math.Pow(aimRating, 0.8);
                 flashlightRating = Math.Pow(flashlightRating, 0.8);
             }
 
             if (mods.Any(h => h is OsuModRelax))
             {
                 aimRating *= 0.9;
+                aimRatingWorstCase = 0.9;
                 speedRating = 0.0;
                 flashlightRating *= 0.7;
             }
@@ -67,6 +70,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             {
                 speedRating *= 0.5;
                 aimRating = 0.0;
+                aimRatingWorstCase = 0.0;
                 flashlightRating *= 0.4;
             }
 
@@ -105,6 +109,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 StarRating = starRating,
                 Mods = mods,
                 AimDifficulty = aimRating,
+                AimWorstCaseDifficulty = aimRatingWorstCase,
                 AimDifficultSliderCount = difficultSliders,
                 SpeedDifficulty = speedRating,
                 SpeedNoteCount = speedNotes,
@@ -143,8 +148,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             var skills = new List<Skill>
             {
-                new Aim(mods, true),
-                new Aim(mods, false),
+                new Aim(mods, true, false),
+                new Aim(mods, false, false),
+                new Aim(mods, true, true),
                 new Speed(mods)
             };
 

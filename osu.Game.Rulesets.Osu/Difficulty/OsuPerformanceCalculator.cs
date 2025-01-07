@@ -138,7 +138,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (score.Mods.Any(h => h is OsuModAutopilot))
                 return 0.0;
 
-            double aimDifficulty = attributes.AimDifficulty;
+            double aimDifficulty = double.Lerp(attributes.AimWorstCaseDifficulty,
+                attributes.AimDifficulty,
+                Math.Pow(accuracy, 50.0 / Math.Max(1, attributes.OverallDifficulty)));
 
             if (attributes.SliderCount > 0 && attributes.AimDifficultSliderCount > 0)
             {
@@ -188,10 +190,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
                 aimValue *= 1.0 + 0.04 * (12.0 - attributes.ApproachRate);
             }
-
-            aimValue *= accuracy;
-            // It is important to consider accuracy difficulty when scaling with accuracy.
-            aimValue *= 0.98 + Math.Pow(attributes.OverallDifficulty, 2) / 2500;
 
             return aimValue;
         }

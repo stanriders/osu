@@ -41,8 +41,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // When calculating worst case aim difficulty we assume that player cheesed every object by hitting it late
             if (worstCaseStrain)
             {
-                osuCurrStrainTime += osuCurrObj.HitWindowGreat;
-                osuLastStrainTime += osuLastObj.HitWindowGreat;
+                osuCurrStrainTime += osuCurrObj.HitWindowFull;
+                osuLastStrainTime += osuLastObj.HitWindowFull;
             }
 
             const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;

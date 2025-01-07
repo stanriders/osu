@@ -86,6 +86,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double HitWindowGreat { get; private set; }
 
+        /// <summary>
+        /// Retrieves the full hittable hit window of the object.
+        /// </summary>
+        public double HitWindowFull { get; private set; }
+
         private readonly OsuHitObject? lastLastObject;
         private readonly OsuHitObject lastObject;
 
@@ -98,14 +103,23 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             StrainTime = Math.Max(DeltaTime, MIN_DELTA_TIME);
 
+            double hitWindowGood;
+            double hitWindowMeh;
+
             if (BaseObject is Slider sliderObject)
             {
                 HitWindowGreat = 2 * sliderObject.HeadCircle.HitWindows.WindowFor(HitResult.Great) / clockRate;
+                hitWindowGood = 2 * sliderObject.HeadCircle.HitWindows.WindowFor(HitResult.Ok) / clockRate;
+                hitWindowMeh = 2 * sliderObject.HeadCircle.HitWindows.WindowFor(HitResult.Meh) / clockRate;
             }
             else
             {
                 HitWindowGreat = 2 * BaseObject.HitWindows.WindowFor(HitResult.Great) / clockRate;
+                hitWindowGood = 2 * BaseObject.HitWindows.WindowFor(HitResult.Ok) / clockRate;
+                hitWindowMeh = 2 * BaseObject.HitWindows.WindowFor(HitResult.Meh) / clockRate;
             }
+
+            HitWindowFull = HitWindowGreat + hitWindowGood + hitWindowMeh;
 
             setDistances(clockRate);
         }

@@ -140,7 +140,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimDifficulty = double.Lerp(attributes.AimWorstCaseDifficulty,
                 attributes.AimDifficulty,
-                Math.Pow(accuracy, 50.0 / Math.Max(1, attributes.OverallDifficulty)));
+                Math.Pow(accuracy, 11.1 / Math.Max(1, attributes.OverallDifficulty)));
 
             if (attributes.SliderCount > 0 && attributes.AimDifficultSliderCount > 0)
             {

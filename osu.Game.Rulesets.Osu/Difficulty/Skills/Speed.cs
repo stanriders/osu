@@ -15,13 +15,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Speed : OsuStrainSkill
     {
-        private double skillMultiplier => 1.46;
+        private double skillMultiplier => 1.45;
         private double strainDecayBase => 0.3;
 
         private double currentStrain;
         private double currentRhythm;
 
-        protected override int ReducedSectionCount => 5;
+        protected override int ReducedSectionCount => 0;
 
         public Speed(Mod[] mods)
             : base(mods)

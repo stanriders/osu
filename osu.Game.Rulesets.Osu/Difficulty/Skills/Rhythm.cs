@@ -6,6 +6,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -18,7 +19,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            return Math.Pow(RhythmEvaluator.EvaluateDifficultyOf(current), 5);
+            var odho = (OsuDifficultyHitObject)current;
+            return Math.Pow(RhythmEvaluator.EvaluateDifficultyOf(current), 20) / odho.StrainTime;
         }
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current)

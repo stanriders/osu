@@ -77,6 +77,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double baseAimPerformance = OsuStrainSkill.DifficultyToPerformance(aimRating);
             double baseSpeedPerformance = OsuStrainSkill.DifficultyToPerformance(speedRating);
+            double baseReadingPerformance = OsuStrainSkill.DifficultyToPerformance(readingRating);
             double baseFlashlightPerformance = 0.0;
 
             if (mods.Any(h => h is OsuModFlashlight))
@@ -86,6 +87,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 Math.Pow(
                     Math.Pow(baseAimPerformance, 1.1) +
                     Math.Pow(baseSpeedPerformance, 1.1) +
+                    Math.Pow(baseReadingPerformance, 1.1) +
                     Math.Pow(baseFlashlightPerformance, 1.1), 1.0 / 1.1
                 );
 
@@ -139,12 +141,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>();
 
+            double preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
+
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < beatmap.HitObjects.Count; i++)
             {
                 var lastLast = i > 1 ? beatmap.HitObjects[i - 2] : null;
-                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], lastLast, clockRate, objects, objects.Count));
+
+                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], lastLast, clockRate, objects, objects.Count, preempt));
+            }
+
+            foreach (var difficultyHitObject in objects)
+            {
+                ((OsuDifficultyHitObject)difficultyHitObject).SetNoteDensity();
             }
 
             return objects;
@@ -152,14 +162,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
-            double preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
-
             var skills = new List<Skill>
             {
                 new Aim(mods, true),
                 new Aim(mods, false),
                 new Speed(mods),
-                new Reading(mods, preempt, clockRate)
+                new Reading(mods, clockRate)
             };
 
             if (mods.Any(h => h is OsuModFlashlight))

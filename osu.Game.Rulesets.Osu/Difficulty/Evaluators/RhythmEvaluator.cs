@@ -69,7 +69,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 // calculate how much current delta difference deserves a rhythm bonus
                 // this function is meant to reduce rhythm bonus for deltas that are multiples of each other (i.e 100 and 200)
                 double deltaDifferenceRatio = Math.Min(prevDelta, currDelta) / Math.Max(prevDelta, currDelta);
-                double currRatio = 1.0 + rhythm_ratio_multiplier * Math.Min(0.5, Math.Pow(Math.Sin(Math.PI / deltaDifferenceRatio), 2));
+                double currRatio = 1.0 + 5 * Math.Min(0.5, Math.Pow(Math.Sin(Math.PI / deltaDifferenceRatio), 2));
 
                 // reduce ratio bonus if delta difference is too big
                 double fraction = Math.Max(prevDelta / currDelta, currDelta / prevDelta);

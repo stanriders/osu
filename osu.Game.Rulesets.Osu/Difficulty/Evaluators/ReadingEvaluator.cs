@@ -19,17 +19,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// <summary>
         /// Calculates reading difficulty of the map
         /// </summary>
-        public static double CalculateReadingDiff(DifficultyHitObject current, double fingerStrain, double clockRate, double preempt, bool hidden = false)
+        public static double CalculateReadingDiff(DifficultyHitObject current, double fingerStrain, double clockRate, bool hidden = false)
         {
-            /*int noteDensity = (int)Math.Floor(noteDensities[i]) - 1; // exclude current circle
-            if (noteDensity > hitObjects.Count - i)
-                noteDensity = hitObjects.Count - i;*/
             if (current.BaseObject is Spinner)
             {
                 return 0;
             }
 
-            var noteDensity = CalculateNoteDensities(current, preempt);
+            var osuCurr = (OsuDifficultyHitObject)current;
+            double noteDensity = osuCurr.NoteDensity;
 
             noteDensity = Math.Min(noteDensity, current.Index);
 
@@ -38,50 +36,31 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             if (noteDensity > 1)
             {
-                var visibleObjects = new List<OsuHitObject>();
+                var visibleObjects = new List<OsuHitObject>() { (OsuHitObject)current.BaseObject };
 
-                for (int i = 0; i < (int)Math.Floor(noteDensity); i++)
+                for (int i = 0; i < (int)Math.Ceiling(noteDensity); i++)
                 {
-                    visibleObjects.Add((OsuHitObject)current.Previous(i).BaseObject);
+                    visibleObjects.Add((OsuHitObject)current.Next(i).BaseObject);
                 }
 
+                var previousObject = current.Previous(0);
                 var nextObject = current.Next(0);
 
-                rhythmReadingComplexity = calculateRhythmReading(visibleObjects, (OsuHitObject)current.Previous(0).BaseObject, (OsuHitObject)current.BaseObject, (OsuHitObject)nextObject.BaseObject, fingerStrain, clockRate, hidden) * rhythm_multiplier;
-                aimReadingComplexity = calculateAimReading(visibleObjects, (OsuHitObject)current.BaseObject, (OsuHitObject)nextObject.BaseObject, hidden) * aim_multiplier;
+                rhythmReadingComplexity = calculateRhythmReading(visibleObjects,
+                    (OsuHitObject)previousObject.BaseObject,
+                    (OsuHitObject)current.BaseObject,
+                    (OsuHitObject)nextObject.BaseObject,
+                    fingerStrain,
+                    clockRate,
+                    hidden) * rhythm_multiplier;
+
+                aimReadingComplexity = calculateAimReading(visibleObjects,
+                    (OsuHitObject)current.BaseObject,
+                    (OsuHitObject)nextObject.BaseObject,
+                    hidden) * aim_multiplier;
             }
 
             return Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 2.5);
-        }
-
-        /// <summary>
-        /// Calculates note density for every note
-        /// </summary>
-        public static double CalculateNoteDensities(DifficultyHitObject current, double preempt)
-        {
-            List<DifficultyHitObject> window = new List<DifficultyHitObject>();
-
-            int next = 0;
-
-            while (current.Next(next) != null && current.Next(next).StartTime < current.StartTime + preempt)
-            {
-                window.Add(current.Next(next));
-                next++;
-            }
-
-            return calculateNoteDensity(current.StartTime, preempt, window);
-        }
-
-        private static double calculateNoteDensity(double time, double preempt, List<DifficultyHitObject> window)
-        {
-            double noteDensity = 0;
-
-            foreach (var hitObject in window)
-            {
-                noteDensity += 1 - Math.Abs(hitObject.StartTime - time) / preempt;
-            }
-
-            return noteDensity;
         }
 
         private static double calculateRhythmReading(List<OsuHitObject> visibleObjects,
@@ -132,7 +111,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double changeRatio = distanceRatio * tRatio;
             double spacingChange = Math.Min(1.05, Math.Pow(changeRatio - 1, 2) * 1000) * Math.Min(1.00, Math.Pow(distanceRatio - 1, 2) * 1000);
 
-            return Math.Pow(0.3, 2 / (currentFingerStrain + 1e-10)) * overlapness * spacingChange * (hidden ? 1.2 : 1.0);
+            return Math.Pow(0.3, 2 / (currentFingerStrain + 1e-10)) * overlapness * spacingChange * (hidden ? 1.05 : 1.0);
         }
 
         private static double calculateAimReading(List<OsuHitObject> visibleObjects, OsuHitObject currentObject, OsuHitObject nextObject, bool hidden)
@@ -158,8 +137,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                                            DifficultyCalculationUtils.Logistic((3 - visibleToNextDistance) / 0.7);
 
                 // this is temp until sliders get proper reading impl
-                if (visibleObject is Slider)
-                    intersectionBonus *= 2.0;
+                if (visibleObject is Slider slider)
+                    intersectionBonus *= Math.Sqrt(slider.Distance / OsuDifficultyHitObject.NORMALISED_DIAMETER);
 
                 // TODO: approach circle intersections
 

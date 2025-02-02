@@ -15,7 +15,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 {
     public class OsuPerformanceCalculator : PerformanceCalculator
     {
-        public const double PERFORMANCE_BASE_MULTIPLIER = 1.14; // This is being adjusted to keep the final pp value scaled around what it used to be when changing things.
+        public const double PERFORMANCE_BASE_MULTIPLIER = 1.13; // This is being adjusted to keep the final pp value scaled around what it used to be when changing things.
 
         private bool usingClassicSliderAccuracy;
 
@@ -183,8 +183,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double approachRateFactor = 0.0;
             if (attributes.ApproachRate > 10.33)
                 approachRateFactor = 0.3 * (attributes.ApproachRate - 10.33);
-            else if (attributes.ApproachRate < 8.0)
-                approachRateFactor = 0.05 * (8.0 - attributes.ApproachRate);
 
             if (score.Mods.Any(h => h is OsuModRelax))
                 approachRateFactor = 0.0;
@@ -196,7 +194,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             else if (score.Mods.Any(m => m is OsuModHidden || m is OsuModTraceable))
             {
                 // We want to give more reward for lower AR when it comes to aim and HD. This nerfs high AR and buffs lower AR.
-                aimValue *= 1.0 + 0.04 * (12.0 - attributes.ApproachRate);
+                //aimValue *= 1.0 + 0.04 * (12.0 - attributes.ApproachRate);
             }
 
             aimValue *= accuracy;

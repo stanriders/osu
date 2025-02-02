@@ -86,10 +86,46 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double HitWindowGreat { get; private set; }
 
+        public double Preempt { get; set; }
+        public double NoteDensity { get; set; }
+
+        /// <summary>
+        /// Calculates note density for every note
+        /// </summary>
+        public double CalculateNoteDensities()
+        {
+            List<DifficultyHitObject> window = new List<DifficultyHitObject>();
+
+            int next = 0;
+
+            while (Next(next) is DifficultyHitObject nextObject)
+            {
+                if (nextObject.StartTime >= StartTime + Preempt)
+                    break;
+
+                window.Add(nextObject);
+                next++;
+            }
+
+            return calculateNoteDensity(StartTime, Preempt, window);
+        }
+
+        private static double calculateNoteDensity(double time, double preempt, List<DifficultyHitObject> window)
+        {
+            double noteDensity = 0;
+
+            foreach (var hitObject in window)
+            {
+                noteDensity += 1 - Math.Abs(hitObject.StartTime - time) / preempt;
+            }
+
+            return noteDensity;
+        }
+
         private readonly OsuHitObject? lastLastObject;
         private readonly OsuHitObject lastObject;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject? lastLastObject, double clockRate, List<DifficultyHitObject> objects, int index)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject? lastLastObject, double clockRate, List<DifficultyHitObject> objects, int index, double preempt)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             this.lastLastObject = lastLastObject as OsuHitObject;
@@ -97,6 +133,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             StrainTime = Math.Max(DeltaTime, MIN_DELTA_TIME);
+            Preempt = preempt;
 
             if (BaseObject is Slider sliderObject)
             {
@@ -108,6 +145,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
 
             setDistances(clockRate);
+        }
+
+        public void SetNoteDensity()
+        {
+            NoteDensity = CalculateNoteDensities();
         }
 
         public double OpacityAt(double time, bool hidden)

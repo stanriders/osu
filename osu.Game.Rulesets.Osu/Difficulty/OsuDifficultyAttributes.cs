@@ -45,6 +45,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         [JsonProperty("flashlight_difficulty")]
         public double FlashlightDifficulty { get; set; }
 
+        [JsonProperty("reading_difficulty")]
+        public double ReadingDifficulty { get; set; }
+
         /// <summary>
         /// Describes how much of <see cref="AimDifficulty"/> is contributed to by hitcircles or sliders.
         /// A value closer to 1.0 indicates most of <see cref="AimDifficulty"/> is contributed by hitcircles.

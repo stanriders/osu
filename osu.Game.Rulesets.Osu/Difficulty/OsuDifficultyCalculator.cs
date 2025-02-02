@@ -53,6 +53,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             var flashlight = skills.OfType<Flashlight>().SingleOrDefault();
             double flashlightRating = flashlight == null ? 0.0 : Math.Sqrt(flashlight.DifficultyValue()) * difficulty_multiplier;
 
+            var reading = skills.OfType<Reading>().Single();
+            double readingRating = Math.Sqrt(reading.DifficultyValue()) * difficulty_multiplier;
+
             if (mods.Any(m => m is OsuModTouchDevice))
             {
                 aimRating = Math.Pow(aimRating, 0.8);
@@ -113,6 +116,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 SpeedDifficulty = speedRating,
                 SpeedNoteCount = speedNotes,
                 FlashlightDifficulty = flashlightRating,
+                ReadingDifficulty = readingRating,
                 SliderFactor = sliderFactor,
                 AimDifficultStrainCount = aimDifficultyStrainCount,
                 SpeedDifficultStrainCount = speedDifficultyStrainCount,
@@ -148,11 +152,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)
         {
+            double preempt = IBeatmapDifficultyInfo.DifficultyRange(beatmap.Difficulty.ApproachRate, 1800, 1200, 450) / clockRate;
+
             var skills = new List<Skill>
             {
                 new Aim(mods, true),
                 new Aim(mods, false),
-                new Speed(mods)
+                new Speed(mods),
+                new Reading(mods, preempt, clockRate)
             };
 
             if (mods.Any(h => h is OsuModFlashlight))

@@ -15,7 +15,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 {
     public class OsuPerformanceCalculator : PerformanceCalculator
     {
-        public const double PERFORMANCE_BASE_MULTIPLIER = 1.15; // This is being adjusted to keep the final pp value scaled around what it used to be when changing things.
+        public const double PERFORMANCE_BASE_MULTIPLIER = 1.14; // This is being adjusted to keep the final pp value scaled around what it used to be when changing things.
 
         private bool usingClassicSliderAccuracy;
 
@@ -119,12 +119,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double speedValue = computeSpeedValue(score, osuAttributes);
             double accuracyValue = computeAccuracyValue(score, osuAttributes);
             double flashlightValue = computeFlashlightValue(score, osuAttributes);
+            double readingValue = computeReadingValue(osuAttributes);
 
             double totalValue =
                 Math.Pow(
                     Math.Pow(aimValue, 1.1) +
                     Math.Pow(speedValue, 1.1) +
                     Math.Pow(accuracyValue, 1.1) +
+                    Math.Pow(readingValue, 1.1) + 
                     Math.Pow(flashlightValue, 1.1), 1.0 / 1.1
                 ) * multiplier;
 
@@ -132,6 +134,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             {
                 Aim = aimValue,
                 Speed = speedValue,
+                Reading = readingValue,
                 Accuracy = accuracyValue,
                 Flashlight = flashlightValue,
                 EffectiveMissCount = effectiveMissCount,
@@ -201,6 +204,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             aimValue *= 0.98 + Math.Pow(Math.Max(0, attributes.OverallDifficulty), 2) / 2500;
 
             return aimValue;
+        }
+
+        private double computeReadingValue(OsuDifficultyAttributes attributes)
+        {
+            return OsuStrainSkill.DifficultyToPerformance(attributes.ReadingDifficulty) * accuracy;
         }
 
         private double computeSpeedValue(ScoreInfo score, OsuDifficultyAttributes attributes)

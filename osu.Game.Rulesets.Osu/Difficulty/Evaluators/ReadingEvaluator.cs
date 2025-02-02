@@ -51,7 +51,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 aimReadingComplexity = calculateAimReading(visibleObjects, (OsuHitObject)current.BaseObject, (OsuHitObject)nextObject.BaseObject, hidden) * aim_multiplier;
             }
 
-            return rhythmReadingComplexity + aimReadingComplexity;
+            return Math.Pow(rhythmReadingComplexity + aimReadingComplexity, 2.5);
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     {
         private readonly double preempt;
         private readonly double clockRate;
-        private double skillMultiplier => 8.0;
+        private double skillMultiplier => 1.0;
 
         private double currentStrain;
 
@@ -29,9 +29,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             currentStrain = ReadingEvaluator.CalculateReadingDiff(current, RhythmEvaluator.EvaluateDifficultyOf(current), clockRate, preempt, Mods.Any(x => x is OsuModHidden)) * skillMultiplier;
 
-            double totalStrain = currentStrain;
-
-            return totalStrain;
+            return currentStrain;
         }
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current)

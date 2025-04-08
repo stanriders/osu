@@ -7,12 +7,30 @@ using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using System.Linq;
+using osu.Game.Rulesets.Difficulty.Skills;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     /// <summary>
     /// Represents the skill required to press keys with regards to keeping up with the speed at which objects need to be hit.
     /// </summary>
+    public class flow : StrainSkill
+    {
+        public flow(Mod[] mods)
+            : base(mods)
+        {
+        }
+
+        protected override double StrainValueAt(DifficultyHitObject current)
+        {
+            return ((OsuDifficultyHitObject)current).IsFlow ? 100 : 0;
+        }
+
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current)
+        {
+            return ((OsuDifficultyHitObject)current).IsFlow ? 100 : 0;
+        }
+    }
     public class Speed : OsuStrainSkill
     {
         private double skillMultiplier => 1.46;

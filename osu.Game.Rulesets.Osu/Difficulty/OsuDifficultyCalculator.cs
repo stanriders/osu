@@ -159,7 +159,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < beatmap.HitObjects.Count; i++)
             {
-                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], clockRate, objects, objects.Count));
+                var lastLast = i > 1 ? beatmap.HitObjects[i - 2] : null;
+                var nextObjects = beatmap.HitObjects.Skip(i+1).Take(2).ToArray();
+                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], lastLast, nextObjects, clockRate, objects, objects.Count));
             }
 
             return objects;
@@ -171,7 +173,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             {
                 new Aim(mods, true),
                 new Aim(mods, false),
-                new Speed(mods)
+                new Speed(mods),
+                new flow(mods)
             };
 
             if (mods.Any(h => h is OsuModFlashlight))

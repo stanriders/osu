@@ -69,7 +69,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double aimStrain = currVelocity; // Start strain with regular velocity.
 
-            if (Math.Max(osuCurrObj.StrainTime, osuLastObj.StrainTime) < 1.25 * Math.Min(osuCurrObj.StrainTime, osuLastObj.StrainTime)) // If rhythms are the same.
+            //if (Math.Max(osuCurrObj.StrainTime, osuLastObj.StrainTime) < 1.25 * Math.Min(osuCurrObj.StrainTime, osuLastObj.StrainTime)) // If rhythms are the same.
             {
                 if (osuCurrObj.Angle != null && osuLastObj.Angle != null)
                 {
@@ -134,7 +134,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             // Add in acute angle bonus or wide angle bonus + velocity change bonus, whichever is larger.
             if (!osuCurrObj.IsFlow)
-                aimStrain += Math.Max(acuteAngleBonus * 3, wideAngleBonus * 1.55 + velocityChangeBonus * velocity_change_multiplier);
+                aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * 1.55 + velocityChangeBonus * velocity_change_multiplier);
+            else
+                aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, velocityChangeBonus * velocity_change_multiplier);
 
             // Add in additional slider velocity bonus.
             if (withSliderTravelDistance)

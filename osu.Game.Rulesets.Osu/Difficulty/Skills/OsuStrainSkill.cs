@@ -35,7 +35,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             var objectStrain = LengthBonusMultipliedStrain(current);
 
-            double lengthBonus = 0.95 + 0.4 * Math.Min(1.0, current.Index / 2000.0) +
+            double lengthBonus = 1 + 0.35 * Math.Min(1.0, current.Index / 2000.0) +
                                  (current.Index > 2000 ? Math.Log10(current.Index / 2000.0) * 0.5 : 0.0);
 
             return objectStrain * lengthBonus;

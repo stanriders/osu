@@ -7,6 +7,7 @@ using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using System.Linq;
 using osu.Framework.Utils;
+using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -26,6 +27,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected OsuStrainSkill(Mod[] mods)
             : base(mods)
         {
+        }
+
+        protected abstract double LengthBonusMultipliedStrain(DifficultyHitObject current);
+
+        protected override double StrainValueAt(DifficultyHitObject current)
+        {
+            var objectStrain = LengthBonusMultipliedStrain(current);
+
+            double lengthBonus = 0.95 + 0.4 * Math.Min(1.0, current.Index / 2000.0) +
+                                 (current.Index > 2000 ? Math.Log10(current.Index / 2000.0) * 0.5 : 0.0);
+
+            return objectStrain * lengthBonus;
         }
 
         public override double DifficultyValue()

@@ -41,27 +41,26 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             // Calculate the velocity to the current hitobject, which starts with a base distance / time assuming the last object is a hitcircle.
             double currVelocity = osuCurrObj.LazyJumpDistance / osuCurrObj.StrainTime;
-            /*
+
             // But if the last object is a slider, then we extend the travel velocity through the slider into the current object.
             if (osuLastObj.BaseObject is Slider && withSliderTravelDistance)
             {
                 double travelVelocity = osuLastObj.TravelDistance / osuLastObj.TravelTime; // calculate the slider velocity from slider head to slider end.
                 double movementVelocity = osuCurrObj.MinimumJumpDistance / osuCurrObj.MinimumJumpTime; // calculate the movement velocity from slider end to current object
 
-                currVelocity = Math.Max(currVelocity, movementVelocity + travelVelocity); // take the larger total combined velocity.
-            }*/
+                currVelocity = Math.Max(currVelocity, Math.Max(movementVelocity, travelVelocity)); // take the larger velocity.
+            }
 
-            // As above, do the same for the previous hitobject.
             double prevVelocity = osuLastObj.LazyJumpDistance / osuLastObj.StrainTime;
-            /*
+
             if (osuLastLastObj.BaseObject is Slider && withSliderTravelDistance)
             {
                 double travelVelocity = osuLastLastObj.TravelDistance / osuLastLastObj.TravelTime;
                 double movementVelocity = osuLastObj.MinimumJumpDistance / osuLastObj.MinimumJumpTime;
 
-                prevVelocity = Math.Max(prevVelocity, movementVelocity + travelVelocity);
+                prevVelocity = Math.Max(prevVelocity, Math.Max(movementVelocity, travelVelocity));
             }
-            */
+
             double wideAngleBonus = 0;
             double acuteAngleBonus = 0;
             double sliderBonus = 0;
@@ -69,15 +68,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double wiggleBonus = 0;
 
             double aimStrain = currVelocity; // Start strain with regular velocity.
-
-            // But if the last object is a slider, then we extend the travel velocity through the slider into the current object.
-            if (osuLastObj.BaseObject is Slider && withSliderTravelDistance)
-            {
-                double travelVelocity = osuLastObj.TravelDistance / osuLastObj.TravelTime; // calculate the slider velocity from slider head to slider end.
-                double movementVelocity = osuCurrObj.MinimumJumpDistance / osuCurrObj.MinimumJumpTime; // calculate the movement velocity from slider end to current object
-
-                aimStrain = Math.Max(currVelocity, Math.Max(movementVelocity, travelVelocity)); // take the larger total combined velocity.
-            }
 
             if (osuCurrObj.Angle != null && osuLastObj.Angle != null)
             {
@@ -167,7 +157,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // Add in additional slider velocity bonus.
             if (withSliderTravelDistance)
             {
-                aimStrain += sliderBonus * 1.8;
+                aimStrain += sliderBonus * 1.5;
             }
 
             // Apply high circle size bonus

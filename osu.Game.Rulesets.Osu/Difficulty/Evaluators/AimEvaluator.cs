@@ -13,7 +13,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     {
         private const double wide_angle_multiplier = 1.5;
         private const double acute_angle_multiplier = 2.55;
-        private const double slider_multiplier = 1.35;
+        private const double slider_multiplier = 2.0;
         private const double velocity_change_multiplier = 0.75;
         private const double wiggle_multiplier = 1.02;
 
@@ -48,7 +48,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double travelVelocity = osuLastObj.TravelDistance / osuLastObj.TravelTime; // calculate the slider velocity from slider head to slider end.
                 double movementVelocity = osuCurrObj.MinimumJumpDistance / osuCurrObj.MinimumJumpTime; // calculate the movement velocity from slider end to current object
 
-                currVelocity = Math.Max(currVelocity, Math.Max(movementVelocity, travelVelocity)); // take the larger velocity.
+                currVelocity = Math.Max(currVelocity, (movementVelocity + travelVelocity) / 2.0); // take the larger velocity.
             }
 
             double prevVelocity = osuLastObj.LazyJumpDistance / osuLastObj.StrainTime;
@@ -58,7 +58,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double travelVelocity = osuLastLastObj.TravelDistance / osuLastLastObj.TravelTime;
                 double movementVelocity = osuLastObj.MinimumJumpDistance / osuLastObj.MinimumJumpTime;
 
-                prevVelocity = Math.Max(prevVelocity, Math.Max(movementVelocity, travelVelocity));
+                prevVelocity = Math.Max(prevVelocity, (movementVelocity + travelVelocity) / 2.0);
             }
 
             double wideAngleBonus = 0;
@@ -157,7 +157,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // Add in additional slider velocity bonus.
             if (withSliderTravelDistance)
             {
-                aimStrain += sliderBonus * 1.5;
+                aimStrain += sliderBonus * slider_multiplier;
             }
 
             // Apply high circle size bonus

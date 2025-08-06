@@ -224,8 +224,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double speedValue = OsuStrainSkill.DifficultyToPerformance(attributes.SpeedDifficulty);
 
-            double lengthBonus = 0.95 + 0.4 * Math.Min(1.0, totalHits / 2000.0) +
-                                 (totalHits > 2000 ? Math.Log10(totalHits / 2000.0) * 0.5 : 0.0);
+            double lengthBonus = 0.95 + 0.25 * Math.Min(1.0, attributes.SpeedNoteCount / 800.0) +
+                                 (attributes.SpeedNoteCount > 800 ? Math.Log10(attributes.SpeedNoteCount / 800.0) * 0.3 : 0.0);
             speedValue *= lengthBonus;
 
             if (effectiveMissCount > 0)

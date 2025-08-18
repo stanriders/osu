@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.Utils;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
@@ -18,6 +19,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private const double rhythm_overall_multiplier = 1.0;
         private const double rhythm_ratio_multiplier = 15.0;
 
+        private static double[] ratioTiming = new[]
+        {
+            1.0,
+            1.5,
+            2.0,
+            2.5,
+            3.0,
+            4.0,
+            5.0
+        };
+
+        private static double[] ratioValue = new[]
+        {
+            0.1,
+            4.0,
+            0.6,
+            1.0,
+            0.5,
+            0.1,
+            0.0
+        };
+
         /// <summary>
         /// Calculates a rhythm multiplier for the difficulty of the tap associated with historic data of the current <see cref="OsuDifficultyHitObject"/>.
         /// </summary>
@@ -25,6 +48,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             if (current.BaseObject is Spinner)
                 return 0;
+
+            ratioTiming = new[]
+            {
+                1.0,
+                1.5,
+                2.0,
+                2.5,
+                3.0,
+                4.0,
+                5.0
+            };
+
+            ratioValue = new[]
+            {
+                0.1,
+                4.0,
+                0.6,
+                1.0,
+                0.5,
+                0.1,
+                0.0
+            };
 
             var currentOsuObject = (OsuDifficultyHitObject)current;
 
@@ -82,7 +127,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 double windowPenalty = Math.Min(1, Math.Max(0, Math.Abs(prevDelta - currDelta) - deltaDifferenceEpsilon) / deltaDifferenceEpsilon);
 
-                double effectiveRatio = windowPenalty * currRatio * differenceMultiplier;
+                double effectiveRatio = LerpFromArrays(ratioTiming, ratioValue, deltaDifference);//windowPenalty * currRatio * differenceMultiplier;
 
                 if (firstDeltaSwitch)
                 {
@@ -95,25 +140,25 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     {
                         // bpm change is into slider, this is easy acc window
                         if (currObj.BaseObject is Slider)
-                            effectiveRatio *= 0.125;
+                            effectiveRatio *= 0.25;
 
                         // bpm change was from a slider, this is easier typically than circle -> circle
                         // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                        if (prevObj.BaseObject is Slider)
-                            effectiveRatio *= 0.3;
+                        //if (prevObj.BaseObject is Slider)
+                        //    effectiveRatio *= 0.3;
 
                         // repeated island polarity (2 -> 4, 3 -> 5)
                         if (island.IsSimilarPolarity(previousIsland))
                             effectiveRatio *= 0.5;
 
                         // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
-                        if (lastDelta > prevDelta + deltaDifferenceEpsilon && prevDelta > currDelta + deltaDifferenceEpsilon)
-                            effectiveRatio *= 0.125;
+                        //if (lastDelta > prevDelta + deltaDifferenceEpsilon && prevDelta > currDelta + deltaDifferenceEpsilon)
+                        //    effectiveRatio *= 0.125;
 
                         // repeated island size (ex: triplet -> triplet)
                         // TODO: remove this nerf since its staying here only for balancing purposes because of the flawed ratio calculation
-                        if (previousIsland.DeltaCount == island.DeltaCount)
-                            effectiveRatio *= 0.5;
+                        //if (previousIsland.DeltaCount == island.DeltaCount)
+                        //    effectiveRatio *= 0.5;
 
                         var islandCount = islandCounts.FirstOrDefault(x => x.Island.Equals(island));
 
@@ -158,13 +203,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     firstDeltaSwitch = true;
 
                     // bpm change is into slider, this is easy acc window
-                    if (currObj.BaseObject is Slider)
-                        effectiveRatio *= 0.6;
+                    //if (currObj.BaseObject is Slider)
+                    //    effectiveRatio *= 0.6;
 
                     // bpm change was from a slider, this is easier typically than circle -> circle
                     // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                    if (prevObj.BaseObject is Slider)
-                        effectiveRatio *= 0.6;
+                    //if (prevObj.BaseObject is Slider)
+                    //    effectiveRatio *= 0.6;
 
                     startRatio = effectiveRatio;
 
@@ -175,7 +220,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 prevObj = currObj;
             }
 
-            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * rhythm_overall_multiplier) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
+            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * 1.0) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
             rhythmDifficulty *= 1 - currentOsuObject.GetDoubletapness((OsuDifficultyHitObject)current.Next(0));
 
             return rhythmDifficulty;
@@ -212,7 +257,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             {
                 // TODO: consider islands to be of similar polarity only if they're having the same average delta (we don't want to consider 3 singletaps similar to a triple)
                 //       naively adding delta check here breaks _a lot_ of maps because of the flawed ratio calculation
-                return DeltaCount % 2 == other.DeltaCount % 2;
+                return Math.Abs(Delta - other.Delta) < deltaDifferenceEpsilon &&
+                       DeltaCount % 2 == other.DeltaCount % 2;
             }
 
             public bool Equals(Island? other)
@@ -228,6 +274,26 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             {
                 return $"{Delta}x{DeltaCount}";
             }
+        }
+
+        public static double LerpFromArrays(double[] x, double[] y, double t)
+        {
+            if (t <= x[0])
+                return y[0];
+
+            if (t >= x[^1])
+                return y[^1];
+
+            for (int i = 0; i < x.Length - 1; i++)
+            {
+                if (t >= x[i] && t <= x[i + 1])
+                {
+                    double u = (t - x[i]) / (x[i + 1] - x[i]);
+                    return Interpolation.Lerp(y[i], y[i + 1], u);
+                }
+            }
+
+            return 0;
         }
     }
 }

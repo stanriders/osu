@@ -21,23 +21,23 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
         private static double[] ratioTiming = new[]
         {
-            1.0,
-            1.5,
-            2.0,
-            2.5,
-            3.0,
-            4.0,
-            5.0
+            1.0, // same rhythm
+            7.0 / 6.0, // 7/6 difference duh
+            1.5, // 1/3 difference
+            2.0, // 1/2 difference
+            2.5, // uhhhhh
+            3.0, // A difference
+            4.0 // Practically A Break
         };
 
         private static double[] ratioValue = new[]
         {
-            0.1,
-            4.0,
-            0.6,
-            1.0,
+            0.01,
+            2.0,
+            5.0,
             0.5,
-            0.1,
+            2.0,
+            0.25,
             0.0
         };
 
@@ -51,23 +51,23 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             ratioTiming = new[]
             {
-                1.0,
-                1.5,
-                2.0,
-                2.5,
-                3.0,
-                4.0,
-                5.0
+                1.0, // same rhythm
+                7.0 / 6.0, // 7/6 difference duh
+                1.5, // 1/3 difference
+                2.0, // 1/2 difference
+                2.5, // uhhhhh
+                3.0, // A difference
+                4.0 // Practically A Break
             };
 
             ratioValue = new[]
             {
-                0.1,
-                4.0,
-                0.6,
-                1.0,
+                0.01,
+                2.0,
+                5.0,
                 0.5,
-                0.1,
+                2.0,
+                0.25,
                 0.0
             };
 
@@ -140,7 +140,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     {
                         // bpm change is into slider, this is easy acc window
                         if (currObj.BaseObject is Slider)
-                            effectiveRatio *= 0.25;
+                            effectiveRatio *= 0.5;
 
                         // bpm change was from a slider, this is easier typically than circle -> circle
                         // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
@@ -148,8 +148,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         //    effectiveRatio *= 0.3;
 
                         // repeated island polarity (2 -> 4, 3 -> 5)
-                        if (island.IsSimilarPolarity(previousIsland))
-                            effectiveRatio *= 0.5;
+                        //if (island.IsSimilarPolarity(previousIsland))
+                        //    effectiveRatio *= 0.5;
 
                         // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
                         //if (lastDelta > prevDelta + deltaDifferenceEpsilon && prevDelta > currDelta + deltaDifferenceEpsilon)
@@ -171,8 +171,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                                 islandCount.Count++;
 
                             // repeated island (ex: triplet -> triplet)
-                            double power = DifficultyCalculationUtils.Logistic(island.Delta, maxValue: 2.75, multiplier: 0.24, midpointOffset: 58.33);
-                            effectiveRatio *= Math.Min(3.0 / islandCount.Count, Math.Pow(1.0 / islandCount.Count, power));
+                            double power = DifficultyCalculationUtils.Logistic(island.Delta, maxValue: 0.75, multiplier: 0.24, midpointOffset: 58.33);
+                            effectiveRatio *= Math.Min(5.0 / islandCount.Count, Math.Pow(1.0 / islandCount.Count, power));
 
                             islandCounts[countIndex] = (islandCount.Island, islandCount.Count);
                         }

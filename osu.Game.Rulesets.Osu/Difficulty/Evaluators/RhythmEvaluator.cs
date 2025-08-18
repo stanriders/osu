@@ -17,28 +17,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private const int history_time_max = 5 * 1000; // 5 seconds
         private const int history_objects_max = 32;
         private const double rhythm_overall_multiplier = 1.0;
-        private const double rhythm_ratio_multiplier = 15.0;
 
-        private static double[] ratioTiming = new[]
+        private static (double ratio, double multiplier)[] ratioMultipliers = new[]
         {
-            1.0, // same rhythm
-            7.0 / 6.0, // 7/6 difference duh
-            1.5, // 1/3 difference
-            2.0, // 1/2 difference
-            2.5, // uhhhhh
-            3.0, // A difference
-            4.0 // Practically A Break
-        };
-
-        private static double[] ratioValue = new[]
-        {
-            0.01,
-            2.0,
-            5.0,
-            0.5,
-            2.0,
-            0.25,
-            0.0
+            (1.0, 0.01), // same rhythm
+            (7.0 / 6.0, 2.0), // 7/6 difference duh
+            (1.5, 5.0), // 1/3 difference
+            (2.0, 0.5), // 1/2 difference
+            (2.5, 2.0), // uhhhhh
+            (3.0, 0.25), // A difference
+            (4.0, 0.0) // Practically A Break
         };
 
         /// <summary>
@@ -49,26 +37,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (current.BaseObject is Spinner)
                 return 0;
 
-            ratioTiming = new[]
+            ratioMultipliers = new[]
             {
-                1.0, // same rhythm
-                7.0 / 6.0, // 7/6 difference duh
-                1.5, // 1/3 difference
-                2.0, // 1/2 difference
-                2.5, // uhhhhh
-                3.0, // A difference
-                4.0 // Practically A Break
-            };
-
-            ratioValue = new[]
-            {
-                0.01,
-                2.0,
-                5.0,
-                0.5,
-                2.0,
-                0.25,
-                0.0
+                (1.0, 0.01), // same rhythm
+                (7.0 / 6.0, 2.0), // 7/6 difference duh
+                (1.5, 5.0), // 1/3 difference
+                (2.0, 0.5), // 1/2 difference
+                (2.5, 2.0), // uhhhhh
+                (3.0, 0.25), // A difference
+                (4.0, 0.0) // Practically A Break
             };
 
             var currentOsuObject = (OsuDifficultyHitObject)current;
@@ -96,7 +73,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 rhythmStart++;
 
             OsuDifficultyHitObject prevObj = (OsuDifficultyHitObject)current.Previous(rhythmStart);
-            OsuDifficultyHitObject lastObj = (OsuDifficultyHitObject)current.Previous(rhythmStart + 1);
 
             // we go from the furthest object back to the current one
             for (int i = rhythmStart; i > 0; i--)
@@ -111,23 +87,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 double currDelta = currObj.StrainTime;
                 double prevDelta = prevObj.StrainTime;
-                double lastDelta = lastObj.StrainTime;
 
                 // calculate how much current delta difference deserves a rhythm bonus
                 // this function is meant to reduce rhythm bonus for deltas that are multiples of each other (i.e 100 and 200)
                 double deltaDifference = Math.Max(prevDelta, currDelta) / Math.Min(prevDelta, currDelta);
 
-                // Take only the fractional part of the value since we're only interested in punishing multiples
-                double deltaDifferenceFraction = deltaDifference - Math.Truncate(deltaDifference);
-
-                double currRatio = 1.0 + rhythm_ratio_multiplier * Math.Min(0.5, DifficultyCalculationUtils.SmoothstepBellCurve(deltaDifferenceFraction));
-
-                // reduce ratio bonus if delta difference is too big
-                double differenceMultiplier = Math.Clamp(2.0 - deltaDifference / 8.0, 0.0, 1.0);
-
-                double windowPenalty = Math.Min(1, Math.Max(0, Math.Abs(prevDelta - currDelta) - deltaDifferenceEpsilon) / deltaDifferenceEpsilon);
-
-                double effectiveRatio = LerpFromArrays(ratioTiming, ratioValue, deltaDifference);//windowPenalty * currRatio * differenceMultiplier;
+                double effectiveRatio = LerpFromArrays(ratioMultipliers, deltaDifference);
 
                 if (firstDeltaSwitch)
                 {
@@ -141,24 +106,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         // bpm change is into slider, this is easy acc window
                         if (currObj.BaseObject is Slider)
                             effectiveRatio *= 0.5;
-
-                        // bpm change was from a slider, this is easier typically than circle -> circle
-                        // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                        //if (prevObj.BaseObject is Slider)
-                        //    effectiveRatio *= 0.3;
-
-                        // repeated island polarity (2 -> 4, 3 -> 5)
-                        //if (island.IsSimilarPolarity(previousIsland))
-                        //    effectiveRatio *= 0.5;
-
-                        // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
-                        //if (lastDelta > prevDelta + deltaDifferenceEpsilon && prevDelta > currDelta + deltaDifferenceEpsilon)
-                        //    effectiveRatio *= 0.125;
-
-                        // repeated island size (ex: triplet -> triplet)
-                        // TODO: remove this nerf since its staying here only for balancing purposes because of the flawed ratio calculation
-                        //if (previousIsland.DeltaCount == island.DeltaCount)
-                        //    effectiveRatio *= 0.5;
 
                         var islandCount = islandCounts.FirstOrDefault(x => x.Island.Equals(island));
 
@@ -202,21 +149,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // Begin counting island until we change speed again.
                     firstDeltaSwitch = true;
 
-                    // bpm change is into slider, this is easy acc window
-                    //if (currObj.BaseObject is Slider)
-                    //    effectiveRatio *= 0.6;
-
-                    // bpm change was from a slider, this is easier typically than circle -> circle
-                    // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                    //if (prevObj.BaseObject is Slider)
-                    //    effectiveRatio *= 0.6;
-
                     startRatio = effectiveRatio;
 
                     island = new Island((int)currDelta, deltaDifferenceEpsilon);
                 }
 
-                lastObj = prevObj;
                 prevObj = currObj;
             }
 
@@ -276,20 +213,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             }
         }
 
-        public static double LerpFromArrays(double[] x, double[] y, double t)
+        public static double LerpFromArrays((double ratio, double multiplier)[] ratioMultipliers, double t)
         {
-            if (t <= x[0])
-                return y[0];
+            if (t <= ratioMultipliers[0].ratio)
+                return ratioMultipliers[0].multiplier;
 
-            if (t >= x[^1])
-                return y[^1];
+            if (t >= ratioMultipliers[^1].ratio)
+                return ratioMultipliers[^1].multiplier;
 
-            for (int i = 0; i < x.Length - 1; i++)
+            for (int i = 0; i < ratioMultipliers.Length - 1; i++)
             {
-                if (t >= x[i] && t <= x[i + 1])
+                if (t >= ratioMultipliers[i].ratio && t <= ratioMultipliers[i + 1].ratio)
                 {
-                    double u = (t - x[i]) / (x[i + 1] - x[i]);
-                    return Interpolation.Lerp(y[i], y[i + 1], u);
+                    double u = (t - ratioMultipliers[i].ratio) / (ratioMultipliers[i + 1].ratio - ratioMultipliers[i].ratio);
+                    return Interpolation.Lerp(ratioMultipliers[i].multiplier, ratioMultipliers[i + 1].multiplier, u);
                 }
             }
 

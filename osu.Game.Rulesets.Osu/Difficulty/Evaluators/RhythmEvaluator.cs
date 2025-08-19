@@ -40,12 +40,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             ratioMultipliers = new[]
             {
                 (1.0, 0.01), // same rhythm
-                (7.0 / 6.0, 2.0), // 7/6 difference duh
-                (1.5, 5.0), // 1/3 difference
-                (2.0, 0.5), // 1/2 difference
-                (2.5, 2.0), // uhhhhh
-                (3.0, 0.25), // A difference
-                (4.0, 0.0) // Practically A Break
+                (4.0 / 3.0, 3.0), // 1/4 <-> 1/3
+                (1.5, 1.5), // 1/3 <-> 1/2
+                (5.0 / 3.0, 5.0), // 1/5 <-> 1/3
+                (2.0, 0.5), // 1/4 <-> 1/2
+                (2.5, 2.0), // 1/5 <-> 1/2
+                (3.0, 0.25), // 1/3 <-> 1/1
+                (4.0, 0.0) // 1/4 <-> 1/1
             };
 
             var currentOsuObject = (OsuDifficultyHitObject)current;
@@ -105,7 +106,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     {
                         // bpm change is into slider, this is easy acc window
                         if (currObj.BaseObject is Slider)
-                            effectiveRatio *= 0.5;
+                            effectiveRatio *= 0.25;
 
                         var islandCount = islandCounts.FirstOrDefault(x => x.Island.Equals(island));
 
@@ -225,8 +226,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             {
                 if (t >= ratioMultipliers[i].ratio && t <= ratioMultipliers[i + 1].ratio)
                 {
-                    double u = (t - ratioMultipliers[i].ratio) / (ratioMultipliers[i + 1].ratio - ratioMultipliers[i].ratio);
-                    return Interpolation.Lerp(ratioMultipliers[i].multiplier, ratioMultipliers[i + 1].multiplier, u);
+                    double distance = (t - ratioMultipliers[i].ratio) / (ratioMultipliers[i + 1].ratio - ratioMultipliers[i].ratio);
+                    double uncommonRhythmBuff = 8 * DifficultyCalculationUtils.SmoothstepBellCurve(distance);
+                    return Interpolation.Lerp(ratioMultipliers[i].multiplier, ratioMultipliers[i + 1].multiplier, distance) + uncommonRhythmBuff;
                 }
             }
 

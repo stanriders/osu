@@ -40,11 +40,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             ratioMultipliers = new[]
             {
                 (1.0, 0.01), // same rhythm
-                (4.0 / 3.0, 3.0), // 1/4 <-> 1/3
-                (1.5, 1.5), // 1/3 <-> 1/2
-                (5.0 / 3.0, 5.0), // 1/5 <-> 1/3
-                (2.0, 0.5), // 1/4 <-> 1/2
-                (2.5, 2.0), // 1/5 <-> 1/2
+                (4.0 / 3.0, 2.0), // 1/4 <-> 1/3
+                (1.5, 1.0), // 1/3 <-> 1/2
+                (5.0 / 3.0, 4.0), // 1/5 <-> 1/3
+                (2.0, 0.05), // 1/4 <-> 1/2
+                (2.5, 1.2), // 1/5 <-> 1/2
                 (3.0, 0.25), // 1/3 <-> 1/1
                 (4.0, 0.0) // 1/4 <-> 1/1
             };
@@ -63,8 +63,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var islandCounts = new List<(Island Island, int Count)>();
 
             double startRatio = 0; // store the ratio of the current start of an island to buff for tighter rhythms
-
-            bool firstDeltaSwitch = false;
 
             int historicalNoteCount = Math.Min(current.Index, history_objects_max);
 
@@ -93,64 +91,54 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 // this function is meant to reduce rhythm bonus for deltas that are multiples of each other (i.e 100 and 200)
                 double deltaDifference = Math.Max(prevDelta, currDelta) / Math.Min(prevDelta, currDelta);
 
+                bool isSpeedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
+
                 double effectiveRatio = LerpFromArrays(ratioMultipliers, deltaDifference);
 
-                if (firstDeltaSwitch)
+                if (isSpeedingUp)
+                    effectiveRatio *= 0.5;
+
+                if (Math.Abs(prevDelta - currDelta) < deltaDifferenceEpsilon)
                 {
-                    if (Math.Abs(prevDelta - currDelta) < deltaDifferenceEpsilon)
+                    // island is still progressing
+                    island.AddDelta((int)currDelta);
+                }
+                else
+                {
+                    // bpm change is into slider, this is easy acc window
+                    if (currObj.BaseObject is Slider)
+                        effectiveRatio *= 0.25;
+
+                    var islandCount = islandCounts.FirstOrDefault(x => x.Island.Equals(island));
+
+                    if (islandCount != default)
                     {
-                        // island is still progressing
-                        island.AddDelta((int)currDelta);
+                        int countIndex = islandCounts.IndexOf(islandCount);
+
+                        // only add island to island counts if they're going one after another
+                        if (previousIsland.Equals(island))
+                            islandCount.Count++;
+
+                        // repeated island (ex: triplet -> triplet)
+                        double power = DifficultyCalculationUtils.Logistic(island.Delta, maxValue: 0.75, multiplier: 0.24, midpointOffset: 58.33);
+                        effectiveRatio *= Math.Min(5.0 / islandCount.Count, Math.Pow(1.0 / islandCount.Count, power));
+
+                        islandCounts[countIndex] = (islandCount.Island, islandCount.Count);
                     }
                     else
                     {
-                        // bpm change is into slider, this is easy acc window
-                        if (currObj.BaseObject is Slider)
-                            effectiveRatio *= 0.25;
-
-                        var islandCount = islandCounts.FirstOrDefault(x => x.Island.Equals(island));
-
-                        if (islandCount != default)
-                        {
-                            int countIndex = islandCounts.IndexOf(islandCount);
-
-                            // only add island to island counts if they're going one after another
-                            if (previousIsland.Equals(island))
-                                islandCount.Count++;
-
-                            // repeated island (ex: triplet -> triplet)
-                            double power = DifficultyCalculationUtils.Logistic(island.Delta, maxValue: 0.75, multiplier: 0.24, midpointOffset: 58.33);
-                            effectiveRatio *= Math.Min(5.0 / islandCount.Count, Math.Pow(1.0 / islandCount.Count, power));
-
-                            islandCounts[countIndex] = (islandCount.Island, islandCount.Count);
-                        }
-                        else
-                        {
-                            islandCounts.Add((island, 1));
-                        }
-
-                        // scale down the difficulty if the object is doubletappable
-                        double doubletapness = prevObj.GetDoubletapness(currObj);
-                        effectiveRatio *= 1 - doubletapness * 0.75;
-
-                        rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay;
-
-                        startRatio = effectiveRatio;
-
-                        previousIsland = island;
-
-                        if (prevDelta + deltaDifferenceEpsilon < currDelta) // we're slowing down, stop counting
-                            firstDeltaSwitch = false; // if we're speeding up, this stays true and we keep counting island size.
-
-                        island = new Island((int)currDelta, deltaDifferenceEpsilon);
+                        islandCounts.Add((island, 1));
                     }
-                }
-                else if (prevDelta > currDelta + deltaDifferenceEpsilon) // we're speeding up
-                {
-                    // Begin counting island until we change speed again.
-                    firstDeltaSwitch = true;
+
+                    // scale down the difficulty if the object is doubletappable
+                    double doubletapness = prevObj.GetDoubletapness(currObj);
+                    effectiveRatio *= 1 - doubletapness * 0.75;
+
+                    rhythmComplexitySum += effectiveRatio * Math.Sqrt(startRatio) * currHistoricalDecay;
 
                     startRatio = effectiveRatio;
+
+                    previousIsland = island;
 
                     island = new Island((int)currDelta, deltaDifferenceEpsilon);
                 }
@@ -158,9 +146,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 prevObj = currObj;
             }
 
-            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * 1.0) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
-            rhythmDifficulty *= 1 - currentOsuObject.GetDoubletapness((OsuDifficultyHitObject)current.Next(0));
+            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * 4.0) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
 
+            rhythmDifficulty *= 1 - currentOsuObject.GetDoubletapness((OsuDifficultyHitObject)current.Next(0));
             return rhythmDifficulty;
         }
 
@@ -227,8 +215,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 if (t >= ratioMultipliers[i].ratio && t <= ratioMultipliers[i + 1].ratio)
                 {
                     double distance = (t - ratioMultipliers[i].ratio) / (ratioMultipliers[i + 1].ratio - ratioMultipliers[i].ratio);
-                    double uncommonRhythmBuff = 8 * DifficultyCalculationUtils.SmoothstepBellCurve(distance);
-                    return Interpolation.Lerp(ratioMultipliers[i].multiplier, ratioMultipliers[i + 1].multiplier, distance) + uncommonRhythmBuff;
+                    return Interpolation.Lerp(ratioMultipliers[i].multiplier, ratioMultipliers[i + 1].multiplier, distance);
                 }
             }
 

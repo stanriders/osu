@@ -41,10 +41,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             ratioMultipliers = new[]
             {
                 (1.0, 0.01), // same rhythm
-                (4.0 / 3.0, 2.0), // 1/4 <-> 1/3
-                (1.5, 1.0), // 1/3 <-> 1/2
-                (5.0 / 3.0, 4.0), // 1/5 <-> 1/3
-                (2.0, 0.1), // 1/4 <-> 1/2
+                (4.0 / 3.0, 3.0), // 1/4 <-> 1/3
+                (1.5, 1.25), // 1/3 <-> 1/2
+                (5.0 / 3.0, 3.0), // 1/5 <-> 1/3
+                (2.0, 0.2), // 1/4 <-> 1/2
                 (2.5, 1.2), // 1/5 <-> 1/2
                 (3.0, 0.25), // 1/3 <-> 1/1
                 (4.0, 0.0) // 1/4 <-> 1/1
@@ -119,7 +119,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // bpm change is into slider, this is easy acc window
                     // TODO: `if (mods.classic)`
                     if (currObj.BaseObject is Slider)
-                        effectiveRatio *= 0.25;
+                        effectiveRatio *= 0.35;
 
                     var islandCount = islandCounts.FirstOrDefault(x => x.Island.Equals(island));
 
@@ -158,7 +158,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 prevObj = currObj;
             }
 
-            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * 4.0) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
+            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * 3.2) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
 
             rhythmDifficulty *= 1 - currentOsuObject.GetDoubletapness((OsuDifficultyHitObject)current.Next(0));
             return rhythmDifficulty;

@@ -21,12 +21,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static (double ratio, double multiplier)[] ratioMultipliers = new[]
         {
             (1.0, 0.01), // same rhythm
-            (7.0 / 6.0, 2.0), // 7/6 difference duh
-            (1.5, 5.0), // 1/3 difference
-            (2.0, 0.5), // 1/2 difference
-            (2.5, 2.0), // uhhhhh
-            (3.0, 0.25), // A difference
-            (4.0, 0.0) // Practically A Break
+            (4.0 / 3.0, 2.0), // 1/4 <-> 1/3
+            (1.5, 1.0), // 1/3 <-> 1/2
+            (5.0 / 3.0, 4.0), // 1/5 <-> 1/3
+            (2.0, 0.1), // 1/4 <-> 1/2
+            (2.5, 1.2), // 1/5 <-> 1/2
+            (3.0, 0.25), // 1/3 <-> 1/1
+            (4.0, 0.0) // 1/4 <-> 1/1
         };
 
         /// <summary>
@@ -87,13 +88,23 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double currDelta = currObj.StrainTime;
                 double prevDelta = prevObj.StrainTime;
 
-                // calculate how much current delta difference deserves a rhythm bonus
-                // this function is meant to reduce rhythm bonus for deltas that are multiples of each other (i.e 100 and 200)
                 double deltaDifference = Math.Max(prevDelta, currDelta) / Math.Min(prevDelta, currDelta);
 
                 bool isSpeedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
 
                 double effectiveRatio = LerpFromArrays(ratioMultipliers, deltaDifference);
+
+                if (prevObj.BaseObject is Slider)
+                {
+                    // if previous object is a slider it might be easier to tap since you dont have to do a whole tapping motion
+                    // while a full deltatime might end up some weird ratio
+                    // the "unpress->taps" motion might be simple, for example a slider-circle-circle pattern is being evaluated as a triple and not a single->double
+                    double sliderEndDelta = currObj.MinimumJumpTime;
+                    double sliderDeltaDifference = Math.Max(sliderEndDelta, currDelta) / Math.Min(sliderEndDelta, currDelta);
+                    double sliderEffectiveRatio = LerpFromArrays(ratioMultipliers, sliderDeltaDifference);
+
+                    effectiveRatio = Math.Min(sliderEffectiveRatio, effectiveRatio);
+                }
 
                 if (isSpeedingUp)
                     effectiveRatio *= 0.5;
@@ -106,6 +117,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 else
                 {
                     // bpm change is into slider, this is easy acc window
+                    // TODO: `if (mods.classic)`
                     if (currObj.BaseObject is Slider)
                         effectiveRatio *= 0.25;
 

@@ -223,9 +223,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         /// </summary>
         private static double calculateJumpOverlapCorrection(OsuHitObject curr, OsuHitObject last, OsuHitObject lastLast, OsuHitObject last3)
         {
-            var lastLastToCurrDist = (curr.StackedPosition - lastLast.StackedPosition).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
-            var last3ToCurrDist = (curr.StackedPosition - last3.StackedPosition).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
-            var lastToCurrDist = (curr.StackedPosition - last.StackedPosition).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
+            float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)curr.Radius;
+
+            var lastLastToCurrDist = (curr.StackedPosition * scalingFactor - lastLast.StackedPosition * scalingFactor).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
+            var last3ToCurrDist = (curr.StackedPosition * scalingFactor - last3.StackedPosition * scalingFactor).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
+            var lastToCurrDist = (curr.StackedPosition * scalingFactor - last.StackedPosition * scalingFactor).Length / OsuDifficultyHitObject.NORMALISED_DIAMETER;
 
             var secondLastToCurrentNerf = Math.Max(0.15 - 0.1 * lastLastToCurrDist, 0.0);
             var fourthLastToCurrentNerf = Math.Max(0.1125 - 0.075 * last3ToCurrDist, 0.0);

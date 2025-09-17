@@ -194,7 +194,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             var distanceNerf = Math.Exp(-Math.Pow(((curr.LazyJumpDistance / OsuDifficultyHitObject.NORMALISED_DIAMETER) - 2.2) / 0.7, 2.0));
 
-            return 1.0 - distanceNerf * bpmCutoff * 0.17;
+            return 1.0 - distanceNerf * bpmCutoff * 0.25;
         }
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             var distanceBuff = DifficultyCalculationUtils.Logistic(-(((curr.LazyJumpDistance / OsuDifficultyHitObject.NORMALISED_DIAMETER) - 6.0) / 0.5));
 
-            return 1.0 + distanceBuff * bpmCutoff * 0.15;
+            return 1.0 + distanceBuff * bpmCutoff * 0.5;
         }
 
         /// <summary>

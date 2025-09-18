@@ -122,7 +122,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     if (distance < 1)
                     {
                         wideAngleBonus *= 1 - 0.35 * (1 - distance)
-                                                   * DifficultyCalculationUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, 0, diameter * 2);
+                                                   * DifficultyCalculationUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, radius, diameter);
                     }
                 }
             }

@@ -40,11 +40,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double StrainValueAt(DifficultyHitObject current)
         {
             currentStrain *= strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
-            currentStrain += SpeedEvaluator.EvaluateDifficultyOf(current, Mods) * skillMultiplier;
+
+            var evaluatedDifficulty = SpeedEvaluator.EvaluateDifficultyOf(current, Mods);
+
+            double currentStrainNoDistance = currentStrain + evaluatedDifficulty.strainNoDistance * skillMultiplier;
+            currentStrain += evaluatedDifficulty.strain * skillMultiplier;
 
             currentRhythm = RhythmEvaluator.EvaluateDifficultyOf(current);
 
-            double totalStrain = currentStrain * currentRhythm;
+            double rhythmContribution = currentStrainNoDistance * currentRhythm - (currentStrainNoDistance);
+
+            double totalStrain = currentStrain + rhythmContribution;
 
             if (current.BaseObject is Slider)
                 sliderStrains.Add(totalStrain);

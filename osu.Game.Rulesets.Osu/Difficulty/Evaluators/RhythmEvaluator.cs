@@ -41,10 +41,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             ratioMultipliers = new[]
             {
                 (1.0, 0.01), // same rhythm
-                (4.0 / 3.0, 3.0), // 1/4 <-> 1/3
-                (1.5, 1.25), // 1/3 <-> 1/2
+                (4.0 / 3.0, 2.0), // 1/4 <-> 1/3
+                (1.5, 1.5), // 1/3 <-> 1/2
                 (5.0 / 3.0, 3.0), // 1/5 <-> 1/3
-                (2.0, 0.2), // 1/4 <-> 1/2
+                (2.0, 0.1), // 1/4 <-> 1/2
                 (2.5, 1.2), // 1/5 <-> 1/2
                 (3.0, 0.25), // 1/3 <-> 1/1
                 (4.0, 0.0) // 1/4 <-> 1/1
@@ -122,6 +122,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     if (currObj.BaseObject is Slider)
                         effectiveRatio *= 0.35;
 
+                    // repeated island polarity (2 -> 4, 3 -> 5)
+                    if (island.IsSimilarPolarity(previousIsland))
+                        effectiveRatio *= 0.5;
+
                     var islandCount = islandCounts.FirstOrDefault(x => x.Island.Equals(island));
 
                     if (islandCount != default)
@@ -147,7 +151,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     double doubletapness = prevObj.GetDoubletapness(currObj);
                     effectiveRatio *= 1 - doubletapness * 0.75;
 
-                    rhythmComplexitySum += effectiveRatio * Math.Sqrt(startRatio) * currHistoricalDecay;
+                    rhythmComplexitySum += effectiveRatio * currHistoricalDecay;
 
                     startRatio = effectiveRatio;
 
@@ -159,7 +163,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 prevObj = currObj;
             }
 
-            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * 3.2) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
+            double rhythmDifficulty = Math.Sqrt(4 + rhythmComplexitySum * 2.0) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though)
 
             rhythmDifficulty *= 1 - currentOsuObject.GetDoubletapness((OsuDifficultyHitObject)current.Next(0));
             return rhythmDifficulty;
@@ -194,8 +198,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             public bool IsSimilarPolarity(Island other)
             {
-                // TODO: consider islands to be of similar polarity only if they're having the same average delta (we don't want to consider 3 singletaps similar to a triple)
-                //       naively adding delta check here breaks _a lot_ of maps because of the flawed ratio calculation
+                // single delta islands shouldn't be compared
+                if (DeltaCount <= 1 || other.DeltaCount <= 1)
+                    return false;
+
                 return Math.Abs(Delta - other.Delta) < deltaDifferenceEpsilon &&
                        DeltaCount % 2 == other.DeltaCount % 2;
             }

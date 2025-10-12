@@ -143,6 +143,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 velocityChangeBonus *= Math.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 2);
             }
 
+            if (osuCurrObj.Verticality != null && osuCurrObj.Verticality > 50)
+            {
+                aimStrain *= 1 - Math.Pow((osuCurrObj.Verticality.Value - 50) / 100, 2.0);
+            }
+
             if (osuLastObj.BaseObject is Slider)
             {
                 // Reward sliders based on velocity.

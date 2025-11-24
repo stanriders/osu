@@ -16,7 +16,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// <summary>
     /// Represents the skill required to correctly aim at every object in the map with a uniform CircleSize and normalized distances.
     /// </summary>
-    public class Aim : OsuStrainSkill
+    public class Aim : OsuMovementStrainSkill
     {
         public readonly bool IncludeSliders;
 
@@ -35,30 +35,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) => currentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double deltaTime) => currentStrain * strainDecay(deltaTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override double StrainValueAt(DifficultyHitObject current, Movement movement)
         {
-            var osuCurrent = (OsuDifficultyHitObject)current;
+            currentStrain *= strainDecay(movement.Time);
+            currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * (movement.IsNested ? 0.4 : 1.0);
 
-            var firstMovement = osuCurrent.Movements.First();
-            currentStrain *= strainDecay(firstMovement.Time);
-            currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, firstMovement) * skillMultiplier;
-
-            for (int i = 1; i < osuCurrent.Movements.Count; i++)
-            {
-                var movement = osuCurrent.Movements[i];
-
-                // always apply strain decay to make circle-only strains decay at the same speed as slider stains
-                currentStrain *= strainDecay(movement.Time);
-
-                if (IncludeSliders && movement.IsNested)
-                {
-                    currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * 0.4;
-                }
-            }
-
-            if (current.BaseObject is Slider)
+            if (current.BaseObject is Slider && !movement.IsNested)
                 sliderStrains.Add(currentStrain);
 
             return currentStrain;

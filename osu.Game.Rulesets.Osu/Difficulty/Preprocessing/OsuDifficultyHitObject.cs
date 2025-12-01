@@ -8,7 +8,6 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
-using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Rulesets.Scoring;
 using osuTK;
 
@@ -36,16 +35,69 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public readonly double AdjustedDeltaTime;
 
         /// <summary>
+        /// Normalised distance from the "lazy" end position of the previous <see cref="OsuDifficultyHitObject"/> to the start position of this <see cref="OsuDifficultyHitObject"/>.
+        /// <para>
+        /// The "lazy" end position is the position at which the cursor ends up if the previous hitobject is followed with as minimal movement as possible (i.e. on the edge of slider follow circles).
+        /// </para>
+        /// </summary>
+        public double LazyJumpDistance { get; private set; }
+
+        /// <summary>
+        /// Normalised shortest distance to consider for a jump between the previous <see cref="OsuDifficultyHitObject"/> and this <see cref="OsuDifficultyHitObject"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is bounded from above by <see cref="LazyJumpDistance"/>, and is smaller than the former if a more natural path is able to be taken through the previous <see cref="OsuDifficultyHitObject"/>.
+        /// </remarks>
+        /// <example>
+        /// Suppose a linear slider - circle pattern.
+        /// <br />
+        /// Following the slider lazily (see: <see cref="LazyJumpDistance"/>) will result in underestimating the true end position of the slider as being closer towards the start position.
+        /// As a result, <see cref="LazyJumpDistance"/> overestimates the jump distance because the player is able to take a more natural path by following through the slider to its end,
+        /// such that the jump is felt as only starting from the slider's true end position.
+        /// <br />
+        /// Now consider a slider - circle pattern where the circle is stacked along the path inside the slider.
+        /// In this case, the lazy end position correctly estimates the true end position of the slider and provides the more natural movement path.
+        /// </example>
+        public double MinimumJumpDistance { get; private set; }
+
+        /// <summary>
+        /// The time taken to travel through <see cref="MinimumJumpDistance"/>, with a minimum value of 25ms.
+        /// </summary>
+        public double MinimumJumpTime { get; private set; }
+
+        /// <summary>
+        /// Normalised distance between the start and end position of this <see cref="OsuDifficultyHitObject"/>.
+        /// </summary>
+        public double TravelDistance { get; private set; }
+
+        /// <summary>
+        /// The time taken to travel through <see cref="TravelDistance"/>, with a minimum value of 25ms for <see cref="Slider"/> objects.
+        /// </summary>
+        public double TravelTime { get; private set; }
+
+        /// <summary>
         /// The position of the cursor at the point of completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
         /// and was hit with as few movements as possible.
         /// </summary>
         public Vector2? LazyEndPosition { get; private set; }
 
         /// <summary>
+        /// The distance travelled by the cursor upon completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
+        /// and was hit with as few movements as possible.
+        /// </summary>
+        public double LazyTravelDistance { get; private set; }
+
+        /// <summary>
         /// The time taken by the cursor upon completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
         /// and was hit with as few movements as possible.
         /// </summary>
         public double LazyTravelTime { get; private set; }
+
+        /// <summary>
+        /// Angle the player has to take to hit this <see cref="OsuDifficultyHitObject"/>.
+        /// Calculated as the angle between the circles (current-2, current-1, current).
+        /// </summary>
+        public double? Angle { get; private set; }
 
         /// <summary>
         /// Retrieves the full hit window for a Great <see cref="HitResult"/>.
@@ -156,6 +208,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             });
 
             computeSliderMovements(clockRate);
+
+            if (PreviousMovement != null)
+                Angle = Movements.First().Angle(PreviousMovement);
+
+            LazyJumpDistance = Movements.First().Distance;
+            MinimumJumpTime = Movements.First().Time;
+            MinimumJumpDistance = LazyJumpDistance;
+
+            LazyTravelDistance = Movements.Where(x => x.IsNested).Sum(x => x.Distance);
+
+            if (BaseObject is Slider currentSlider)
+            {
+                TravelDistance = LazyTravelDistance;
+                TravelTime = Math.Max(LazyTravelTime / clockRate, MIN_DELTA_TIME);
+            }
         }
 
         public double OpacityAt(double time, bool hidden)

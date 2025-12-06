@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double currentStrain;
 
-        private double skillMultiplier => 26.4;
+        private double skillMultiplier => 26.2;
         private double strainDecayBase => 0.15;
 
         private readonly List<double> sliderStrains = new List<double>();
@@ -39,8 +39,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current, Movement movement)
         {
+            var osuCurrent = (OsuDifficultyHitObject)current;
+            double ratioMultiplier = 1;
+
+            if (IncludeSliders)
+            {
+                ratioMultiplier = Math.Pow(Math.Pow(1 - osuCurrent.PathLengthToMovementLengthRatio, 2) + 1, 1);
+            }
+
             currentStrain *= strainDecay(movement.Time);
-            currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * (movement.IsNested ? 0.4 : 1.0);
+            currentStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * skillMultiplier * (movement.IsNested ? 0.8 : 1.0) * ratioMultiplier;
 
             if (current.BaseObject is Slider && !movement.IsNested)
                 sliderStrains.Add(currentStrain);

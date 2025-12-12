@@ -78,15 +78,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 // Rewarding angles, take the smaller velocity as base.
                 double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
+                //if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
                 {
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
 
                     // Penalize angle repetition.
-                    acuteAngleBonus *= 0.08 + 0.92 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));
+                    acuteAngleBonus *= 0.15 + 0.85 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));
 
                     // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
-                    acuteAngleBonus *= angleBonus *
+                    acuteAngleBonus *= 
                                        DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400) *
                                        DifficultyCalculationUtils.Smootherstep(osuCurrObj.LazyJumpDistance, diameter, diameter * 2);
                 }
@@ -153,7 +153,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             aimStrain += velocityChangeBonus * velocity_change_multiplier;
 
             // Add in acute angle bonus or wide angle bonus, whichever is larger.
-            aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
+            aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier * 2.0, wideAngleBonus * wide_angle_multiplier);
 
             // Apply high circle size bonus
             aimStrain *= osuCurrObj.SmallCircleBonus;

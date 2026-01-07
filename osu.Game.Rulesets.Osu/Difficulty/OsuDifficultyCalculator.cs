@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.Utils;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Difficulty;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
@@ -17,6 +18,7 @@ using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.Scoring;
 using osu.Game.Rulesets.Scoring;
+using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Difficulty
 {
@@ -159,12 +161,96 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < beatmap.HitObjects.Count; i++)
             {
-                var lastLast = i > 1 ? beatmap.HitObjects[i - 2] : null;
-                var nextObjects = beatmap.HitObjects.Skip(i+1).Take(2).ToArray();
-                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], lastLast, nextObjects, clockRate, objects, objects.Count));
+                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], clockRate, objects, objects.Count));
             }
 
+            populateFlowParams(objects);
+
             return objects;
+        }
+
+        private void populateFlowParams(List<DifficultyHitObject> objects)
+        {
+            foreach (var obj in objects)
+            {
+                var difficultyHitObject = (OsuDifficultyHitObject)obj;
+
+                //int degrees = 12;
+                int previousObjectsCount = 2;
+                var previousObjects = new List<OsuDifficultyHitObject>();
+
+                for (int i = 0; i < previousObjectsCount; i++)
+                {
+                    var prev = (OsuDifficultyHitObject)difficultyHitObject.Previous(i);
+                    if (prev != null)
+                        previousObjects.Add(prev);
+                }
+
+                previousObjects.Reverse();
+
+                int nextObjectsCount = 2;
+                var nextObjects = new List<OsuDifficultyHitObject>();
+
+                for (int i = 0; i < nextObjectsCount; i++)
+                {
+                    var next = (OsuDifficultyHitObject)difficultyHitObject.Next(i);
+                    if (next != null)
+                        nextObjects.Add(next);
+                }
+
+                var baseObject = (OsuHitObject)difficultyHitObject.BaseObject;
+                float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)baseObject.Radius;
+
+                var splineObjectsToConsider = previousObjects.Append(difficultyHitObject)
+                                                             .Concat(nextObjects)
+                                                             .ToArray();
+                var splinePoints = new List<Vector2>();
+
+                for (int i = 0; i < splineObjectsToConsider.Length; i++)
+                {
+                    var baseObjectSpline = (OsuHitObject)splineObjectsToConsider[i].BaseObject;
+                    var objectScaledPosition = baseObjectSpline.StackedPosition * scalingFactor;
+                    splinePoints.Add(objectScaledPosition);
+
+                    if (splineObjectsToConsider[i].BaseObject is Slider)
+                    {
+                        objectScaledPosition = (splineObjectsToConsider[i].LazyEndPosition ?? baseObjectSpline.StackedPosition) * scalingFactor;
+                        splinePoints.Add(objectScaledPosition);
+                    }
+
+                    if (i < splineObjectsToConsider.Length - 1)
+                    {
+                        var nextBaseObject = (OsuHitObject)splineObjectsToConsider[i + 1].BaseObject;
+                        var nextObjectScaledPosition = nextBaseObject.StackedPosition * scalingFactor;
+
+                        splinePoints.Add(new Vector2((objectScaledPosition.X + nextObjectScaledPosition.X) / 2, (objectScaledPosition.Y + nextObjectScaledPosition.Y) / 2));
+                    }
+                }
+
+                difficultyHitObject.FlowPoints = PathApproximator.BezierToPiecewiseLinear(new ReadOnlySpan<Vector2>(splinePoints.ToArray()));
+
+                double snapDistance = previousObjects.Skip(1).Concat(nextObjects).Sum(x => x.LazyJumpDistance);
+                float flowDistance = 0f;
+
+                for (int i = 1; i < splinePoints.Count; i++)
+                {
+                    var splinePoint = splinePoints[i];
+                    var prevSplinePoint = splinePoints[i - 1];
+                    flowDistance += Vector2.Distance(splinePoint, prevSplinePoint);
+                }
+
+                difficultyHitObject.FlowDistance = flowDistance + 0.1;
+                difficultyHitObject.SnapDistance = snapDistance + 0.1;
+
+                if (flowDistance > 1 && snapDistance > 1)
+                {
+                    difficultyHitObject.IsFlow = Math.Abs(snapDistance - flowDistance) < OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25;
+
+                    difficultyHitObject.FlowProbability = Math.Pow(
+                        Math.Min(snapDistance + OsuDifficultyHitObject.NORMALISED_DIAMETER, flowDistance) / Math.Max(snapDistance, flowDistance),
+                        10);
+                }
+            }
         }
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, double clockRate)

@@ -26,14 +26,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            return ((OsuDifficultyHitObject)current).IsFlow ? 100 : 0;
+            return ((OsuDifficultyHitObject)current).FlowProbability * 100;
         }
 
         protected override double CalculateInitialStrain(double time, DifficultyHitObject current)
         {
-            return ((OsuDifficultyHitObject)current).IsFlow ? 100 : 0;
+            return ((OsuDifficultyHitObject)current).FlowProbability * 100;
         }
     }
+
     public class Speed : OsuStrainSkill
     {
         private double skillMultiplier => 1.47;

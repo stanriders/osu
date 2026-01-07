@@ -74,7 +74,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 // Take only the fractional part of the value since we're only interested in punishing multiples
                 double deltaDifferenceFraction = deltaDifference - Math.Truncate(deltaDifference);
 
-                double currRatio = 1.0 + rhythm_ratio_multiplier * Math.Min(0.5, DifficultyCalculationUtils.SmoothstepBellCurve(deltaDifferenceFraction));
+                double currRatio = 1.0 + 23 * Math.Min(0.5, DifficultyCalculationUtils.SmoothstepBellCurve(deltaDifferenceFraction));
 
                 // reduce ratio bonus if delta difference is too big
                 double differenceMultiplier = Math.Clamp(2.0 - deltaDifference / 8.0, 0.0, 1.0);

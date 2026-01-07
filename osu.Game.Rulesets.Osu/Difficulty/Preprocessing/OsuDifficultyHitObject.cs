@@ -114,19 +114,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         private readonly OsuDifficultyHitObject? lastLastDifficultyObject;
         private readonly OsuDifficultyHitObject? lastDifficultyObject;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
-        public List<Vector2>? FlowPoints { get; }
-        public bool IsFlow { get; }
+        public List<Vector2>? FlowPoints { get; set; }
+        public bool IsFlow { get; set; }
+        public double SnapDistance { get; set; }
+        public double FlowDistance { get; set; }
+        public double FlowProbability { get; set; }
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject? lastLastObject, HitObject[] nextObjects, double clockRate, List<DifficultyHitObject> objects, int index)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             lastLastDifficultyObject = index > 1 ? (OsuDifficultyHitObject)objects[index - 2] : null;
             lastDifficultyObject = index > 0 ? (OsuDifficultyHitObject)objects[index - 1] : null;
-
-            /*var osuNextObject = nextObject as OsuHitObject;
-            var osuNextNextObject = nextNextObject as OsuHitObject;
-            var osunextNextNextObject = nextNextNextObject as OsuHitObject;*/
 
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             AdjustedDeltaTime = Math.Max(DeltaTime, MIN_DELTA_TIME);
@@ -144,44 +142,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
             computeSliderCursorPosition();
             setDistances(clockRate);
-
-            if (this.lastLastObject != null/* && osuNextObject != null && osuNextNextObject != null && osunextNextNextObject != null*/)
-            {
-                //int degrees = 12;
-                int previousObjects = 2;
-
-                float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
-
-                var splineObjectsToConsider = objects.TakeLast(previousObjects).Select(x => (OsuHitObject)x.BaseObject).Append(this.BaseObject).Concat(nextObjects.Select(x => (OsuHitObject)x)).ToArray();
-                var splinePoints = new List<Vector2>();
-
-                for (int i = 0; i < splineObjectsToConsider.Length; i++)
-                {
-                    var objectScaledPosition = splineObjectsToConsider[i].StackedPosition * scalingFactor;
-                    splinePoints.Add(objectScaledPosition);
-
-                    if (splineObjectsToConsider[i] is Slider)
-                    {
-                        objectScaledPosition = getEndCursorPosition(splineObjectsToConsider[i]) * scalingFactor;
-                        splinePoints.Add(objectScaledPosition);
-                    }
-
-                    if (i < splineObjectsToConsider.Length - 1)
-                    {
-                        var nextObjectScaledPosition = splineObjectsToConsider[i + 1].StackedPosition * scalingFactor;
-
-                        splinePoints.Add(new Vector2((objectScaledPosition.X + nextObjectScaledPosition.X) / 2, (objectScaledPosition.Y + nextObjectScaledPosition.Y) / 2));
-                    }
-                }
-
-                FlowPoints = PathApproximator.BezierToPiecewiseLinear(new ReadOnlySpan<Vector2>(splinePoints.ToArray()));
-
-                if (LazyJumpDistance < NORMALISED_DIAMETER * 3 &&
-                    FlowPoints.Any(x => Precision.AlmostBigger(NORMALISED_RADIUS, Vector2.Distance(this.BaseObject.StackedPosition * scalingFactor, x))))
-                {
-                    IsFlow = true;
-                }
-            }
         }
 
         public double OpacityAt(double time, bool hidden)
@@ -412,6 +372,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         private Vector2 getEndCursorPosition(OsuDifficultyHitObject difficultyHitObject)
         {
             return difficultyHitObject.LazyEndPosition ?? difficultyHitObject.BaseObject.StackedPosition;
-            }
         }
     }
+}

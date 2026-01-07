@@ -7,6 +7,7 @@ using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Objects;
 
@@ -27,7 +28,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double currentStrain;
 
-        private double skillMultiplier => 27.2;
+        private double skillMultiplier => 26.8;
+        private double flowMultiplier => 4.2;
         private double strainDecayBase => 0.15;
 
         private readonly List<double> sliderStrains = new List<double>();
@@ -38,8 +40,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
+            var osuCurr = (OsuDifficultyHitObject)current;
+
+            double aimDifficulty = AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders);
+            double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current, Mods);
+
+            aimDifficulty *= 1 - osuCurr.FlowProbability;
+            flowDifficulty *= osuCurr.FlowProbability;
+
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplier;
+            currentStrain += aimDifficulty * skillMultiplier + flowDifficulty * flowMultiplier;
 
             if (current.BaseObject is Slider)
                 sliderStrains.Add(currentStrain);
@@ -47,6 +57,45 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return currentStrain;
         }
 
+        /*
+        private double currentAimStrain;
+        private double currentSpeedStrain;
+
+        private double skillMultiplierAim => 26;
+        private double skillMultiplierSpeed => 2;
+        private double totalMultiplier => 1.5;
+        private double meanExponent => 1.25;
+
+        private readonly List<double> sliderStrains = new List<double>();
+
+        private double strainDecayAim(double ms) => Math.Pow(0.15, ms / 1000);
+        private double strainDecaySpeed(double ms) => Math.Pow(0.3, ms / 1000);
+
+        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) =>
+            currentAimStrain * (1 - ((OsuDifficultyHitObject)current).FlowProbability) * strainDecayAim(time - current.Previous(0).StartTime) +
+            currentSpeedStrain * ((OsuDifficultyHitObject)current).FlowProbability * strainDecaySpeed(time - current.Previous(0).StartTime);
+
+        protected override double StrainValueAt(DifficultyHitObject current)
+        {
+            var osuCurr = (OsuDifficultyHitObject)current;
+
+            currentAimStrain *= strainDecayAim(current.DeltaTime);
+            currentAimStrain += AimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplierAim;
+
+            currentSpeedStrain *= strainDecaySpeed(current.DeltaTime);
+            currentSpeedStrain += FlowAimEvaluator.EvaluateDifficultyOf(current, Mods) * skillMultiplierSpeed;
+
+            currentAimStrain *= 1 - osuCurr.FlowProbability;
+            currentSpeedStrain *= osuCurr.FlowProbability;
+
+            double totalStrain = currentAimStrain + currentSpeedStrain;
+
+            if (current.BaseObject is Slider)
+                sliderStrains.Add(totalStrain);
+
+            return totalStrain * totalMultiplier;
+        }
+        */
         public double GetDifficultSliders()
         {
             if (sliderStrains.Count == 0)

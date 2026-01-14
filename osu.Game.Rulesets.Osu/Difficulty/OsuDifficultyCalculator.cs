@@ -174,19 +174,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             foreach (var obj in objects)
             {
                 var difficultyHitObject = (OsuDifficultyHitObject)obj;
+                if (difficultyHitObject.Index <= 0)
+                    continue;
 
                 //int degrees = 12;
                 int previousObjectsCount = 2;
                 var previousObjects = new List<OsuDifficultyHitObject>();
 
-                for (int i = 0; i < previousObjectsCount; i++)
+                for (int i = previousObjectsCount; i >= 0; i--)
                 {
                     var prev = (OsuDifficultyHitObject)difficultyHitObject.Previous(i);
                     if (prev != null)
                         previousObjects.Add(prev);
                 }
-
-                previousObjects.Reverse();
 
                 int nextObjectsCount = 2;
                 var nextObjects = new List<OsuDifficultyHitObject>();
@@ -217,14 +217,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                         objectScaledPosition = (splineObjectsToConsider[i].LazyEndPosition ?? baseObjectSpline.StackedPosition) * scalingFactor;
                         splinePoints.Add(objectScaledPosition);
                     }
-
+                    /*
                     if (i < splineObjectsToConsider.Length - 1)
                     {
                         var nextBaseObject = (OsuHitObject)splineObjectsToConsider[i + 1].BaseObject;
                         var nextObjectScaledPosition = nextBaseObject.StackedPosition * scalingFactor;
 
                         splinePoints.Add(new Vector2((objectScaledPosition.X + nextObjectScaledPosition.X) / 2, (objectScaledPosition.Y + nextObjectScaledPosition.Y) / 2));
-                    }
+                    }*/
                 }
 
                 difficultyHitObject.FlowPoints = PathApproximator.BezierToPiecewiseLinear(new ReadOnlySpan<Vector2>(splinePoints.ToArray()));
@@ -232,16 +232,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 double snapDistance = previousObjects.Skip(1).Concat(nextObjects).Sum(x => x.LazyJumpDistance);
                 float flowDistance = 0f;
 
-                for (int i = 1; i < splinePoints.Count; i++)
+                for (int i = 1; i < difficultyHitObject.FlowPoints.Count; i++)
                 {
-                    var splinePoint = splinePoints[i];
-                    var prevSplinePoint = splinePoints[i - 1];
+                    var splinePoint = difficultyHitObject.FlowPoints[i];
+                    var prevSplinePoint = difficultyHitObject.FlowPoints[i - 1];
                     flowDistance += Vector2.Distance(splinePoint, prevSplinePoint);
                 }
 
-                difficultyHitObject.FlowDistance = flowDistance + 0.1;
-                difficultyHitObject.SnapDistance = snapDistance + 0.1;
+                difficultyHitObject.FlowDistance = flowDistance;
+                difficultyHitObject.SnapDistance = snapDistance;
 
+                // should super small distance jumps be flow or snap by default?
                 if (flowDistance > 1 && snapDistance > 1)
                 {
                     difficultyHitObject.IsFlow = Math.Abs(snapDistance - flowDistance) < OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25;

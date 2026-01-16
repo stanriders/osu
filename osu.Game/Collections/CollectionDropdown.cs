@@ -17,7 +17,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Database;
 using osu.Game.Graphics.Containers;
 using osu.Game.Graphics.UserInterface;
-using osuTK;
+using System.Numerics;
 using Realms;
 
 namespace osu.Game.Collections

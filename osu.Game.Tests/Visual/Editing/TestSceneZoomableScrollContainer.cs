@@ -15,7 +15,7 @@ using osu.Framework.Utils;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Cursor;
 using osu.Game.Screens.Edit.Compose.Components.Timeline;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osuTK.Input;
 

@@ -16,7 +16,7 @@ using osu.Game.Overlays;
 using osu.Game.Rulesets;
 using osu.Game.Tournament.IPC;
 using osu.Game.Tournament.Models;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tournament.Screens.Setup
 {

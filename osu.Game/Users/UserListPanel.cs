@@ -9,7 +9,7 @@ using osu.Framework.Extensions.Color4Extensions;
 using osuTK.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Online.API.Requests.Responses;
-using osuTK;
+using System.Numerics;
 using osu.Game.Overlays.Profile.Header.Components;
 
 namespace osu.Game.Users

@@ -29,7 +29,7 @@ using osu.Game.Screens.Ranking.Expanded.Statistics;
 using osu.Game.Screens.Ranking.Statistics;
 using osu.Game.Skinning;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 using Realms;
 

@@ -10,7 +10,6 @@ using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Localisation;
 using osu.Game.Overlays.Settings;
 using osu.Game.Utils;
-using Vector2 = osuTK.Vector2;
 
 namespace osu.Game.Graphics.UserInterfaceV2
 {

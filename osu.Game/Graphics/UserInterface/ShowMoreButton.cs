@@ -11,7 +11,7 @@ using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Events;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Overlays;
-using osuTK;
+using System.Numerics;
 using System.Collections.Generic;
 using osu.Framework.Extensions.LocalisationExtensions;
 using osu.Framework.Localisation;

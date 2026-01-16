@@ -3,7 +3,7 @@
 
 using System.Linq;
 using NUnit.Framework;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Graphics;
 using osu.Game.Beatmaps.Formats;
 using osu.Game.IO;

@@ -11,7 +11,7 @@ using osu.Framework.Graphics.Sprites;
 using osu.Game.Rulesets.Mania.Beatmaps;
 using osu.Game.Rulesets.Mania.UI;
 using osu.Game.Skinning;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Mania.Skinning.Legacy

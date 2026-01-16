@@ -8,7 +8,7 @@ using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Bindables;
 using System;
 using osu.Framework.Graphics.Shapes;
-using osuTK;
+using System.Numerics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics;
 using osu.Framework.Localisation;

@@ -8,7 +8,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Textures;
 using osu.Game.Graphics;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {

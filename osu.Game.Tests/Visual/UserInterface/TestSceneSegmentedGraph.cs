@@ -11,7 +11,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {

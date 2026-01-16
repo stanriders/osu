@@ -29,7 +29,7 @@ using osu.Game.Overlays;
 using osu.Game.Overlays.Chat;
 using osu.Game.Overlays.Chat.Listing;
 using osu.Game.Overlays.Chat.ChannelList;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Tests.Resources;

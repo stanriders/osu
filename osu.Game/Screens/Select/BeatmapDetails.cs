@@ -17,7 +17,7 @@ using osu.Game.Online.API.Requests;
 using osu.Game.Overlays.BeatmapSet;
 using osu.Game.Resources.Localisation.Web;
 using osu.Game.Screens.Select.Details;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Screens.Select
 {

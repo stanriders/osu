@@ -8,7 +8,7 @@ using osu.Game.Online.Rooms;
 using osu.Game.Rulesets.Osu;
 using osu.Game.Screens.OnlinePlay.Multiplayer;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {

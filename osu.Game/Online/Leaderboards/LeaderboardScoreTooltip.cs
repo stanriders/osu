@@ -7,7 +7,7 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
 using osu.Game.Scoring;
-using osuTK;
+using System.Numerics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics;
 using osu.Framework.Allocation;

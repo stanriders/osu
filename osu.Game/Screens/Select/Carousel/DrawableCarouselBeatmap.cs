@@ -30,7 +30,7 @@ using osu.Game.Overlays;
 using osu.Game.Resources.Localisation.Web;
 using osu.Game.Rulesets;
 using osu.Game.Rulesets.Mods;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using CommonStrings = osu.Game.Localisation.CommonStrings;
 using WebCommonStrings = osu.Game.Resources.Localisation.Web.CommonStrings;

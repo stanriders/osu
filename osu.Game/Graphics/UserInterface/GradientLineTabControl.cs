@@ -6,7 +6,7 @@
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Graphics.Shapes;
 using osuTK.Graphics;
 using osu.Framework.Graphics.Colour;

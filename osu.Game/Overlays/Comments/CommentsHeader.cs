@@ -12,7 +12,7 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics.Shapes;
 using osu.Game.Graphics;
 using osu.Framework.Graphics.Sprites;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Input.Events;
 using osu.Framework.Localisation;
 using osu.Game.Graphics.Sprites;

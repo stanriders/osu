@@ -4,7 +4,7 @@
 #nullable disable
 
 using System;
-using osuTK;
+using System.Numerics;
 using osu.Framework;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;

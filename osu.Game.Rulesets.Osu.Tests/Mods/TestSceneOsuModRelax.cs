@@ -15,7 +15,7 @@ using osu.Game.Rulesets.Osu.Scoring;
 using osu.Game.Rulesets.Replays;
 using osu.Game.Scoring;
 using osu.Game.Tests.Visual;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.Tests.Mods
 {

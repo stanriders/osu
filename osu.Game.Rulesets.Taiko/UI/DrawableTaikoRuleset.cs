@@ -27,7 +27,7 @@ using osu.Game.Scoring;
 using osu.Game.Screens.Play;
 using osu.Game.Skinning;
 using osu.Game.Storyboards;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Taiko.UI
 {

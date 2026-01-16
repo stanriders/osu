@@ -11,7 +11,7 @@ using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Legacy;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Scoring;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.Objects
 {

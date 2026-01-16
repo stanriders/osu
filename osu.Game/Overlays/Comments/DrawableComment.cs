@@ -4,7 +4,7 @@
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics;
 using osu.Game.Graphics;
-using osuTK;
+using System.Numerics;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Users.Drawables;
 using osu.Game.Graphics.Containers;

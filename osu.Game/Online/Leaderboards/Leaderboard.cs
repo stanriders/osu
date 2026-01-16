@@ -19,7 +19,7 @@ using osu.Game.Graphics.Cursor;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Online.API;
 using osu.Game.Online.Placeholders;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Game.Localisation;
 

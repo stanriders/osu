@@ -14,7 +14,7 @@ using osu.Game.Rulesets.Osu.Objects.Drawables;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Skinning;
 using osu.Game.Tests.Visual;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.Tests
 {

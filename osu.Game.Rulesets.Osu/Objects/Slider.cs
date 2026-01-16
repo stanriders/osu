@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using osuTK;
+using System.Numerics;
 using osu.Game.Rulesets.Objects.Types;
 using System.Collections.Generic;
 using osu.Game.Rulesets.Objects;

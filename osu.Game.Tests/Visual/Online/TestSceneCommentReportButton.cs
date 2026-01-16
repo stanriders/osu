@@ -10,7 +10,7 @@ using osu.Game.Online.API.Requests;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Overlays.Comments;
 using osu.Game.Tests.Visual.UserInterface;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Online
 {

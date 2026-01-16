@@ -2,7 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Linq;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Framework.Audio;

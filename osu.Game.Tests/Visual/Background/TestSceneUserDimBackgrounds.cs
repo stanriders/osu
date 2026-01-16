@@ -35,7 +35,7 @@ using osu.Game.Screens.Ranking;
 using osu.Game.Screens.SelectV2;
 using osu.Game.Storyboards.Drawables;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Background

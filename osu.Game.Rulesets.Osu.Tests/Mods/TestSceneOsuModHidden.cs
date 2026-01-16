@@ -9,7 +9,7 @@ using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.Tests.Mods
 {

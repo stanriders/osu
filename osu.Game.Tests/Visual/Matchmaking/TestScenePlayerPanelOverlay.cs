@@ -15,7 +15,7 @@ using osu.Game.Online.Multiplayer;
 using osu.Game.Online.Multiplayer.MatchTypes.Matchmaking;
 using osu.Game.Online.Rooms;
 using osu.Game.Screens.OnlinePlay.Matchmaking.Match;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Matchmaking
 {

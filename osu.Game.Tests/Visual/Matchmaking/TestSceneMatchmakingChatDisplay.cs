@@ -7,7 +7,7 @@ using osu.Game.Online.Rooms;
 using osu.Game.Overlays;
 using osu.Game.Screens;
 using osu.Game.Screens.OnlinePlay.Matchmaking.Match;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Matchmaking
 {

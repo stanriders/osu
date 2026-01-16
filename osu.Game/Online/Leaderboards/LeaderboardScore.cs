@@ -27,7 +27,7 @@ using osu.Game.Rulesets.UI;
 using osu.Game.Screens.Select;
 using osu.Game.Scoring;
 using osu.Game.Users.Drawables;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Game.Online.API;
 using osu.Game.Resources.Localisation.Web;

@@ -8,7 +8,7 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics;
 using osu.Game.Online.API.Requests.Responses;
-using osuTK;
+using System.Numerics;
 using System.Linq;
 
 namespace osu.Game.Overlays.News.Sidebar

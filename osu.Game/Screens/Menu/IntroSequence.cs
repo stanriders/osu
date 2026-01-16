@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Linq;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Framework.Extensions.Color4Extensions;

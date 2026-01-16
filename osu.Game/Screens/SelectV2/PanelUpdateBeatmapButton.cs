@@ -19,7 +19,7 @@ using osu.Game.Localisation;
 using osu.Game.Online.API;
 using osu.Game.Overlays;
 using osu.Game.Screens.Select.Carousel;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using CommonStrings = osu.Game.Resources.Localisation.Web.CommonStrings;
 

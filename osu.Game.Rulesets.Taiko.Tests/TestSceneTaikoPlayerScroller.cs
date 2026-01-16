@@ -9,7 +9,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Taiko.Skinning.Legacy;
 using osu.Game.Storyboards;
 using osu.Game.Tests.Visual;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Taiko.Tests
 {

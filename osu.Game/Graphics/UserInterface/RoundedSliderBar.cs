@@ -13,7 +13,6 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input.Events;
 using osu.Game.Overlays;
-using Vector2 = osuTK.Vector2;
 
 namespace osu.Game.Graphics.UserInterface
 {

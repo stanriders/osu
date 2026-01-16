@@ -14,7 +14,7 @@ using osu.Framework.Utils;
 using osu.Framework.Testing;
 using osu.Game.Graphics.Containers;
 using osu.Game.Screens.Menu;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.UserInterface

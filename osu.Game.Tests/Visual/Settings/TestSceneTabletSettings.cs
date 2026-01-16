@@ -15,7 +15,7 @@ using osu.Game.Graphics.Containers;
 using osu.Game.Overlays;
 using osu.Game.Overlays.Settings;
 using osu.Game.Overlays.Settings.Sections.Input;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Settings
 {

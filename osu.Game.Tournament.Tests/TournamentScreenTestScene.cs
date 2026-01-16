@@ -5,7 +5,7 @@ using System;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tournament.Tests
 {

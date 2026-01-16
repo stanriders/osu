@@ -9,7 +9,7 @@ using osu.Framework.Utils;
 using osu.Game.Beatmaps.Drawables;
 using osu.Game.Rulesets.Osu;
 using osu.Game.Tests.Beatmaps;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Beatmaps
 {

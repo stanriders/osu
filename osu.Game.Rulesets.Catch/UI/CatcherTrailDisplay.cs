@@ -11,7 +11,7 @@ using osu.Framework.Graphics.Pooling;
 using osu.Game.Rulesets.Catch.Skinning;
 using osu.Game.Rulesets.Objects.Pooling;
 using osu.Game.Skinning;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Catch.UI

@@ -4,7 +4,7 @@
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.UserInterface

@@ -10,7 +10,7 @@ using osu.Framework.Logging;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Input.Bindings;
 using osu.Game.Screens.Play;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Gameplay

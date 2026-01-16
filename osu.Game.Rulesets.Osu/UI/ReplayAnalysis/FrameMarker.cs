@@ -6,7 +6,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.UserInterface;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.UI.ReplayAnalysis
 {

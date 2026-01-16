@@ -4,7 +4,7 @@
 using osu.Framework.Graphics;
 using osu.Game.Rulesets.Judgements;
 using osu.Game.Rulesets.Scoring;
-using osuTK;
+using System.Numerics;
 using DefaultJudgementPiece = osu.Game.Rulesets.Taiko.Skinning.Default.DefaultJudgementPiece;
 
 namespace osu.Game.Rulesets.Taiko.UI

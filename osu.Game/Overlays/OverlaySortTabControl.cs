@@ -8,7 +8,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Graphics.Sprites;
 using osu.Game.Graphics;
-using osuTK;
+using System.Numerics;
 using osu.Game.Graphics.UserInterface;
 using osu.Framework.Input.Events;
 using osu.Framework.Bindables;

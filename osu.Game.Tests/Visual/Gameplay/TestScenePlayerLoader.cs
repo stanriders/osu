@@ -34,7 +34,7 @@ using osu.Game.Screens.Menu;
 using osu.Game.Screens.Play;
 using osu.Game.Screens.Play.PlayerSettings;
 using osu.Game.Utils;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Gameplay

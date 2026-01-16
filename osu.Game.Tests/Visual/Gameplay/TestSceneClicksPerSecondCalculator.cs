@@ -11,7 +11,7 @@ using osu.Framework.Testing;
 using osu.Framework.Timing;
 using osu.Game.Screens.Play;
 using osu.Game.Screens.Play.HUD.ClicksPerSecond;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {

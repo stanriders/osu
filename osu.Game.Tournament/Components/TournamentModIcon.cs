@@ -9,7 +9,7 @@ using osu.Framework.Graphics.Textures;
 using osu.Game.Rulesets;
 using osu.Game.Rulesets.UI;
 using osu.Game.Tournament.Models;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tournament.Components
 {

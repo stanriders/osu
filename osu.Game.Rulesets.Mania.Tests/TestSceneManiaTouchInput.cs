@@ -9,7 +9,7 @@ using osu.Framework.Testing;
 using osu.Game.Rulesets.Mania.Configuration;
 using osu.Game.Rulesets.Mania.UI;
 using osu.Game.Tests.Visual;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Mania.Tests
 {

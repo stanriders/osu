@@ -16,7 +16,7 @@ using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Input.Events;
 using osu.Game.Graphics.UserInterface;
 using System.Collections.Generic;
-using osuTK;
+using System.Numerics;
 using osu.Game.Online.API;
 using osu.Game.Online.API.Requests;
 using osu.Framework.Bindables;

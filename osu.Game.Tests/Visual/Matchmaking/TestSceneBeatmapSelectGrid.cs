@@ -16,7 +16,7 @@ using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Online.Rooms;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Screens.OnlinePlay.Matchmaking.Match.BeatmapSelect;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Matchmaking
 {

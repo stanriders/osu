@@ -10,7 +10,7 @@ using osu.Framework.Graphics.Shapes;
 using osu.Game.Beatmaps.Drawables.Cards.Buttons;
 using osu.Game.Overlays;
 using osu.Framework.Graphics.UserInterface;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Beatmaps.Drawables.Cards
 {

@@ -17,7 +17,7 @@ using osu.Game.Graphics.UserInterface;
 using osu.Game.Overlays;
 using osu.Game.Screens.Edit;
 using osu.Game.Screens.Edit.Timing;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Editing

@@ -14,7 +14,7 @@ using osu.Game.Graphics.Sprites;
 using osu.Game.Tournament.Components;
 using osu.Game.Tournament.Models;
 using osu.Game.Tournament.Screens.Ladder.Components;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tournament.Screens.TeamIntro
 {

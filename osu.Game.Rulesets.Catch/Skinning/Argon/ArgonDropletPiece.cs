@@ -9,7 +9,7 @@ using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Utils;
 using osu.Game.Rulesets.Catch.Skinning.Default;
 using osu.Game.Rulesets.Catch.UI;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.Skinning.Argon
 {

@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using osuTK;
+using System.Numerics;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;

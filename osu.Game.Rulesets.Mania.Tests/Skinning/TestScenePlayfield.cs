@@ -10,7 +10,7 @@ using osu.Game.Rulesets.Mania.Beatmaps;
 using osu.Game.Rulesets.Mania.UI;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Scoring;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Mania.Tests.Skinning
 {

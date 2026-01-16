@@ -28,7 +28,7 @@ using osu.Game.Screens.Play.HUD.HitErrorMeters;
 using osu.Game.Skinning;
 using osu.Game.Skinning.Components;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Gameplay

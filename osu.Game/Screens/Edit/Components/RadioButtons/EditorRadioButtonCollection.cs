@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Screens.Edit.Components.RadioButtons
 {

@@ -5,7 +5,7 @@ using osu.Framework.Graphics;
 using osu.Game.Graphics.Containers;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics.Sprites;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Allocation;
 
 namespace osu.Game.Overlays.Comments.Buttons

@@ -5,7 +5,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics;
 using osu.Game.Graphics;
 using osu.Framework.Graphics.Sprites;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Bindables;
 using Humanizer;
 using osu.Game.Graphics.Sprites;

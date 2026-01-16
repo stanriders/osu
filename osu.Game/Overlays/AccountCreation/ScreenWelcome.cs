@@ -10,7 +10,7 @@ using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Overlays.Settings;
 using osu.Game.Screens.Menu;
-using osuTK;
+using System.Numerics;
 using osu.Game.Localisation;
 
 namespace osu.Game.Overlays.AccountCreation

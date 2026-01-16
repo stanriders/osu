@@ -22,7 +22,7 @@ using osu.Game.Scoring;
 using osu.Game.Screens.SelectV2;
 using osu.Game.Tests.Resources;
 using osu.Game.Tests.Visual.UserInterface;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.SongSelectV2
 {

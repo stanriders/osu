@@ -17,7 +17,7 @@ using osu.Game.Rulesets.UI;
 using osu.Game.Rulesets.UI.Scrolling;
 using osu.Game.Scoring;
 using osu.Game.Screens.Play;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.UI
 {

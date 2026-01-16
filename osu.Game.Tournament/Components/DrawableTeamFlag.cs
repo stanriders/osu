@@ -10,7 +10,7 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.Textures;
 using osu.Game.Tournament.Models;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tournament.Components
 {

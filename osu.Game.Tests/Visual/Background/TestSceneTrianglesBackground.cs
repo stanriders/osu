@@ -5,7 +5,7 @@ using osu.Game.Graphics.Backgrounds;
 using osu.Framework.Graphics;
 using osuTK.Graphics;
 using osu.Framework.Graphics.Shapes;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Background
 {

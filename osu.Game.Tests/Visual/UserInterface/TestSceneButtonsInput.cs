@@ -5,7 +5,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics;
 using osu.Game.Overlays.Settings;
 using NUnit.Framework;
-using osuTK;
+using System.Numerics;
 using osu.Game.Overlays;
 using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Graphics.UserInterface;

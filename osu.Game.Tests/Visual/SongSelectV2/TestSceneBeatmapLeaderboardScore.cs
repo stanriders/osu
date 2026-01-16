@@ -24,7 +24,7 @@ using osu.Game.Scoring;
 using osu.Game.Screens.SelectV2;
 using osu.Game.Tests.Resources;
 using osu.Game.Users;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.SongSelectV2

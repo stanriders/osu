@@ -17,7 +17,7 @@ using osu.Game.Rulesets;
 using osu.Game.Scoring;
 using osu.Game.Screens.Select.Carousel;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.SongSelect
 {

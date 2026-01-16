@@ -13,7 +13,7 @@ using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Tests.Resources;
 using osu.Game.Users;
 using osu.Game.Users.Drawables;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Online

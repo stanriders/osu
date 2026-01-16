@@ -10,7 +10,7 @@ using osu.Framework.Graphics.Shapes;
 using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
 using osu.Game.Graphics;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.UI
 {

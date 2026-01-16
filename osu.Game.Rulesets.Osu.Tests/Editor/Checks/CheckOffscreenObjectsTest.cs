@@ -12,7 +12,7 @@ using osu.Game.Rulesets.Osu.Edit.Checks;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Tests.Beatmaps;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.Tests.Editor.Checks
 {

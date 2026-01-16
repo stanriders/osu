@@ -23,7 +23,7 @@ using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Online.Rooms;
 using osu.Game.Overlays;
 using osu.Game.Screens.OnlinePlay.Match.Components;
-using osuTK;
+using System.Numerics;
 using osu.Game.Localisation;
 using osu.Game.Rulesets;
 using Container = osu.Framework.Graphics.Containers.Container;

@@ -11,7 +11,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Extensions.LocalisationExtensions;
 using osu.Game.Graphics;
 using osu.Framework.Graphics.Shapes;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Localisation;
 using osu.Game.Online.API.Requests.Responses;
 

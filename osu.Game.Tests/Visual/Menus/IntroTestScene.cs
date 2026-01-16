@@ -11,7 +11,7 @@ using osu.Framework.Threading;
 using osu.Game.Overlays;
 using osu.Game.Screens;
 using osu.Game.Screens.Menu;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Menus

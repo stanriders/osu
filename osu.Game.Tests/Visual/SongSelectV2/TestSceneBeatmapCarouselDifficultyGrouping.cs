@@ -7,7 +7,7 @@ using osu.Framework.Testing;
 using osu.Game.Graphics.Carousel;
 using osu.Game.Screens.Select.Filter;
 using osu.Game.Screens.SelectV2;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.SongSelectV2
 {

@@ -8,7 +8,7 @@ using osu.Framework.Graphics;
 using osu.Game.Rulesets.Mods;
 using osu.Framework.Bindables;
 using osu.Game.Rulesets;
-using osuTK;
+using System.Numerics;
 using osu.Game.Rulesets.UI;
 using osu.Framework.Input.Events;
 using osu.Game.Graphics.UserInterface;

@@ -13,7 +13,7 @@ using osu.Framework.Timing;
 using osu.Framework.Utils;
 using osu.Game.Graphics;
 using osu.Game.Skinning;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {

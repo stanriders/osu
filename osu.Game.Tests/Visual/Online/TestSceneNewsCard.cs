@@ -7,7 +7,7 @@ using osu.Game.Overlays.News;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Framework.Allocation;
 using osu.Game.Overlays;
-using osuTK;
+using System.Numerics;
 using System;
 
 namespace osu.Game.Tests.Visual.Online

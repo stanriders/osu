@@ -5,7 +5,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Graphics.Shaders;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.Rendering;

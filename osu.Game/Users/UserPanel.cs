@@ -27,7 +27,7 @@ using osu.Game.Online.Multiplayer;
 using osu.Game.Screens;
 using osu.Game.Screens.Play;
 using osu.Game.Users.Drawables;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Users
 {

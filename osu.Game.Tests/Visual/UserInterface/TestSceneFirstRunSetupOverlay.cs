@@ -25,7 +25,7 @@ using osu.Game.Overlays.Notifications;
 using osu.Game.Screens;
 using osu.Game.Screens.Footer;
 using osu.Game.Tests.Beatmaps;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.UserInterface

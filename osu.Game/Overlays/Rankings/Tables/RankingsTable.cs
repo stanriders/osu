@@ -15,7 +15,7 @@ using osu.Framework.Extensions.IEnumerableExtensions;
 using osu.Framework.Extensions.LocalisationExtensions;
 using osu.Game.Users;
 using osu.Game.Users.Drawables;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Localisation;
 
 namespace osu.Game.Overlays.Rankings.Tables

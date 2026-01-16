@@ -42,7 +42,7 @@ using osu.Game.Rulesets.UI;
 using osu.Game.Screens.Ranking.Statistics.User;
 using osu.Game.Tests.Resources;
 using osu.Game.Users;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Ranking
 {

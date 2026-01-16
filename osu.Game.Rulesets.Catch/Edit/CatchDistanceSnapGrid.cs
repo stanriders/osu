@@ -13,7 +13,7 @@ using osu.Game.Rulesets.Catch.UI;
 using osu.Game.Rulesets.Edit;
 using osu.Game.Rulesets.UI;
 using osu.Game.Rulesets.UI.Scrolling;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.Edit
 {

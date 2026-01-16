@@ -4,7 +4,7 @@
 #nullable disable
 
 using System;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Framework.Allocation;
 using osu.Framework.Audio;

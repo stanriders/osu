@@ -15,7 +15,7 @@ using osu.Framework.Testing;
 using osu.Framework.Threading;
 using osu.Game.Screens.Edit.Compose.Components;
 using osu.Game.Utils;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Editing

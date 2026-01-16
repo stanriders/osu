@@ -15,7 +15,7 @@ using osu.Game.Localisation;
 using osu.Game.Online.Chat;
 using osu.Game.Overlays;
 using osu.Game.Screens.Select;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Screens.SelectV2
 {

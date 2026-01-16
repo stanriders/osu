@@ -9,7 +9,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Graphics.Containers;
-using osuTK;
+using System.Numerics;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics;
 using System.Linq;

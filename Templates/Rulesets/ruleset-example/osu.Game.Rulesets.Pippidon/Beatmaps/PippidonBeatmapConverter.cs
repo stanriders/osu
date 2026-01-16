@@ -8,7 +8,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Pippidon.Objects;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Pippidon.Beatmaps
 {

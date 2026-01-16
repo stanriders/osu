@@ -13,7 +13,7 @@ using osu.Framework.Utils;
 using osu.Game.Beatmaps.Drawables.Cards;
 using osu.Game.Overlays;
 using osu.Game.Screens.Edit.Submission;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Editing
 {

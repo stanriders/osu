@@ -9,7 +9,7 @@ using osu.Game.Graphics.UserInterface;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
 using System.Collections.Generic;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Allocation;
 using osu.Game.Resources.Localisation.Web;
 

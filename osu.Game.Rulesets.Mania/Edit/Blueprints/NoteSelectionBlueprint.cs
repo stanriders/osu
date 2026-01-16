@@ -6,7 +6,7 @@ using osu.Framework.Graphics;
 using osu.Game.Rulesets.Mania.Edit.Blueprints.Components;
 using osu.Game.Rulesets.Mania.Objects;
 using osu.Game.Rulesets.UI.Scrolling;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Mania.Edit.Blueprints
 {

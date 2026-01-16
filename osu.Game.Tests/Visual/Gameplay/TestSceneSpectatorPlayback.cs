@@ -30,7 +30,7 @@ using osu.Game.Scoring;
 using osu.Game.Tests.Gameplay;
 using osu.Game.Tests.Mods;
 using osu.Game.Tests.Visual.Spectator;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Gameplay

@@ -10,7 +10,7 @@ using osu.Game.Rulesets.Mania.Objects;
 using osu.Game.Rulesets.Mania.Objects.Drawables;
 using osu.Game.Rulesets.UI.Scrolling;
 using osu.Game.Screens.Edit;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Mania.Edit.Blueprints
 {

@@ -26,7 +26,7 @@ using osu.Game.Scoring;
 using osu.Game.Screens.Play;
 using osu.Game.Tests.Gameplay;
 using osu.Game.Tests.Mods;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osuTK.Input;
 

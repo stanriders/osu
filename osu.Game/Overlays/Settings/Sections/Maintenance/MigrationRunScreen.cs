@@ -15,7 +15,7 @@ using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Localisation;
 using osu.Game.Screens;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Overlays.Settings.Sections.Maintenance
 {

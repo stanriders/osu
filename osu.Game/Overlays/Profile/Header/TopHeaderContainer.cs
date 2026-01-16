@@ -18,7 +18,7 @@ using osu.Game.Online.API;
 using osu.Game.Overlays.Profile.Header.Components;
 using osu.Game.Users;
 using osu.Game.Users.Drawables;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Overlays.Profile.Header
 {

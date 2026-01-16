@@ -13,7 +13,7 @@ using osu.Framework.Testing;
 using osu.Game.Graphics.UserInterface;
 using osu.Game.Overlays.Dialog;
 using osu.Game.Tournament.Screens.Editors.Components;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tournament.Tests.Screens

@@ -17,7 +17,7 @@ using osu.Game.Rulesets.Osu;
 using osu.Game.Rulesets.Osu.Beatmaps;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Beatmaps.Formats
 {

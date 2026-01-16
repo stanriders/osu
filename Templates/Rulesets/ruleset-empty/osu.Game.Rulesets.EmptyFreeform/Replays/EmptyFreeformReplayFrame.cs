@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Replays;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.EmptyFreeform.Replays
 {

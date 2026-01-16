@@ -5,7 +5,7 @@ using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Sprites;
 using osu.Framework.Input.Events;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Graphics.UserInterface

@@ -10,7 +10,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Localisation;
 using osu.Game.Beatmaps;
 using osu.Game.Graphics.UserInterfaceV2;
-using osuTK;
+using System.Numerics;
 using osu.Game.Localisation;
 
 namespace osu.Game.Screens.Edit.Setup

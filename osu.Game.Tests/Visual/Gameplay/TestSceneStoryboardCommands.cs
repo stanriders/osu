@@ -21,7 +21,7 @@ using osu.Game.Rulesets.Mods;
 using osu.Game.Storyboards;
 using osu.Game.Storyboards.Drawables;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Gameplay
 {

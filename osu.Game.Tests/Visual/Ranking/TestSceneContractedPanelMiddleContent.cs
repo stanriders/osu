@@ -15,7 +15,7 @@ using osu.Game.Scoring;
 using osu.Game.Screens.Ranking;
 using osu.Game.Screens.Ranking.Contracted;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Ranking
 {

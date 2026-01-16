@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Linq;
+using System.Numerics;
 using NUnit.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Graphics.Containers;
@@ -9,7 +10,6 @@ using osu.Framework.Testing;
 using osu.Game.Tournament.Components;
 using osu.Game.Tournament.Models;
 using osu.Game.Tournament.Screens.MapPool;
-using osuTK;
 using osuTK.Input;
 
 namespace osu.Game.Tournament.Tests.Screens

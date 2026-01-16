@@ -7,7 +7,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Layout;
 using osu.Game.Rulesets.Mania.Objects;
 using osu.Game.Rulesets.Mods;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Mania.Mods
 {

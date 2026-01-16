@@ -11,7 +11,7 @@ using osu.Game.Rulesets.Catch.Mods;
 using osu.Game.Rulesets.Catch.Objects;
 using osu.Game.Rulesets.Catch.UI;
 using osu.Game.Rulesets.Objects;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.Tests.Mods
 {

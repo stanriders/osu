@@ -6,7 +6,7 @@ using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Graphics;
 using osuTK.Graphics;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Input.Events;
 
 namespace osu.Game.Overlays.BeatmapListing

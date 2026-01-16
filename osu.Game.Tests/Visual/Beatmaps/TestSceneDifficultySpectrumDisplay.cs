@@ -7,7 +7,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Testing;
 using osu.Game.Beatmaps.Drawables;
 using osu.Game.Online.API.Requests.Responses;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Beatmaps
 {

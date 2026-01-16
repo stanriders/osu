@@ -4,7 +4,7 @@
 using System.Linq;
 using NUnit.Framework;
 using osu.Framework.Graphics;
-using osuTK;
+using System.Numerics;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Edit;
 using osu.Game.Rulesets.Edit.Checks;

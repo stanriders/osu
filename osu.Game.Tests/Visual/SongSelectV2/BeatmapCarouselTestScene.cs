@@ -28,7 +28,7 @@ using osu.Game.Screens.Select.Filter;
 using osu.Game.Screens.SelectV2;
 using osu.Game.Tests.Beatmaps;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osuTK.Input;
 using BeatmapCarousel = osu.Game.Screens.SelectV2.BeatmapCarousel;

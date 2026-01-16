@@ -16,7 +16,7 @@ using osu.Game.Graphics.UserInterface;
 using osu.Game.Input.Bindings;
 using osu.Game.Online;
 using osu.Game.Online.Multiplayer;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Screens.Play
 {

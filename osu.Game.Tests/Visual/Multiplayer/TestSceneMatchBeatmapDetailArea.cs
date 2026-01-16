@@ -10,7 +10,7 @@ using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Screens.OnlinePlay.Components;
 using osu.Game.Tests.Beatmaps;
 using osu.Game.Tests.Visual.OnlinePlay;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Multiplayer
 {

@@ -7,7 +7,7 @@ using osu.Framework.Bindables;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Online.API;
 using System.Collections.Generic;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Allocation;
 using osu.Game.Resources.Localisation.Web;
 

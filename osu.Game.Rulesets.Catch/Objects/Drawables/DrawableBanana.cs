@@ -6,7 +6,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Utils;
 using osu.Game.Rulesets.Catch.Skinning.Default;
 using osu.Game.Skinning;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.Objects.Drawables
 {

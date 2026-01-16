@@ -3,7 +3,7 @@
 
 using osu.Framework.Graphics;
 using osu.Game.Graphics;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {

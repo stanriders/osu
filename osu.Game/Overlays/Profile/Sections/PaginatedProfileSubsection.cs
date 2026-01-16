@@ -16,7 +16,7 @@ using osu.Game.Online.API;
 using osu.Game.Graphics.Containers;
 using osu.Game.Online.API.Requests;
 using osu.Game.Online.API.Requests.Responses;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Overlays.Profile.Sections
 {

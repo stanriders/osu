@@ -6,7 +6,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Allocation;
 using osu.Game.Overlays;
 using osu.Framework.Graphics.Containers;
-using osuTK;
+using System.Numerics;
 using NUnit.Framework;
 using System.Linq;
 using osu.Framework.Graphics.Sprites;

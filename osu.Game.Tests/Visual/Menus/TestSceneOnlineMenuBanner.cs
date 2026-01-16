@@ -9,7 +9,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Testing;
 using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Screens.Menu;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Menus
 {

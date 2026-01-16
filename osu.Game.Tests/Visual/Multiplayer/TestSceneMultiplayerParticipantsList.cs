@@ -25,7 +25,7 @@ using osu.Game.Rulesets.Taiko.Mods;
 using osu.Game.Screens.OnlinePlay.Multiplayer.Participants;
 using osu.Game.Tests.Resources;
 using osu.Game.Users;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Multiplayer

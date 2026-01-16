@@ -15,7 +15,7 @@ using osu.Framework.Graphics.Effects;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Utils;
 using osu.Game.Overlays.Notifications;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Overlays
 {

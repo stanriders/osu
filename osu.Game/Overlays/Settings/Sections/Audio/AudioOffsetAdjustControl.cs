@@ -21,7 +21,7 @@ using osu.Game.Graphics.UserInterface;
 using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Localisation;
 using osu.Game.Screens.Play.PlayerSettings;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Overlays.Settings.Sections.Audio
 {

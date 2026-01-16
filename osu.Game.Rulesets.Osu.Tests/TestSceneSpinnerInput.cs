@@ -25,6 +25,7 @@ using osu.Game.Storyboards;
 using osu.Game.Tests;
 using osu.Game.Tests.Visual;
 using osuTK;
+using Vector2 = System.Numerics.Vector2;
 
 namespace osu.Game.Rulesets.Osu.Tests
 {

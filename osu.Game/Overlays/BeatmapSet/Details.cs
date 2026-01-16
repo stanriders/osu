@@ -12,7 +12,7 @@ using osu.Game.Online.API.Requests.Responses;
 using osu.Game.Overlays.BeatmapSet.Buttons;
 using osu.Game.Rulesets;
 using osu.Game.Screens.Select.Details;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Overlays.BeatmapSet
 {

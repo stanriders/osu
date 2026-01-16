@@ -13,7 +13,7 @@ using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Screens.Ranking.Statistics;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Ranking
 {

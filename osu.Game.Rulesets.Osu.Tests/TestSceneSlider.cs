@@ -11,7 +11,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.Objects.Drawables;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Game.Rulesets.Mods;
 using System.Linq;

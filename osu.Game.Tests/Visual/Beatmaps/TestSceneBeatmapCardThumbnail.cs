@@ -12,7 +12,7 @@ using osu.Framework.Testing;
 using osu.Game.Beatmaps.Drawables.Cards;
 using osu.Game.Beatmaps.Drawables.Cards.Buttons;
 using osu.Game.Overlays;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Beatmaps

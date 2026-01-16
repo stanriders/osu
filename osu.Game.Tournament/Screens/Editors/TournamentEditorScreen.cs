@@ -16,7 +16,7 @@ using osu.Game.Graphics.Containers;
 using osu.Game.Overlays;
 using osu.Game.Tournament.Components;
 using osu.Game.Tournament.Screens.Editors.Components;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tournament.Screens.Editors
 {

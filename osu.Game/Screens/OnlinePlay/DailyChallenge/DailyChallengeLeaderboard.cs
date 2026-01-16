@@ -18,7 +18,7 @@ using osu.Game.Rulesets;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Scoring;
 using osu.Game.Screens.SelectV2;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Screens.OnlinePlay.DailyChallenge
 {

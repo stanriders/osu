@@ -20,7 +20,7 @@ using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Skinning;
-using osuTK;
+using System.Numerics;
 using osu.Game.Rulesets.Objects.Pooling;
 using osu.Framework.Extensions.ObjectExtensions;
 using osu.Framework.Graphics.Primitives;

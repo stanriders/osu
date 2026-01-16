@@ -10,7 +10,7 @@ using osu.Game.Graphics.UserInterface;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Screens.Edit.Compose.Components.Timeline;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 using static osu.Game.Screens.Edit.Compose.Components.Timeline.TimelineHitObjectBlueprint;
 

@@ -11,7 +11,7 @@ using osu.Game.Overlays;
 using osu.Game.Rulesets;
 using NUnit.Framework;
 using osu.Framework.Graphics.Containers;
-using osuTK;
+using System.Numerics;
 using osu.Framework.Allocation;
 
 namespace osu.Game.Tests.Visual.UserInterface

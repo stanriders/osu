@@ -27,7 +27,7 @@ using osu.Game.Screens.Play.HUD;
 using osu.Game.Screens.Play.PlayerSettings;
 using osu.Game.Storyboards;
 using osu.Game.Tests.Beatmaps.IO;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osuTK.Input;
 

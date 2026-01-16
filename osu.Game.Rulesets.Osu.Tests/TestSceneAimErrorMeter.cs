@@ -8,7 +8,7 @@ using osu.Game.Rulesets.Scoring;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Game.Tests.Visual;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osu.Framework.Input.Events;
 using osu.Game.Rulesets.Osu.Judgements;

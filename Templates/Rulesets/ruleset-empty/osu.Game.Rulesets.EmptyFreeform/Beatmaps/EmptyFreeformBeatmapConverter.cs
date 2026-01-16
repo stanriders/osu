@@ -7,7 +7,7 @@ using osu.Game.Beatmaps;
 using osu.Game.Rulesets.EmptyFreeform.Objects;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.EmptyFreeform.Beatmaps
 {

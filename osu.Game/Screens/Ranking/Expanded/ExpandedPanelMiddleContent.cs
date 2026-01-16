@@ -24,7 +24,7 @@ using osu.Game.Scoring;
 using osu.Game.Screens.Play.HUD;
 using osu.Game.Screens.Ranking.Expanded.Accuracy;
 using osu.Game.Screens.Ranking.Expanded.Statistics;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Screens.Ranking.Expanded
 {

@@ -16,7 +16,7 @@ using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Screens.Edit.Compose.Components.Timeline;
 using osu.Game.Screens.Edit.Timing;
 using osu.Game.Tests.Beatmaps;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.Editing

@@ -6,7 +6,7 @@ using NUnit.Framework;
 using osu.Framework.Testing;
 using osu.Game.Screens.Select.Filter;
 using osu.Game.Screens.SelectV2;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Tests.Visual.SongSelectV2

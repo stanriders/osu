@@ -13,7 +13,7 @@ using osu.Framework.Logging;
 using osu.Framework.Testing;
 using osu.Game.Graphics.Sprites;
 using osu.Game.Online;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Components

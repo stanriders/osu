@@ -9,7 +9,7 @@ using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Objects.Types;
 using osu.Game.Rulesets.Scoring;
 using osu.Game.Rulesets.Taiko.Beatmaps;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Taiko.Objects
 {

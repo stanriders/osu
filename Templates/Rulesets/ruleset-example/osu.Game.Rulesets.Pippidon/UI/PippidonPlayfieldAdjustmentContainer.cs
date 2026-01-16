@@ -3,7 +3,7 @@
 
 using osu.Framework.Graphics;
 using osu.Game.Rulesets.UI;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Pippidon.UI
 {

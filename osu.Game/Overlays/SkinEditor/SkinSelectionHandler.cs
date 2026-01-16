@@ -16,7 +16,7 @@ using osu.Game.Screens.Edit.Compose.Components;
 using osu.Game.Localisation;
 using osu.Game.Skinning;
 using osu.Game.Utils;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Overlays.SkinEditor
 {

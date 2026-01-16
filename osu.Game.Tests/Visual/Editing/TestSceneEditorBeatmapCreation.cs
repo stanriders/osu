@@ -33,7 +33,7 @@ using osu.Game.Screens.Edit.Setup;
 using osu.Game.Skinning;
 using osu.Game.Storyboards;
 using osu.Game.Tests.Resources;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 using SharpCompress.Archives;
 using SharpCompress.Archives.Zip;

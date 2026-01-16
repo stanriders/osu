@@ -17,7 +17,7 @@ using osu.Game.Scoring;
 using osu.Game.Tests.Beatmaps;
 using osu.Game.Tests.Visual.Metadata;
 using osu.Game.Users;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Online
 {

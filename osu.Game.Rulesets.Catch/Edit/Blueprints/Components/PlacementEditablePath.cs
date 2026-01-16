@@ -3,7 +3,7 @@
 
 using System;
 using osu.Game.Rulesets.Catch.Objects;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Catch.Edit.Blueprints.Components
 {

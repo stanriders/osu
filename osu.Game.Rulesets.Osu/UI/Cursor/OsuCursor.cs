@@ -15,7 +15,7 @@ using osu.Game.Configuration;
 using osu.Game.Rulesets.Osu.Skinning;
 using osu.Game.Screens.Play;
 using osu.Game.Skinning;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.UI.Cursor

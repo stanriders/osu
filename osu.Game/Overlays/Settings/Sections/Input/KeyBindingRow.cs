@@ -27,7 +27,7 @@ using osu.Game.Graphics.UserInterfaceV2;
 using osu.Game.Input.Bindings;
 using osu.Game.Resources.Localisation.Web;
 using osu.Game.Rulesets;
-using osuTK;
+using System.Numerics;
 using osuTK.Input;
 
 namespace osu.Game.Overlays.Settings.Sections.Input

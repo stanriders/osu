@@ -9,7 +9,7 @@ using osu.Game.Configuration;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Taiko.Mods;
 using osu.Game.Rulesets.Taiko.UI;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Taiko.Tests.Mods
 {

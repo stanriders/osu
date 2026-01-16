@@ -16,7 +16,7 @@ using osu.Game.Rulesets.Taiko.Judgements;
 using osu.Game.Rulesets.Taiko.Objects;
 using osu.Game.Rulesets.Taiko.Objects.Drawables;
 using osu.Game.Rulesets.Taiko.UI;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Taiko.Tests
 {

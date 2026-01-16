@@ -9,7 +9,7 @@ using osu.Framework.Graphics.Shapes;
 using osu.Game.Overlays;
 using osu.Game.Screens.SelectV2;
 using osu.Game.Tests.Visual.UserInterface;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.SongSelectV2

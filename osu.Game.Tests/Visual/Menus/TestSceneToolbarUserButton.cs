@@ -13,7 +13,7 @@ using osu.Game.Online.API;
 using osu.Game.Overlays.Toolbar;
 using osu.Game.Scoring;
 using osu.Game.Users;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Tests.Visual.Menus

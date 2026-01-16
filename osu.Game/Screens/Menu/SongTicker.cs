@@ -5,7 +5,7 @@ using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Game.Graphics.Sprites;
-using osuTK;
+using System.Numerics;
 using osu.Game.Graphics;
 using osu.Framework.Bindables;
 using osu.Framework.Extensions.Color4Extensions;

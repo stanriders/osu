@@ -8,7 +8,7 @@ using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Rulesets.Osu;
 using osu.Game.Screens.Edit;
 using osu.Game.Screens.Edit.Components.Timelines.Summary;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Tests.Visual.Editing
 {

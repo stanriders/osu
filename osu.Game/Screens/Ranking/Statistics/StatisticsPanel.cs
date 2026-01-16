@@ -23,7 +23,7 @@ using osu.Game.Online.API;
 using osu.Game.Online.Placeholders;
 using osu.Game.Scoring;
 using osu.Game.Screens.Ranking.Statistics.User;
-using osuTK;
+using System.Numerics;
 using Realms;
 
 namespace osu.Game.Screens.Ranking.Statistics

@@ -6,7 +6,7 @@
 using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Game.Online.Chat;
-using osuTK;
+using System.Numerics;
 using System;
 using System.Linq;
 using NUnit.Framework;

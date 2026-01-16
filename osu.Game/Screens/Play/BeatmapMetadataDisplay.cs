@@ -18,7 +18,7 @@ using osu.Game.Graphics.UserInterface;
 using osu.Game.Resources.Localisation.Web;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Screens.Play.HUD;
-using osuTK;
+using System.Numerics;
 using CommonStrings = osu.Game.Localisation.CommonStrings;
 
 namespace osu.Game.Screens.Play

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Framework.Bindables;
+using osu.Framework.Graphics;
 using osu.Framework.Localisation;
 using osu.Framework.Utils;
 using osu.Game.Beatmaps;
@@ -35,7 +36,7 @@ namespace osu.Game.Rulesets.Osu.Mods
             Precision = 0.1f
         };
 
-        private static readonly float playfield_diagonal = OsuPlayfield.BASE_SIZE.LengthFast;
+        private static readonly float playfield_diagonal = OsuPlayfield.BASE_SIZE.LengthFast();
 
         private Random random = null!;
 

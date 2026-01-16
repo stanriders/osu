@@ -10,7 +10,7 @@ using osu.Framework.Input;
 using osu.Framework.Input.Events;
 using osu.Framework.Input.StateChanges;
 using osu.Game.Configuration;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.UI
 {
@@ -125,7 +125,7 @@ namespace osu.Game.Rulesets.Osu.UI
             if (touchEvent is TouchMoveEvent moveEvent)
             {
                 var trackedTouch = trackedTouches.Single(t => t.Source == touchEvent.Touch.Source);
-                trackedTouch.DistanceTravelled += moveEvent.Delta.Length;
+                trackedTouch.DistanceTravelled += moveEvent.Delta.Length();
             }
 
             // Movement should only be tracked for the most recent touch.

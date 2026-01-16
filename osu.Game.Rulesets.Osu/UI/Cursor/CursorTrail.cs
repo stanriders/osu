@@ -18,7 +18,7 @@ using osu.Framework.Graphics.Visualisation;
 using osu.Framework.Input;
 using osu.Framework.Input.Events;
 using osu.Framework.Timing;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osuTK.Graphics.ES30;
 
@@ -195,7 +195,7 @@ namespace osu.Game.Rulesets.Osu.UI.Cursor
 
                     Vector2 pos1 = lastPosition.Value;
                     Vector2 diff = pos2 - pos1;
-                    float distance = diff.Length;
+                    float distance = diff.Length();
                     Vector2 direction = diff / distance;
 
                     float interval = Texture.DisplayWidth * CursorScale.X / 2.5f * IntervalMultiplier;

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using osu.Framework.Extensions;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics;
@@ -14,6 +15,8 @@ using osu.Game.Graphics.Sprites;
 using osu.Game.Graphics;
 using osuTK.Graphics;
 using osuTK;
+using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
 
 namespace osu.Game.Tests.Visual.UserInterface
 {
@@ -175,8 +178,8 @@ namespace osu.Game.Tests.Visual.UserInterface
         {
             Matrix3 parentMatrix = parent.DrawInfo.Matrix;
             Matrix3 childMatrix = child.DrawInfo.Matrix;
-            Vector3 childScale = childMatrix.ExtractScale();
-            Vector3 parentScale = parentMatrix.ExtractScale();
+            Vector3 childScale = childMatrix.ExtractScale().ToSystemNumerics();
+            Vector3 parentScale = parentMatrix.ExtractScale().ToSystemNumerics();
 
             // Orientation check
             if (!(isNearlyZero(MathF.Abs(childMatrix.M21)) && isNearlyZero(MathF.Abs(childMatrix.M12))))

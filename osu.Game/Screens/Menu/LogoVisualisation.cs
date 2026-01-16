@@ -15,7 +15,8 @@ using osu.Framework.Graphics.Rendering.Vertices;
 using osu.Framework.Graphics.Shaders;
 using osu.Framework.Graphics.Textures;
 using osu.Game.Beatmaps;
-using osuTK;
+using System.Numerics;
+using osu.Framework.Extensions;
 using osuTK.Graphics;
 
 namespace osu.Game.Screens.Menu
@@ -199,7 +200,7 @@ namespace osu.Game.Screens.Menu
 
                 shader.Bind();
 
-                Vector2 inflation = DrawInfo.MatrixInverse.ExtractScale().Xy;
+                Vector2 inflation = DrawInfo.MatrixInverse.ExtractScale().Xy.ToSystemNumerics();
 
                 ColourInfo colourInfo = DrawColourInfo.Colour;
                 colourInfo.ApplyChild(transparent_white);
@@ -237,7 +238,7 @@ namespace osu.Game.Screens.Menu
                             null,
                             vertexBatch.AddAction,
                             // barSize by itself will make it smooth more in the X axis than in the Y axis, this reverts that.
-                            Vector2.Divide(inflation, barSize.Yx));
+                            Vector2.Divide(inflation, new Vector2(barSize.Y, barSize.X)));
                     }
                 }
 

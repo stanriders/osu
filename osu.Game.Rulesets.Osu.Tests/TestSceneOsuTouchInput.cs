@@ -23,7 +23,8 @@ using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Rulesets.Osu.UI.Cursor;
 using osu.Game.Screens.Play.HUD;
 using osu.Game.Tests.Visual;
-using osuTK;
+using System.Numerics;
+using osu.Framework.Extensions;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Tests
@@ -733,7 +734,7 @@ namespace osu.Game.Rulesets.Osu.Tests
 
             private Color4 colourFor(TouchSource source)
             {
-                return Color4.FromHsv(new Vector4((float)source / TouchState.MAX_TOUCH_COUNT, 1f, 1f, 1f));
+                return Color4.FromHsv(new Vector4((float)source / TouchState.MAX_TOUCH_COUNT, 1f, 1f, 1f).ToOsuTK());
             }
 
             private partial class FadingCircle : Circle

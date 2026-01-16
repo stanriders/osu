@@ -4,7 +4,7 @@
 using osu.Framework.Graphics;
 using osu.Game.Rulesets.Edit;
 using osu.Game.Rulesets.Objects;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Taiko.Edit.Blueprints
 {
@@ -30,8 +30,8 @@ namespace osu.Game.Rulesets.Taiko.Edit.Blueprints
             var topLeft = new Vector2(float.MaxValue, float.MaxValue);
             var bottomRight = new Vector2(float.MinValue, float.MinValue);
 
-            topLeft = Vector2.ComponentMin(topLeft, Parent!.ToLocalSpace(DrawableObject.ScreenSpaceDrawQuad.TopLeft));
-            bottomRight = Vector2.ComponentMax(bottomRight, Parent!.ToLocalSpace(DrawableObject.ScreenSpaceDrawQuad.BottomRight));
+            topLeft = Vector2Extensions.ComponentMin(topLeft, Parent!.ToLocalSpace(DrawableObject.ScreenSpaceDrawQuad.TopLeft));
+            bottomRight = Vector2Extensions.ComponentMax(bottomRight, Parent!.ToLocalSpace(DrawableObject.ScreenSpaceDrawQuad.BottomRight));
 
             Size = bottomRight - topLeft;
             Position = topLeft;

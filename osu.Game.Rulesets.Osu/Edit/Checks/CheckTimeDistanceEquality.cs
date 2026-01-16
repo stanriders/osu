@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using osu.Framework.Graphics;
 using osu.Game.Beatmaps;
 using osu.Game.Rulesets.Edit;
 using osu.Game.Rulesets.Edit.Checks.Components;
@@ -95,7 +96,7 @@ namespace osu.Game.Rulesets.Osu.Edit.Checks
                     continue;
 
                 // Relying on FastInvSqrt is probably good enough here. We'll be taking the difference between distances later, hence square not being sufficient.
-                float distance = (hitObject.StackedEndPosition - nextHitObject.StackedPosition).LengthFast;
+                float distance = (hitObject.StackedEndPosition - nextHitObject.StackedPosition).LengthFast();
 
                 // Ignore stacks and half-stacks, as these are close enough to where they can't be confused for being time-distanced.
                 if (distance < stack_leniency)

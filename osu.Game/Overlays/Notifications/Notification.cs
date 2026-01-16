@@ -17,7 +17,7 @@ using osu.Framework.Localisation;
 using osu.Framework.Utils;
 using osu.Game.Graphics;
 using osu.Game.Graphics.Containers;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osuTK.Input;
 
@@ -320,7 +320,7 @@ namespace osu.Game.Overlays.Notifications
                 Vector2 change = e.MousePosition - e.MouseDownPosition;
 
                 // Diminish the drag distance as we go further to simulate "rubber band" feeling.
-                change *= change.Length <= 0 ? 0 : MathF.Pow(change.Length, 0.8f) / change.Length;
+                change *= change.Length() <= 0 ? 0 : MathF.Pow(change.Length(), 0.8f) / change.Length();
 
                 // Only apply Y change if dragging to the left.
                 if (change.X >= 0)

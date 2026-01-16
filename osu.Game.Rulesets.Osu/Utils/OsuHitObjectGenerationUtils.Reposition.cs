@@ -8,7 +8,7 @@ using osu.Framework.Graphics.Primitives;
 using osu.Framework.Utils;
 using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.UI;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.Utils
 {
@@ -43,7 +43,7 @@ namespace osu.Game.Rulesets.Osu.Utils
                 positionInfos.Add(positionInfo = new ObjectPositionInfo(hitObject)
                 {
                     RelativeAngle = relativeAngle,
-                    DistanceFromPrevious = relativePosition.Length
+                    DistanceFromPrevious = relativePosition.Length()
                 });
 
                 if (hitObject is Slider slider)

@@ -18,7 +18,7 @@ using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Screens.Edit;
 using osu.Game.Screens.Edit.Compose.Components;
 using osu.Game.Utils;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.Edit
 {
@@ -157,7 +157,7 @@ namespace osu.Game.Rulesets.Osu.Edit
         {
             Debug.Assert(originalInfo.PathControlPointPositions != null && originalInfo.PathControlPointTypes != null);
 
-            scale = Vector2.ComponentMax(scale, new Vector2(Precision.FLOAT_EPSILON));
+            scale = Vector2Extensions.ComponentMax(scale, new Vector2(Precision.FLOAT_EPSILON));
 
             // Maintain the path types in case they were defaulted to bezier at some point during scaling
             for (int i = 0; i < slider.Path.ControlPoints.Count; i++)

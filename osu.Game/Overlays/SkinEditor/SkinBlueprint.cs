@@ -3,6 +3,7 @@
 
 using System;
 using osu.Framework.Allocation;
+using osu.Framework.Extensions;
 using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Colour;
@@ -18,6 +19,7 @@ using osu.Game.Screens.Edit.Compose.Components;
 using osu.Game.Skinning;
 using osuTK;
 using osuTK.Graphics;
+using Vector2 = System.Numerics.Vector2;
 
 namespace osu.Game.Overlays.SkinEditor
 {
@@ -138,7 +140,7 @@ namespace osu.Game.Overlays.SkinEditor
         {
             base.Update();
 
-            Vector2 scale = drawable.DrawInfo.MatrixInverse.ExtractScale().Xy;
+            Vector2 scale = drawable.DrawInfo.MatrixInverse.ExtractScale().Xy.ToSystemNumerics();
             drawableQuad = drawable.ToScreenSpace(
                 drawable.DrawRectangle
                         .Inflate(SkinSelectionHandler.INFLATE_SIZE * scale));
@@ -217,7 +219,7 @@ namespace osu.Game.Overlays.SkinEditor
             var point2 = ToLocalSpace(originBox.ScreenSpaceDrawQuad.Centre);
 
             anchorLine.Position = point1;
-            anchorLine.Width = (point2 - point1).Length;
+            anchorLine.Width = (point2 - point1).Length();
             anchorLine.Rotation = MathHelper.RadiansToDegrees(MathF.Atan2(point2.Y - point1.Y, point2.X - point1.X));
         }
 

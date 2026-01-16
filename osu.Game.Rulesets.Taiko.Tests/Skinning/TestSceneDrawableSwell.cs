@@ -1,6 +1,7 @@
 // Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System.Numerics;
 using NUnit.Framework;
 using osu.Framework.Graphics;
 using osu.Game.Beatmaps;
@@ -20,7 +21,7 @@ namespace osu.Game.Rulesets.Taiko.Tests.Skinning
             {
                 Anchor = Anchor.Centre,
                 Origin = Anchor.Centre,
-                Scale = new osuTK.Vector2(0.5f),
+                Scale = new Vector2(0.5f),
             }));
         }
 

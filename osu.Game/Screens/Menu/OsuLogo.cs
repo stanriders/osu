@@ -23,7 +23,7 @@ using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Graphics.Backgrounds;
 using osu.Game.Graphics.Containers;
 using osu.Game.Overlays;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 using osuTK.Input;
 
@@ -456,7 +456,7 @@ namespace osu.Game.Screens.Menu
             Vector2 change = e.MousePosition - e.MouseDownPosition;
 
             // Diminish the drag distance as we go further to simulate "rubber band" feeling.
-            change *= change.Length <= 0 ? 0 : MathF.Pow(change.Length, 0.6f) / change.Length;
+            change *= change.Length() <= 0 ? 0 : MathF.Pow(change.Length(), 0.6f) / change.Length();
 
             logoBounceContainer.MoveTo(change);
         }

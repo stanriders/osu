@@ -8,6 +8,7 @@ using osu.Framework.Graphics;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Utils;
 using osuTK;
+using Vector2 = System.Numerics.Vector2;
 
 namespace osu.Game.Screens.Edit.Compose.Components
 {
@@ -31,7 +32,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
                 Vector2 currentPosition = StartPosition.Value + index * step;
                 index++;
 
-                if (!lineDefinitelyIntersectsBox(currentPosition, step.PerpendicularLeft, drawSize, out var p1, out var p2))
+                if (!lineDefinitelyIntersectsBox(currentPosition, step.PerpendicularLeft(), drawSize, out var p1, out var p2))
                 {
                     if (!isMovingTowardsBox(currentPosition, step, drawSize))
                         break;
@@ -64,8 +65,8 @@ namespace osu.Game.Screens.Edit.Compose.Components
 
         private bool isMovingTowardsBox(Vector2 currentPosition, Vector2 step, Vector2 box)
         {
-            return (currentPosition + step).LengthSquared < currentPosition.LengthSquared ||
-                   (currentPosition + step - box).LengthSquared < (currentPosition - box).LengthSquared;
+            return (currentPosition + step).LengthSquared() < currentPosition.LengthSquared() ||
+                   (currentPosition + step - box).LengthSquared() < (currentPosition - box).LengthSquared();
         }
 
         /// <summary>

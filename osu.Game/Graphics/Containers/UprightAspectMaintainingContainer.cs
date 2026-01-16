@@ -2,11 +2,14 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using osu.Framework.Extensions;
 using osu.Framework.Extensions.MatrixExtensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Layout;
 using osuTK;
+using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
 
 namespace osu.Game.Graphics.Containers
 {
@@ -74,7 +77,7 @@ namespace osu.Game.Graphics.Containers
             float sx = reversedParent.M11;
             float sy = reversedParent.M22;
 
-            Vector3 parentScale = parentMatrix.ExtractScale();
+            Vector3 parentScale = parentMatrix.ExtractScale().ToSystemNumerics();
 
             float usedScale = 1.0f;
 

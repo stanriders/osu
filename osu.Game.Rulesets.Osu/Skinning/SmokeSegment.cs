@@ -15,7 +15,7 @@ using osu.Framework.Graphics.Shaders;
 using osu.Framework.Graphics.Textures;
 using osu.Framework.Utils;
 using osu.Game.Utils;
-using osuTK;
+using System.Numerics;
 using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Osu.Skinning
@@ -92,7 +92,7 @@ namespace osu.Game.Rulesets.Osu.Skinning
         {
             lastPosition ??= position;
 
-            float delta = (position - (Vector2)lastPosition).LengthFast;
+            float delta = (position - (Vector2)lastPosition).LengthFast();
             totalDistance += delta;
             int count = (int)(totalDistance / pointInterval);
 
@@ -344,7 +344,7 @@ namespace osu.Game.Rulesets.Osu.Skinning
                     return;
 
                 var dir = PointDirection(point, index);
-                var ortho = dir.PerpendicularLeft;
+                var ortho = dir.PerpendicularLeft();
                 dir *= scale * width;
                 ortho *= scale * height;
 

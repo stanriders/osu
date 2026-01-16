@@ -3,8 +3,12 @@
 
 using System;
 using osu.Framework.Bindables;
+using osu.Framework.Extensions;
 using osu.Game.Utils;
 using osuTK;
+using Quaternion = System.Numerics.Quaternion;
+using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
 
 namespace osu.Game.Screens.Edit.Compose.Components
 {
@@ -29,7 +33,7 @@ namespace osu.Game.Screens.Edit.Compose.Components
         protected override void CreateContent()
         {
             var drawSize = DrawSize;
-            var rot = Quaternion.FromAxisAngle(Vector3.UnitZ, MathHelper.DegreesToRadians(GridLineRotation.Value));
+            var rot = QuaternionExtensions.FromAxisAngle(Vector3.UnitZ, MathHelper.DegreesToRadians(GridLineRotation.Value));
 
             GenerateGridLines(Vector2.Transform(new Vector2(0, -Spacing.Value.Y), rot), drawSize);
             GenerateGridLines(Vector2.Transform(new Vector2(0, Spacing.Value.Y), rot), drawSize);

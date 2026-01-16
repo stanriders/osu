@@ -17,6 +17,7 @@ using osu.Game.Graphics;
 using osu.Game.Graphics.Sprites;
 using osuTK;
 using osuTK.Graphics;
+using Vector2 = System.Numerics.Vector2;
 
 namespace osu.Game.Overlays.Settings.Sections.Input
 {
@@ -215,7 +216,7 @@ namespace osu.Game.Overlays.Settings.Sections.Input
             if (!(tablet.Value?.Size is Vector2 size))
                 return;
 
-            float maxDimension = size.LengthFast;
+            float maxDimension = size.LengthFast();
 
             float fitX = maxDimension / (DrawWidth - Padding.Left - Padding.Right);
             float fitY = maxDimension / DrawHeight;

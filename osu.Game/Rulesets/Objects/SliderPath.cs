@@ -11,7 +11,8 @@ using osu.Framework.Bindables;
 using osu.Framework.Caching;
 using osu.Framework.Utils;
 using osu.Game.Rulesets.Objects.Types;
-using osuTK;
+using System.Numerics;
+using osu.Framework.Graphics;
 
 namespace osu.Game.Rulesets.Objects
 {
@@ -420,7 +421,7 @@ namespace osu.Game.Rulesets.Objects
             for (int i = 0; i < calculatedPath.Count - 1; i++)
             {
                 Vector2 diff = calculatedPath[i + 1] - calculatedPath[i];
-                calculatedLength += diff.Length;
+                calculatedLength += diff.Length();
                 cumulativeLength.Add(calculatedLength);
             }
 

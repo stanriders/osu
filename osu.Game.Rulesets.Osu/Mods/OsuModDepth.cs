@@ -14,7 +14,7 @@ using osu.Game.Rulesets.Osu.Objects;
 using osu.Game.Rulesets.Osu.Objects.Drawables;
 using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Rulesets.UI;
-using osuTK;
+using System.Numerics;
 
 namespace osu.Game.Rulesets.Osu.Mods
 {
@@ -158,7 +158,7 @@ namespace osu.Game.Rulesets.Osu.Mods
 
         private static Vector2 toPlayfieldPosition(float scale, Vector2 positionAtZeroDepth)
         {
-            return (positionAtZeroDepth - camera_position.Xy) * scale + camera_position.Xy;
+            return (positionAtZeroDepth - new Vector2(camera_position.X, camera_position.Y)) * scale + new Vector2(camera_position.X, camera_position.Y);
         }
     }
 }

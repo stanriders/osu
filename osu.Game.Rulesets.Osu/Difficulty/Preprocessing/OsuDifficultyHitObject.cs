@@ -110,6 +110,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double SmallCircleBonus { get; private set; }
 
+        public List<Vector2> NormalAngle { get; set; } = new List<Vector2>();
+        public List<Vector2> SliderAngle { get; set; } = new List<Vector2>();
+
         private readonly OsuDifficultyHitObject? lastLastDifficultyObject;
         private readonly OsuDifficultyHitObject? lastDifficultyObject;
 
@@ -246,6 +249,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                     lastCursorPosition = prevSlider.HeadCircle.StackedPosition;
                 Vector2 lastLastCursorPosition = getEndCursorPosition(lastLastDifficultyObject);
 
+                NormalAngle.AddRange([BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition]);
                 double angle = calculateAngle(BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition);
                 double sliderAngle = calculateSliderAngle(lastDifficultyObject!, lastLastCursorPosition);
 
@@ -371,6 +375,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 lastLastCursorPosition = secondLastNestedObject.StackedPosition;
             }
 
+            SliderAngle.AddRange([BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition]);
             return calculateAngle(BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition);
         }
 

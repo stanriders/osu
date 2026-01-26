@@ -57,6 +57,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         private double approachRate;
         private double drainRate;
 
+        private double? totalDeviation;
         private double? speedDeviation;
 
         private double aimEstimatedSliderBreaks;
@@ -141,6 +142,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             }
 
             speedDeviation = calculateSpeedDeviation(osuAttributes);
+            totalDeviation = calculateTotalDeviation(osuAttributes);
 
             double aimValue = computeAimValue(score, osuAttributes);
             double speedValue = computeSpeedValue(score, osuAttributes);
@@ -162,6 +164,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 ScoreBasedEstimatedMissCount = scoreBasedEstimatedMissCount,
                 AimEstimatedSliderBreaks = aimEstimatedSliderBreaks,
                 SpeedEstimatedSliderBreaks = speedEstimatedSliderBreaks,
+                TotalDeviation = totalDeviation,
                 SpeedDeviation = speedDeviation,
                 Total = totalValue
             };
@@ -169,7 +172,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         private double computeAimValue(ScoreInfo score, OsuDifficultyAttributes attributes)
         {
-            if (score.Mods.Any(h => h is OsuModAutopilot))
+            if (score.Mods.Any(h => h is OsuModAutopilot) || totalDeviation == null)
                 return 0.0;
 
             double aimDifficulty = attributes.AimDifficulty;
@@ -218,7 +221,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 aimValue *= 1.0 + calculateTraceableBonus(attributes.SliderFactor);
             }
 
-            aimValue *= accuracy;
+            aimValue *= DifficultyCalculationUtils.Erf(25.0 / (Math.Sqrt(2) * totalDeviation.Value));
 
             return aimValue;
         }
@@ -403,6 +406,48 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             estimatedSliderBreaks *= DifficultyCalculationUtils.Smoothstep(effectiveMissCount, 1, 2);
 
             return estimatedSliderBreaks * okAdjustment * DifficultyCalculationUtils.Logistic(missedComboPercent, 0.33, 15);
+        }
+
+        /// <summary>
+        /// Using <see cref="calculateDeviation"/> estimates player's deviation on accuracy objects.
+        /// Returns deviation for circles and sliders if score was set with slideracc.
+        /// Returns the min between deviation of circles and deviation on circles and sliders (assuming slider hits are 50s), if score was set without slideracc.
+        /// </summary>
+        private double? calculateTotalDeviation(OsuDifficultyAttributes attributes)
+        {
+            if (totalSuccessfulHits == 0)
+                return null;
+
+            int accuracyObjectCount = attributes.HitCircleCount;
+
+            if (!usingClassicSliderAccuracy)
+                accuracyObjectCount += attributes.SliderCount;
+
+            // Assume worst case: all mistakes was on accuracy objects
+            int relevantCountMiss = Math.Min(countMiss, accuracyObjectCount);
+            int relevantCountMeh = Math.Min(countMeh, accuracyObjectCount - relevantCountMiss);
+            int relevantCountOk = Math.Min(countOk, accuracyObjectCount - relevantCountMiss - relevantCountMeh);
+            int relevantCountGreat = Math.Max(0, accuracyObjectCount - relevantCountMiss - relevantCountMeh - relevantCountOk);
+
+            // Calculate deviation on accuracy objects
+            double? deviation = calculateDeviation(relevantCountGreat, relevantCountOk, relevantCountMeh);
+            if (deviation == null)
+                return null;
+
+            if (!usingClassicSliderAccuracy)
+                return deviation.Value;
+
+            // If score was set without slider accuracy - also compute deviation with sliders
+            // Assume that all hits was 50s
+            int totalCountWithSliders = attributes.HitCircleCount + attributes.SliderCount;
+            int missCountWithSliders = Math.Min(totalCountWithSliders, countMiss);
+            int hitCountWithSliders = totalCountWithSliders - missCountWithSliders;
+
+            double hitProbabilityWithSliders = hitCountWithSliders / (totalCountWithSliders + 1.0);
+            double deviationWithSliders = mehHitWindow / (Math.Sqrt(2) * DifficultyCalculationUtils.ErfInv(hitProbabilityWithSliders));
+
+            // Min is needed for edgecase maps with 1 circle and 999 sliders, as deviation on sliders can be lower in this case
+            return Math.Min(deviation.Value, deviationWithSliders);
         }
 
         /// <summary>

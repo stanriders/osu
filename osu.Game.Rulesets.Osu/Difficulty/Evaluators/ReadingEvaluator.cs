@@ -16,7 +16,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private const double reading_window_size = 3000; // 3 seconds
         private const double distance_influence_threshold = OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.5; // 1.5 circles distance between centers
         private const double hidden_multiplier = 0.28;
-        private const double density_multiplier = 2.5;
+        private const double density_multiplier = 2.7;
         private const double density_difficulty_base = 2.5;
         private const double preempt_balancing_factor = 140000;
         private const double preempt_starting_point = 500; // AR 9.66 in milliseconds

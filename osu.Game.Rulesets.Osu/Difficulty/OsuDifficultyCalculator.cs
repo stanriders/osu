@@ -116,6 +116,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double starRating = calculateStarRating(basePerformance);
 
+            Polynomial aimMissPenaltyCurve = aim.GetMissPenaltyCurve();
+
             OsuDifficultyAttributes attributes = new OsuDifficultyAttributes
             {
                 StarRating = starRating,
@@ -138,7 +140,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 SpinnerCount = spinnerCount,
                 NestedScorePerObject = sliderNestedScorePerObject,
                 LegacyScoreBaseMultiplier = legacyScoreBaseMultiplier,
-                MaximumLegacyComboScore = scoreAttributes.ComboScore
+                MaximumLegacyComboScore = scoreAttributes.ComboScore,
+                AimMissPenaltyCurve = aimMissPenaltyCurve
             };
 
             return attributes;

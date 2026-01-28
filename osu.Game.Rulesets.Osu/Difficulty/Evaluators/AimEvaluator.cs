@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     public static class AimEvaluator
     {
         private const double wide_angle_multiplier = 1.5;
-        private const double acute_angle_multiplier = 2.3;
+        private const double acute_angle_multiplier = 2.0;
         private const double slider_multiplier = 1.5;
         private const double velocity_change_multiplier = 0.75;
         private const double wiggle_multiplier = 1.02; // WARNING: Increasing this multiplier beyond 1.02 reduces difficulty as distance increases. Refer to the desmos link above the wiggle bonus calculation
@@ -80,23 +80,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 // Rewarding angles, take the smaller velocity as base.
                 double angleBonus = Math.Min(currVelocity, prevVelocity);
 
-                if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
-                {
-                    acuteAngleBonus = calcAcuteAngleBonus(currAngle);
-
-                    // Penalize angle repetition.
-                    acuteAngleBonus *= 0.08 + 0.92 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));
-
-                    // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
-                    acuteAngleBonus *= angleBonus *
-                                       DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400) *
-                                       DifficultyCalculationUtils.Smootherstep(currDistance, diameter, diameter * 2);
-                }
-
+                acuteAngleBonus = calcAcuteAngleBonus(currAngle);
                 wideAngleBonus = calcWideAngleBonus(currAngle);
 
                 // Penalize angle repetition.
+                acuteAngleBonus *= 0.1 + 0.9 * (1 - Math.Min(acuteAngleBonus, Math.Pow(calcAcuteAngleBonus(lastAngle), 3)));
                 wideAngleBonus *= 1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3));
+
+                // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
+                acuteAngleBonus *= angleBonus *
+                                   DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400) *
+                                   DifficultyCalculationUtils.Smootherstep(currDistance, diameter, diameter * 2);
 
                 // Apply full wide angle bonus for distance more than one diameter
                 wideAngleBonus *= angleBonus * DifficultyCalculationUtils.Smootherstep(currDistance, 0, diameter);

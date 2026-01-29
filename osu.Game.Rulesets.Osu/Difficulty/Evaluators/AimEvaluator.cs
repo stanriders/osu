@@ -11,11 +11,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 {
     public static class AimEvaluator
     {
-        private const double wide_angle_multiplier = 1.5;
+        private const double wide_angle_multiplier = 1.3;
         private const double acute_angle_multiplier = 2.3;
         private const double slider_multiplier = 1.5;
         private const double velocity_change_multiplier = 0.75;
         private const double wiggle_multiplier = 1.02; // WARNING: Increasing this multiplier beyond 1.02 reduces difficulty as distance increases. Refer to the desmos link above the wiggle bonus calculation
+
+        private const double angle_switching_bonus_multiplier = 1.2;
 
         /// <summary>
         /// Evaluates the difficulty of aiming the current object, based on:
@@ -125,6 +127,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                         wideAngleBonus *= 1 - 0.35 * (1 - distance);
                     }
                 }
+
+                aimStrain += angleBonus * angle_switching_bonus_multiplier
+                                        * Math.Pow(calcAcuteAngleBonus(currAngle) * calcWideAngleBonus(lastAngle), 2 * angle_switching_bonus_multiplier)
+                                        * DifficultyCalculationUtils.Smootherstep(currDistance, diameter, diameter * 2)
+                                        * DifficultyCalculationUtils.Smootherstep(prevDistance, diameter, diameter * 2);
             }
 
             if (Math.Max(prevVelocity, currVelocity) != 0)

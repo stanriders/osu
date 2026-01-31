@@ -223,7 +223,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 aimValue *= 1.0 + calculateTraceableBonus(attributes.SliderFactor);
             }
 
-            aimValue *= DifficultyCalculationUtils.Erf(25.0 / (Math.Sqrt(2) * totalDeviation.Value));
+            // An effective hit window is created based on the aim SR. The higher the aim difficulty, the shorter the hit window.
+            // For example, an aim SR of 3.5 leads to an effective hit window of 20ms, which is OD 10.
+            double effectiveHitWindow = 20 * Math.Pow(3.5 / attributes.AimDifficulty, 0.35);
+
+            aimValue *= DifficultyCalculationUtils.Erf(effectiveHitWindow / totalDeviation.Value);
 
             return aimValue;
         }

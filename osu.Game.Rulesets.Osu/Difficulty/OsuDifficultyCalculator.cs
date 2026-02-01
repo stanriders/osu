@@ -247,9 +247,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 {
                     difficultyHitObject.IsFlow = Math.Abs(snapDistance - flowDistance) < OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25;
 
-                    difficultyHitObject.FlowProbability = Math.Pow(
+                    double flowProbability = Math.Pow(
                         Math.Min(snapDistance + OsuDifficultyHitObject.NORMALISED_DIAMETER, flowDistance) / Math.Max(snapDistance, flowDistance),
                         10);
+
+                    difficultyHitObject.FlowProbability = Math.Clamp(flowProbability * (1.5 - Math.Pow(0.002 * difficultyHitObject.DeltaTime, 2)), 0, 1);
                 }
             }
         }

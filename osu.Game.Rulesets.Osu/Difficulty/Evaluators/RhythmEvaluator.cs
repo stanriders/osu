@@ -44,8 +44,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 (4.0 / 3.0, 2.0), // 1/4 <-> 1/3
                 (1.5, 1.5), // 1/3 <-> 1/2
                 (5.0 / 3.0, 3.0), // 1/5 <-> 1/3
-                (2.0, 0.1), // 1/4 <-> 1/2
-                (2.5, 1.2), // 1/5 <-> 1/2
+                (2.0, 0.05), // 1/4 <-> 1/2
+                (2.5, 1.5), // 1/5 <-> 1/2
                 (3.0, 0.25), // 1/3 <-> 1/1
                 (4.0, 0.0) // 1/4 <-> 1/1
             };
@@ -63,7 +63,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // which is impossible to pass into the hash comparer
             var islandCounts = new List<(Island Island, int Count)>();
 
-            double startRatio = 0; // store the ratio of the current start of an island to buff for tighter rhythms
+            double startRatio = 1; // store the ratio of the current start of an island to buff for tighter rhythms
 
             int historicalNoteCount = Math.Min(current.Index, history_objects_max);
 
@@ -144,7 +144,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     }
                     else
                     {
-                        islandCounts.Add((island, 1));
+                        if (island.DeltaCount > 0)
+                        {
+                            islandCounts.Add((island, 1));
+                        }
+
+                        // new island type - buff ratio by how many unique islands there are in the history, the more islands the more unpredictable the rhythm is
+                        effectiveRatio *= Math.Max(0, Math.Pow(islandCounts.Count / 3.0, 1.75));
                     }
 
                     // scale down the difficulty if the object is doubletappable
@@ -163,7 +169,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 prevObj = currObj;
             }
 
-            return Math.Sqrt(4 + rhythmComplexitySum * 2.0) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though);
+            return Math.Sqrt(4 + rhythmComplexitySum * 1.5) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though);
         }
 
         private class Island : IEquatable<Island>

@@ -82,8 +82,8 @@ jobs:
         run: dotnet build -c Debug -warnaserror osu.Desktop.slnf
 
       - name: Test
-        run: dotnet test $pwd/**/*.Tests/bin/Debug/*/*.Tests.dll --logger "trx;LogFileName=TestResults-${{matrix.os.prettyname}}-${{matrix.threadingMode}}.trx" -- NUnit.ConsoleOut=0
-        shell: pwsh
+        # Use solution-level test run to ensure tests are discovered across platforms
+        run: dotnet test osu.Desktop.slnf -c Debug --logger "trx;LogFileName=TestResults-${{ matrix.os.prettyname }}-${{ matrix.threadingMode }}.trx" -- NUnit.ConsoleOut=0
 
       # Attempt to upload results even if test fails.
       # https://docs.github.com/en/actions/reference/context-and-expression-syntax-for-github-actions#always
@@ -92,7 +92,7 @@ jobs:
         if: ${{ always() }}
         with:
           name: osu-test-results-${{matrix.os.prettyname}}-${{matrix.threadingMode}}
-          path: ${{github.workspace}}/TestResults/TestResults-${{matrix.os.prettyname}}-${{matrix.threadingMode}}.trx
+          path: '**/TestResults-${{ matrix.os.prettyname }}-${{ matrix.threadingMode }}.trx'
 
   build-only-android:
     name: Build only (Android)

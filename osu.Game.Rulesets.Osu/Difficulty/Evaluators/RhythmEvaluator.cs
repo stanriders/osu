@@ -17,7 +17,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private const int history_time_max = 5 * 1000; // 5 seconds
         private const int history_objects_max = 32;
         private const double rhythm_overall_multiplier = 1.0;
-
+        /*
         private static (double ratio, double multiplier)[] ratioMultipliers = new[]
         {
             (1.0, 0.01), // same rhythm
@@ -29,7 +29,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             (3.0, 0.25), // 1/3 <-> 1/1
             (4.0, 0.0) // 1/4 <-> 1/1
         };
-
+        */
         /// <summary>
         /// Calculates a rhythm multiplier for the difficulty of the tap associated with historic data of the current <see cref="OsuDifficultyHitObject"/>.
         /// </summary>
@@ -37,18 +37,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             if (current.BaseObject is Spinner)
                 return 0;
-
-            ratioMultipliers = new[]
-            {
-                (1.0, 0.01), // same rhythm
-                (4.0 / 3.0, 2.0), // 1/4 <-> 1/3
-                (1.5, 1.5), // 1/3 <-> 1/2
-                (5.0 / 3.0, 3.0), // 1/5 <-> 1/3
-                (2.0, 0.05), // 1/4 <-> 1/2
-                (2.5, 1.5), // 1/5 <-> 1/2
-                (3.0, 0.25), // 1/3 <-> 1/1
-                (4.0, 0.0) // 1/4 <-> 1/1
-            };
 
             var currentOsuObject = (OsuDifficultyHitObject)current;
 
@@ -93,17 +81,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 bool isSpeedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
 
-                double effectiveRatio = LerpFromArrays(ratioMultipliers, deltaDifference);
+                double effectiveRatio = getEffectiveRatio(deltaDifference);
 
+                // if previous object is a slider it might be easier to tap since you don't have to do a whole tapping motion
+                // while a full deltatime might end up some weird ratio the "unpress->tap" motion might be simple
+                // for example a slider-circle-circle pattern should be evaluated as a regular triple and not as a single->double
                 if (prevObj.BaseObject is Slider)
                 {
-                    // if previous object is a slider it might be easier to tap since you dont have to do a whole tapping motion
-                    // while a full deltatime might end up some weird ratio
-                    // the "unpress->taps" motion might be simple, for example a slider-circle-circle pattern is being evaluated as a triple and not a single->double
-                    double sliderEndDelta = currObj.MinimumJumpTime;
-                    double sliderDeltaDifference = Math.Max(sliderEndDelta, currDelta) / Math.Min(sliderEndDelta, currDelta);
-                    double sliderEffectiveRatio = LerpFromArrays(ratioMultipliers, sliderDeltaDifference);
+                    double sliderLazyEndDelta = currObj.MinimumJumpTime;
+                    double sliderLazyDeltaDifference = Math.Max(sliderLazyEndDelta, currDelta) / Math.Min(sliderLazyEndDelta, currDelta);
 
+                    double sliderRealEndDelta = currObj.LastObjectEndDeltaTime;
+                    double sliderRealDeltaDifference = Math.Max(sliderRealEndDelta, currDelta) / Math.Min(sliderRealEndDelta, currDelta);
+
+                    double sliderEffectiveRatio = Math.Min(getEffectiveRatio(sliderLazyDeltaDifference), getEffectiveRatio(sliderRealDeltaDifference));
                     effectiveRatio = Math.Min(sliderEffectiveRatio, effectiveRatio);
                 }
 
@@ -120,7 +111,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     // bpm change is into slider, this is easy acc window
                     // TODO: `if (mods.classic)`
                     if (currObj.BaseObject is Slider)
-                        effectiveRatio *= 0.35;
+                        effectiveRatio *= 0.5;
 
                     // repeated island polarity (2 -> 4, 3 -> 5)
                     if (island.IsSimilarPolarity(previousIsland))
@@ -170,6 +161,23 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             }
 
             return Math.Sqrt(4 + rhythmComplexitySum * 1.5) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though);
+        }
+
+        private static double getEffectiveRatio(double deltaDifference)
+        {
+            var ratioMultipliers = new[]
+            {
+                (1.0, 0.01), // same rhythm
+                (4.0 / 3.0, 2.0), // 1/4 <-> 1/3
+                (1.5, 1.5), // 1/3 <-> 1/2
+                (5.0 / 3.0, 3.0), // 1/5 <-> 1/3
+                (2.0, 0.05), // 1/4 <-> 1/2
+                (2.5, 1.5), // 1/5 <-> 1/2
+                (3.0, 0.25), // 1/3 <-> 1/1
+                (4.0, 0.0) // 1/4 <-> 1/1
+            };
+
+            return LerpFromArrays(ratioMultipliers, deltaDifference);
         }
 
         private class Island : IEquatable<Island>

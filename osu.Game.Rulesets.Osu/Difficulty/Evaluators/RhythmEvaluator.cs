@@ -16,8 +16,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     {
         private const int history_time_max = 5 * 1000; // 5 seconds
         private const int history_objects_max = 32;
-        private const double rhythm_overall_multiplier = 0.9;
-        private const double rhythm_ratio_multiplier = 30.0;
+        private const double rhythm_overall_multiplier = 1.0;
+        private const double rhythm_ratio_multiplier = 50.0;
 
         /// <summary>
         /// Calculates a rhythm multiplier for the difficulty of the tap associated with historic data of the current <see cref="OsuDifficultyHitObject"/>.
@@ -149,7 +149,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                         rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay;
 
-                        startRatio = effectiveRatio;
+                        startRatio = Math.Sqrt(effectiveRatio);
 
                         previousIsland = island;
 
@@ -173,7 +173,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     if (prevObj.BaseObject is Slider)
                         effectiveRatio *= 0.6;
 
-                    startRatio = effectiveRatio;
+                    startRatio = Math.Sqrt(effectiveRatio);
 
                     island = new Island((int)currDelta, deltaDifferenceEpsilon);
                 }

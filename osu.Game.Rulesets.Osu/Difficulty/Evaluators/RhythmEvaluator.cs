@@ -16,8 +16,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     {
         private const int history_time_max = 5 * 1000; // 5 seconds
         private const int history_objects_max = 32;
-        private const double rhythm_overall_multiplier = 0.9;
-        private const double rhythm_ratio_multiplier = 30.0;
+        private const double rhythm_overall_multiplier = 1.0;
+        private const double rhythm_ratio_multiplier = 45.0;
 
         /// <summary>
         /// Calculates a rhythm multiplier for the difficulty of the tap associated with historic data of the current <see cref="OsuDifficultyHitObject"/>.
@@ -63,7 +63,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double timeDecay = (history_time_max - (current.StartTime - currObj.StartTime)) / history_time_max;
                 double noteDecay = (double)(historicalNoteCount - i) / historicalNoteCount;
 
-                double currHistoricalDecay = Math.Min(noteDecay, timeDecay); // either we're limited by time or limited by object count.
+                double currHistoricalDecay = Math.Pow(Math.Min(noteDecay, timeDecay), 2.2); // either we're limited by time or limited by object count with emphasis on closer objects
 
                 // Use custom cap value to ensure that at this point delta time is actually zero
                 double currDelta = Math.Max(currObj.DeltaTime, 1e-7);
@@ -166,11 +166,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                     // bpm change is into slider, this is easy acc window
                     if (currObj.BaseObject is Slider)
-                        effectiveRatio *= 0.6;
-
-                    // bpm change was from a slider, this is easier typically than circle -> circle
-                    // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                    if (prevObj.BaseObject is Slider)
                         effectiveRatio *= 0.6;
 
                     startRatio = effectiveRatio;

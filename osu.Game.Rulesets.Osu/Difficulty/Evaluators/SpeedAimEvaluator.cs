@@ -38,11 +38,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // Apply reduced small circle bonus because flow aim difficulty on small circles doesn't scale as hard as jumps
             distanceBonus *= Math.Sqrt(osuCurrObj.SmallCircleBonus);
 
-            double strain = distanceBonus * 1000 / osuCurrObj.AdjustedDeltaTime;
+            double velocity = distanceBonus * 1000 / osuCurrObj.AdjustedDeltaTime;
 
-            strain *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);
+            if (osuCurrObj.Angle != null && osuPrevObj?.Angle != null)
+            {
+                double angleDifference = Math.Abs(osuCurrObj.Angle.Value - osuPrevObj.Angle.Value);
+                double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
+                double angularVelocity = angleDifferenceAdjusted / (0.1 * osuCurrObj.AdjustedDeltaTime);
+                double angularVelocityBonus = Math.Max(0.0, 0.65 * Math.Log10(angularVelocity));
 
-            return strain;
+                velocity *= 0.65 + angularVelocityBonus * 0.45;
+            }
+
+            velocity *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);
+
+            return velocity;
         }
 
         private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.3, ms / 1000));

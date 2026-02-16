@@ -76,7 +76,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public double? Angle { get; private set; }
 
         public double PathLengthToMovementLengthRatio { get; set; } = 1;
-        public double PathToNextJumpVelocityRatio { get; set; } = 1;
+        public double MovementsToHeadToHeadVelocityRatio { get; set; } = 1;
 
         public List<Movement> Movements { get; } = new List<Movement>();
 
@@ -350,14 +350,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             // we only want to remove movements that repeat head-to-head movements if they are of similar velocity
             if (lastDifficultyObject.Movements.Count > 1)
             {
-                double sliderNestedVelocity = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance) / lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Time);
+                double sliderNestedDistance = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance);
+                double sliderNestedTime = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Time);
+
+                var lastMovement = lastDifficultyObject.Movements.Last();
+                var initialMovement = new Movement
+                {
+                    Start = lastMovement.End,
+                    StartTime = lastMovement.EndTime,
+                    StartRadius = lastMovement.EndRadius,
+                    End = BaseObject.StackedPosition,
+                    EndTime = StartTime,
+                    EndRadius = BaseObject.Radius
+                };
+
+                double sliderMovementsVelocity = (sliderNestedDistance + initialMovement.Distance) / (sliderNestedTime + initialMovement.Time);
                 double headToHeadVelocity = headToHeadMovement.Distance / headToHeadMovement.Time;
 
-                double velocityRatio = Math.Min(sliderNestedVelocity, headToHeadVelocity) / Math.Max(sliderNestedVelocity, headToHeadVelocity);
-                lastDifficultyObject.PathToNextJumpVelocityRatio = velocityRatio;
+                double velocityRatio = Math.Min(sliderMovementsVelocity, headToHeadVelocity) / Math.Max(sliderMovementsVelocity, headToHeadVelocity);
+                lastDifficultyObject.MovementsToHeadToHeadVelocityRatio = velocityRatio;
             }
 
-            if (slider.RepeatCount < 1 && lastDifficultyObject.PathToNextJumpVelocityRatio > 0.5)
+            if (slider.RepeatCount < 1 && lastDifficultyObject.MovementsToHeadToHeadVelocityRatio > 0.9)
             {
                 for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
                 {

@@ -60,8 +60,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
 
-            double currVelocity = currentMovement.Distance / (currentMovement.IsNested ? Math.Pow(currentMovement.Time, 1) : currentMovement.Time);
-            double prevVelocity = previousMovement.Distance / (previousMovement.IsNested ? Math.Pow(previousMovement.Time, 1) : previousMovement.Time);
+            double currVelocity = currentMovement.Distance / currentMovement.Time;
+            double prevVelocity = previousMovement.Distance / previousMovement.Time;
 
             double wideAngleBonus = 0;
             double acuteAngleBonus = 0;

@@ -76,6 +76,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public double? Angle { get; private set; }
 
         public double PathLengthToMovementLengthRatio { get; set; } = 1;
+        public double PathToNextJumpVelocityRatio { get; set; } = 1;
 
         public List<Movement> Movements { get; } = new List<Movement>();
 
@@ -346,7 +347,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
             var movementsToRemove = new List<Movement>();
 
-            if (slider.RepeatCount < 1)
+            // we only want to remove movements that repeat head-to-head movements if they are of similar velocity
+            if (lastDifficultyObject.Movements.Count > 1)
+            {
+                double sliderNestedVelocity = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance) / lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Time);
+                double headToHeadVelocity = headToHeadMovement.Distance / headToHeadMovement.Time;
+
+                double velocityRatio = Math.Min(sliderNestedVelocity, headToHeadVelocity) / Math.Max(sliderNestedVelocity, headToHeadVelocity);
+                lastDifficultyObject.PathToNextJumpVelocityRatio = velocityRatio;
+            }
+
+            if (slider.RepeatCount < 1 && lastDifficultyObject.PathToNextJumpVelocityRatio > 0.5)
             {
                 for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
                 {

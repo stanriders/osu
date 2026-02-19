@@ -13,6 +13,39 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
     {
         public const double SINGLE_SPACING_THRESHOLD = OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25; // 1.25 circles distance between centers
 
+        public static double EvaluateDifficultyOfMovement(DifficultyHitObject current, Movement currentMovement)
+        {
+            if (current.BaseObject is Spinner)
+                return 0;
+
+            var osuCurrObj = (OsuDifficultyHitObject)current;
+
+            bool isNested = osuCurrObj.Movements.IndexOf(currentMovement) > 0;
+
+            double distance = currentMovement.Distance;
+
+            // Cap distance at single_spacing_threshold
+            distance = Math.Min(distance, SINGLE_SPACING_THRESHOLD);
+
+            // Max distance bonus is 1 * `distance_multiplier` at single_spacing_threshold
+            double distanceBonus = Math.Pow(distance / SINGLE_SPACING_THRESHOLD, 3.95);
+
+            double strain = distanceBonus * 1000 / currentMovement.Time;
+
+            if (!isNested)
+            {
+                // Apply reduced small circle bonus because flow aim difficulty on small circles doesn't scale as hard as jumps
+                strain *= Math.Sqrt(osuCurrObj.SmallCircleBonus);
+                strain *= highBpmBonus(currentMovement.Time);
+            }
+            else
+            {
+                strain *= 7.0;
+            }
+
+            return strain;
+        }
+
         /// <summary>
         /// Evaluates the difficulty of aiming the current object, based on:
         /// <list type="bullet">

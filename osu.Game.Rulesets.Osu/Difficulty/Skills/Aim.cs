@@ -59,7 +59,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double previousTime = firstMovement.StartTime;
 
             double firstMovementAimDifficulty = AimEvaluator.EvaluateDifficultyOfMovement(current, firstMovement);
-            double firstMovementSpeedDifficulty = SpeedAimEvaluator.EvaluateDifficultyOf(current);
+            double firstMovementSpeedDifficulty = SpeedAimEvaluator.EvaluateDifficultyOfMovement(current, firstMovement);
 
             if (Mods.Any(m => m is OsuModTouchDevice))
             {
@@ -71,9 +71,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentAimStrain *= firstMovementAimDecay;
             currentAimStrain += firstMovementAimDifficulty * (1 - firstMovementAimDecay) * skillMultiplierAim;
 
-            double speedDecay = strainDecaySpeed(osuCurrent.AdjustedDeltaTime);
-            currentSpeedStrain *= speedDecay;
-            currentSpeedStrain += firstMovementSpeedDifficulty * (1 - speedDecay) * skillMultiplierSpeed;
+            double firstMovementSpeedDecay = strainDecaySpeed(firstMovement.Time);
+            currentSpeedStrain *= firstMovementSpeedDecay;
+            currentSpeedStrain += firstMovementSpeedDifficulty * (1 - firstMovementSpeedDecay) * skillMultiplierSpeed;
 
             double totalStrain = DifficultyCalculationUtils.Norm(meanExponent, currentAimStrain, currentSpeedStrain) * skillMultiplierTotal;
 
@@ -93,19 +93,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             {
                 var movement = osuCurrent.Movements[i];
                 lastAimStrain = currentAimStrain;
+                lastSpeedStrain = currentSpeedStrain;
 
-                double decay = strainDecayAim(movement.Time);
-                currentAimStrain *= decay;
+                double aimDecay = strainDecayAim(movement.Time);
+                currentAimStrain *= aimDecay;
 
-                // we don't want to save it since we always decay the full object deltatime
-                double movementSpeedStrain = currentSpeedStrain * strainDecaySpeed(movement.Time);
+                double speedDecay = strainDecayAim(movement.Time);
+                currentSpeedStrain *= speedDecay;
 
                 if (IncludeSliders)
                 {
-                    currentAimStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * (1 - decay) * skillMultiplierAim;
+                    currentAimStrain += AimEvaluator.EvaluateDifficultyOfMovement(current, movement) * (1 - aimDecay) * skillMultiplierAim;
+                    currentSpeedStrain += SpeedAimEvaluator.EvaluateDifficultyOfMovement(current, movement) * (1 - speedDecay) * skillMultiplierSpeed;
                 }
 
-                totalStrain = DifficultyCalculationUtils.Norm(meanExponent, currentAimStrain, movementSpeedStrain) * skillMultiplierTotal;
+                totalStrain = DifficultyCalculationUtils.Norm(meanExponent, currentAimStrain, currentSpeedStrain) * skillMultiplierTotal;
 
                 if (current.BaseObject is Slider)
                     sliderStrains.Add(totalStrain);

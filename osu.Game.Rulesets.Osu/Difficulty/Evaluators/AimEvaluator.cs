@@ -144,7 +144,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             if (isNested)
             {
-                aimStrain *= 8.0;
+                aimStrain *= 7.0;
             }
 
             aimStrain += wiggleBonus * wiggle_multiplier;

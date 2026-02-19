@@ -49,11 +49,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double sliderDifficulty = 0;
 
-            if (current.BaseObject is Slider && currObj.Movements.Count > 1)
+            if (current.BaseObject is Slider slider && currObj.Movements.Count > 1)
             {
                 double sliderVelocity = currObj.Movements.Skip(1).Sum(x => x.Distance) / currObj.Movements.Skip(1).Sum(x => x.Time);
                 double ratioMultiplier = Math.Pow(Math.Pow(1.5 - (1.5 * currObj.PathLengthToMovementLengthRatio), 5), Math.Max(1, sliderVelocity));
                 sliderDifficulty = ratioMultiplier;
+
+                // kaede buff
+                double repeatedSliderBonus = 1 + slider.RepeatCount;
+                sliderDifficulty += repeatedSliderBonus;
             }
 
             double difficulty = DifficultyCalculationUtils.Norm(1.5, preemptDifficulty, hiddenDifficulty, noteDensityDifficulty, sliderDifficulty);

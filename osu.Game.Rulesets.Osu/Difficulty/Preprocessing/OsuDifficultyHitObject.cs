@@ -72,9 +72,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double SmallCircleBonus { get; private set; }
 
-        // legacy angle
-        public double? Angle { get; private set; }
-
         public double PathLengthToMovementLengthRatio { get; set; } = 1;
         public double MovementsToHeadToHeadVelocityRatio { get; set; } = 1;
 
@@ -315,12 +312,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 EndRadius = BaseObject.Radius
             };
             Movements.Add(initialMovement);
-
-            // i love kwotaq reading!!
-            if (prevMovement != null)
-            {
-                Angle = initialMovement.Angle(prevMovement);
-            }
 
             LazyJumpDistance = initialMovement.Distance;
         }

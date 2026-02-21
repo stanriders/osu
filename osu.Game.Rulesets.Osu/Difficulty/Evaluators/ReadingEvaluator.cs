@@ -228,6 +228,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             int index = 0;
             double currentTimeGap = 0;
 
+            var currentFirstMovement = current.Movements.First();
+
             while (currentTimeGap < minimum_angle_relevancy_time)
             {
                 var loopObj = (OsuDifficultyHitObject)current.Previous(index);
@@ -235,12 +237,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 if (loopObj.IsNull())
                     break;
 
+                var loopFirstMovement = loopObj.Movements.First();
+
                 // Account less for objects that are close to the time limit.
                 double longIntervalFactor = 1 - DifficultyCalculationUtils.ReverseLerp(loopObj.AdjustedDeltaTime, maximum_angle_relevancy_time, minimum_angle_relevancy_time);
 
-                if (loopObj.Angle.IsNotNull() && current.Angle.IsNotNull())
+                if (loopFirstMovement.PreviousMovement.IsNotNull() && currentFirstMovement.PreviousMovement.IsNotNull())
                 {
-                    double angleDifference = Math.Abs(current.Angle.Value - loopObj.Angle.Value);
+                    double angleDifference = Math.Abs(currentFirstMovement.Angle(currentFirstMovement.PreviousMovement) - loopFirstMovement.Angle(loopFirstMovement.PreviousMovement));
                     double stackFactor = DifficultyCalculationUtils.Smootherstep(loopObj.LazyJumpDistance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
 
                     constantAngleCount += Math.Cos(3 * Math.Min(double.DegreesToRadians(30), angleDifference * stackFactor)) * longIntervalFactor;

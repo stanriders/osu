@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -20,8 +19,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
 
-            bool isNested = osuCurrObj.Movements.IndexOf(currentMovement) > 0;
-
             double distance = currentMovement.Distance;
 
             // Cap distance at single_spacing_threshold
@@ -32,7 +29,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double strain = distanceBonus * 1000 / currentMovement.Time;
 
-            if (!isNested)
+            if (!currentMovement.IsNested)
             {
                 // Apply reduced small circle bonus because flow aim difficulty on small circles doesn't scale as hard as jumps
                 strain *= Math.Sqrt(osuCurrObj.SmallCircleBonus);
@@ -42,37 +39,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             {
                 strain *= 7.0;
             }
-
-            return strain;
-        }
-
-        /// <summary>
-        /// Evaluates the difficulty of aiming the current object, based on:
-        /// <list type="bullet">
-        /// <item><description>distance between the previous and current object</description></item>
-        /// </list>
-        /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
-        {
-            if (current.BaseObject is Spinner)
-                return 0;
-
-            var osuCurrObj = (OsuDifficultyHitObject)current;
-
-            double distance = osuCurrObj.Movements.Select(x => x.Distance).Sum();
-
-            // Cap distance at single_spacing_threshold
-            distance = Math.Min(distance, SINGLE_SPACING_THRESHOLD);
-
-            // Max distance bonus is 1 * `distance_multiplier` at single_spacing_threshold
-            double distanceBonus = Math.Pow(distance / SINGLE_SPACING_THRESHOLD, 3.95);
-
-            // Apply reduced small circle bonus because flow aim difficulty on small circles doesn't scale as hard as jumps
-            distanceBonus *= Math.Sqrt(osuCurrObj.SmallCircleBonus);
-
-            double strain = distanceBonus * 1000 / osuCurrObj.AdjustedDeltaTime;
-
-            strain *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);
 
             return strain;
         }

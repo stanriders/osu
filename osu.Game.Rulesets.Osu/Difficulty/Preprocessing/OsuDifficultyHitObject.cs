@@ -80,8 +80,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         public List<Movement> Movements { get; } = new List<Movement>();
 
-        public Movement? PreviousMovement => lastDifficultyObject?.Movements.Last();
-
         private readonly OsuDifficultyHitObject? lastDifficultyObject;
 
         public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)

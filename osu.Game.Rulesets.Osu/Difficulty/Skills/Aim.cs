@@ -47,7 +47,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double CalculateInitialStrain(double deltaTime) =>
             DifficultyCalculationUtils.Norm(meanExponent,
                 lastAimStrain * strainDecayAim(deltaTime),
-                lastSpeedStrain * strainDecaySpeed(deltaTime));
+                lastSpeedStrain * strainDecaySpeed(deltaTime)) * skillMultiplierTotal;
 
         protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
@@ -65,6 +65,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             {
                 firstMovementAimDifficulty = Math.Pow(firstMovementAimDifficulty, 0.8);
                 firstMovementSpeedDifficulty = Math.Pow(firstMovementSpeedDifficulty, 0.95);
+            }
+
+            if (Mods.Any(m => m is OsuModRelax))
+            {
+                currentSpeedStrain = 0.0;
             }
 
             double firstMovementAimDecay = strainDecayAim(firstMovement.Time);

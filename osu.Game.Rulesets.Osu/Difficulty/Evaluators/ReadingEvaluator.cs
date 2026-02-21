@@ -29,6 +29,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (current.BaseObject is Spinner || current.Index == 0)
                 return 0;
 
+            var prevObj = (OsuDifficultyHitObject)current.Previous(0);
             var currObj = (OsuDifficultyHitObject)current;
             var nextObj = (OsuDifficultyHitObject)current.Next(0);
 
@@ -55,9 +56,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double ratioMultiplier = Math.Pow(Math.Pow(1.5 - (1.5 * currObj.PathLengthToMovementLengthRatio), 5), Math.Max(1, sliderVelocity));
                 sliderDifficulty = ratioMultiplier;
 
-                // kaede buff
                 double repeatedSliderBonus = 1 + slider.RepeatCount;
                 sliderDifficulty += repeatedSliderBonus;
+            }
+
+            if (prevObj.BaseObject is Slider prevSlider)
+            {
+                double previousRepeatedSliderBonus = 1 + prevSlider.RepeatCount;
+                sliderDifficulty += velocity * previousRepeatedSliderBonus * 0.6;
             }
 
             double difficulty = DifficultyCalculationUtils.Norm(1.5, preemptDifficulty, hiddenDifficulty, noteDensityDifficulty, sliderDifficulty);

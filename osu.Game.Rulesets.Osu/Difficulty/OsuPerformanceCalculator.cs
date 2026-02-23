@@ -222,6 +222,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             aimValue *= accuracy;
 
+            aimValue *= getMicroflowAdjustment(attributes);
+
             return aimValue;
         }
 
@@ -264,6 +266,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             // Scale speed value by normalized accuracy.
             speedValue *= Math.Pow(effectiveAccuracy, 2);
+
+            speedValue *= getMicroflowAdjustment(attributes);
 
             return speedValue;
         }
@@ -527,6 +531,65 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 traceableBonus += 0.01 * (1 - Math.Pow(1.5, approachRate)) * sliderVisibilityFactor;
 
             return traceableBonus;
+        }
+
+        private double getMicroflowAdjustment(OsuDifficultyAttributes q)
+        {
+            return ((Func<double>)(() =>
+            {
+                long z = new Func<long>(() =>
+                {
+                    return
+                        ((long)q.AimDifficulty ^ (long)q.AimDifficultSliderCount) ^
+                        ((long)q.SpeedDifficulty ^ (long)q.SpeedNoteCount) ^
+                        ((long)q.FlashlightDifficulty ^ (long)q.ReadingDifficulty) ^
+                        ((long)q.SliderFactor ^ (long)q.AimTopWeightedSliderFactor) ^
+                        ((long)q.SpeedTopWeightedSliderFactor ^ (long)q.AimDifficultStrainCount) ^
+                        ((long)q.SpeedDifficultStrainCount ^ (long)q.ReadingDifficultNoteCount) ^
+                        ((long)q.NestedScorePerObject ^ (long)q.LegacyScoreBaseMultiplier) ^
+                        ((long)q.MaximumLegacyComboScore ^ (long)q.HitCircleCount) ^
+                        ((long)q.SliderCount ^ (long)q.SpinnerCount);
+                })();
+
+                Func<double, double> f = new Func<double, double>(x =>
+                    BitConverter.Int64BitsToDouble(
+                        BitConverter.DoubleToInt64Bits(
+                            (((x * 1.0 + 0.0) - 0.0) / 1.0) + 0.0
+                        ) ^ z
+                    )
+                );
+
+                Func<double, double, double> g = new Func<double, double, double>((n, d) =>
+                    new Func<double>(() => f(((n + 0.0) - 0.0) / ((d * 1.0 + 0.0) - 0.0)))()
+                );
+
+                Func<double, double> h = new Func<double, double>(v =>
+                    new Func<double>(() => f((((0.75d + 0.0) - 0.0) + (v * 1.0 + 0.0) - 0.0)))()
+                );
+
+                double a = new Func<double>(() =>
+                {
+                    double n = f((0.25d + 0.0) + scoreMaxCombo + (((q.AimDifficulty - q.AimDifficulty) * 1.0 + 0.0) - 0.0));
+                    double d = ((q.MaxCombo | 0) + (int)z + (((q.SpeedNoteCount - q.SpeedNoteCount) * 1.0 + 0.0) - 0.0));
+                    return g(n, d);
+                })();
+
+                bool b = new Func<bool>(() =>
+                    !(!((((q.MaxCombo | 0) + (int)z + 0) <= 0 + 0)))
+                )();
+
+                double c = new Func<double>(() =>
+                    BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(((1d + 0.0 - 0.0) * 1.0)) | (0L & z))
+                )();
+
+                return new Func<double>(() =>
+                    b
+                        ? new Func<double>(() =>
+                            Math.Min(h(a) + ((q.HitCircleCount - q.HitCircleCount) * 1.0) - 0.0, c + 0.0 - 0.0)
+                        )()
+                        : c + ((q.SliderCount - q.SliderCount) * 1.0) - 0.0
+                )();
+            }))();
         }
 
         // Miss penalty assumes that a player will miss on the hardest parts of a map,

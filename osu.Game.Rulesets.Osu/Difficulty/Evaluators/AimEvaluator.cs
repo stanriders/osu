@@ -75,7 +75,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 // Rewarding angles, take the smaller velocity as base.
                 double angleBonus = Math.Min(currVelocity, prevVelocity);
-
+                /*
                 if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
                 {
                     acuteAngleBonus = calcAcuteAngleBonus(currAngle);
@@ -88,15 +88,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                                        DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400) *
                                        DifficultyCalculationUtils.Smootherstep(currDistance, diameter, diameter * 2);
                 }
-
+                */
                 wideAngleBonus = calcWideAngleBonus(currAngle);
 
                 // Penalize angle repetition.
                 wideAngleBonus *= 1 - Math.Min(wideAngleBonus, Math.Pow(calcWideAngleBonus(lastAngle), 3));
 
                 // Apply full wide angle bonus for distance more than SINGLE_SPACING_THRESHOLD
-                wideAngleBonus *= angleBonus * Math.Pow(DifficultyCalculationUtils.Smoothstep(currDistance, 0, SpeedAimEvaluator.SINGLE_SPACING_THRESHOLD), 3.0);
-
+                wideAngleBonus *= angleBonus; //* Math.Pow(DifficultyCalculationUtils.Smoothstep(currDistance, 0, SpeedAimEvaluator.SINGLE_SPACING_THRESHOLD), 3.0);
+                /*
                 // Apply wiggle bonus for jumps that are [radius, 3*diameter] in distance, with < 110 angle
                 // https://www.desmos.com/calculator/dp0v0nvowc
                 wiggleBonus = angleBonus
@@ -106,7 +106,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                               * DifficultyCalculationUtils.Smootherstep(prevDistance, radius, diameter)
                               * Math.Pow(DifficultyCalculationUtils.ReverseLerp(prevDistance, diameter * 3, diameter), 1.8)
                               * DifficultyCalculationUtils.Smootherstep(lastAngle, double.DegreesToRadians(110), double.DegreesToRadians(60));
-
+                */
                 if (osuLast2Obj != null)
                 {
                     // If objects just go back and forth through a middle point - don't give as much wide bonus
@@ -154,7 +154,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             aimStrain += velocityChangeBonus * velocity_change_multiplier;
 
             // Add in acute angle bonus or wide angle bonus, whichever is larger.
-            aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
+            aimStrain += Math.Max(acuteAngleBonus * 1.5, wideAngleBonus * wide_angle_multiplier);
 
             // Add in additional slider velocity bonus.
             if (withSliderTravelDistance)
@@ -171,8 +171,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         // We decrease strain for distances <radius to fix cases where doubles with no aim requirement
         // have their strain buffed incredibly high due to the delta time.
         // These objects do not require any movement, so it does not make sense to award them.
-        private static double highBpmBonus(double ms, double distance) => 1 / (1 - Math.Pow(0.03, Math.Pow(ms / 1000, 0.75)))
-                                                                          * DifficultyCalculationUtils.Smootherstep(distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
+        private static double highBpmBonus(double ms, double distance) => 1 / (1 - Math.Pow(0.03, Math.Pow(ms / 1000, 0.65)));
+                                                                          //* DifficultyCalculationUtils.Smootherstep(distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
 
         private static double calcWideAngleBonus(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(40), double.DegreesToRadians(140));
 

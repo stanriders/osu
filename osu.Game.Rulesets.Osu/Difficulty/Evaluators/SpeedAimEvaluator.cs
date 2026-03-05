@@ -3,6 +3,7 @@
 
 using System;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
 
@@ -39,6 +40,38 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             distanceBonus *= Math.Pow(osuCurrObj.SmallCircleBonus, 0.7);
 
             double strain = distanceBonus * 1000 / osuCurrObj.AdjustedDeltaTime;
+
+            double velocityChangeBonus = 0;
+
+            if (osuPrevObj != null)
+            {
+                double currDistance = osuCurrObj.JumpDistance;
+                double currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
+
+                // As above, do the same for the previous hitobject.
+                double prevDistance = osuPrevObj.JumpDistance;
+                double prevVelocity = prevDistance / osuPrevObj.AdjustedDeltaTime;
+
+                const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
+
+                if (Math.Max(prevVelocity, currVelocity) != 0)
+                {
+                    // Scale with ratio of difference compared to 0.5 * max dist.
+                    double distRatio = DifficultyCalculationUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
+
+                    // Reward for % distance up to 125 / strainTime for overlaps where velocity is still changing.
+                    double overlapVelocityBuff = Math.Min(diameter * 1.25 / Math.Min(osuCurrObj.AdjustedDeltaTime, osuPrevObj.AdjustedDeltaTime), Math.Abs(prevVelocity - currVelocity));
+
+                    velocityChangeBonus = overlapVelocityBuff * distRatio;
+
+                    // Penalize for rhythm changes.
+                    velocityChangeBonus *= Math.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuPrevObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuPrevObj.AdjustedDeltaTime), 2);
+
+                    velocityChangeBonus *= DifficultyCalculationUtils.Smootherstep(currDistance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
+                }
+            }
+
+            strain += velocityChangeBonus * 10;
 
             strain *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);
 

@@ -34,7 +34,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double skillMultiplierSnap => 71.0;
         private double skillMultiplierAgility => 2.0;
         private double skillMultiplierFlow => 244.0;
-        private double skillMultiplierTotal => 1.1;
+        private double skillMultiplierTotal => 1.07;
         private double meanExponent => 1.2;
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         /// <summary>
         /// The baseline multiplier applied to the section with the biggest strain.
         /// </summary>
-        private double reducedStrainBaseline => 0.75;
+        private double reducedStrainBaseline => 0.85;
 
         private readonly List<double> sliderStrains = new List<double>();
 

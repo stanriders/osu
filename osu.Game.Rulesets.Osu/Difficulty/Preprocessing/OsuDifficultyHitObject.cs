@@ -131,10 +131,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         private readonly OsuDifficultyHitObject? lastLastDifficultyObject;
         private readonly OsuDifficultyHitObject? lastDifficultyObject;
+        private readonly HitObject? nextObject;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, HitObject? nextObject, double clockRate, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
+            this.nextObject = nextObject;
             lastLastDifficultyObject = index > 1 ? (OsuDifficultyHitObject)objects[index - 2] : null;
             lastDifficultyObject = index > 0 ? (OsuDifficultyHitObject)objects[index - 1] : null;
 
@@ -257,24 +259,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 MinimumJumpDistance = Math.Max(0, Math.Min(LazyJumpDistance - (maximum_slider_radius - assumed_slider_radius), tailJumpDistance - maximum_slider_radius));
             }
 
-            if (lastLastDifficultyObject != null && lastLastDifficultyObject.BaseObject is not Spinner)
+            if (lastDifficultyObject != null && nextObject != null && nextObject is not Spinner)
             {
                 if (lastDifficultyObject!.BaseObject is Slider prevSlider && lastDifficultyObject.TravelDistance > 0)
                     lastCursorPosition = prevSlider.HeadCircle.StackedPosition;
 
-                Vector2 lastLastCursorPosition = getEndCursorPosition(lastLastDifficultyObject);
+                //Vector2 lastLastCursorPosition = getEndCursorPosition(lastLastDifficultyObject);
 
-                double angle = calculateAngle(BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition);
-                double sliderAngle = calculateSliderAngle(lastDifficultyObject!, lastLastCursorPosition);
+                double angle = calculateAngle(((OsuHitObject)nextObject).StackedPosition, BaseObject.StackedPosition, lastCursorPosition);
+                double sliderAngle = calculateSliderAngle(this, lastCursorPosition);
 
                 Vector2 v = BaseObject.StackedPosition - lastCursorPosition;
                 NormalisedVectorAngle = Math.Atan2(Math.Abs(v.Y), Math.Abs(v.X));
 
-                Angle = Math.Min(angle, sliderAngle);
+                Angle = angle;//Math.Min(angle, sliderAngle);
 
-                if (lastLastDifficultyObject.Angle != null)
+                if (lastDifficultyObject.Angle != null)
                 {
-                    double angleDifference = Math.Abs(Angle.Value - lastLastDifficultyObject.Angle.Value);
+                    double angleDifference = Math.Abs(Angle.Value - lastDifficultyObject.Angle.Value);
                     double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
                     AngularVelocity = angleDifferenceAdjusted / (AdjustedDeltaTime * 0.1);
                 }
@@ -402,10 +404,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             return calculateAngle(BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition);
         }
 
-        private double calculateAngle(Vector2 currentPosition, Vector2 lastPosition, Vector2 lastLastPosition)
+        private double calculateAngle(Vector2 nextPosition, Vector2 currentPosition, Vector2 lastPosition)
         {
-            Vector2 v1 = lastLastPosition - lastPosition;
-            Vector2 v2 = currentPosition - lastPosition;
+            Vector2 v1 = lastPosition - currentPosition;
+            Vector2 v2 = nextPosition - currentPosition;
 
             float dot = Vector2.Dot(v1, v2);
             float det = v1.X * v2.Y - v1.Y * v2.X;

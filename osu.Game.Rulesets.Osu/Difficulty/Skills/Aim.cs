@@ -30,6 +30,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         }
 
         private double currentStrain;
+        private double lastStrain;
 
         private double skillMultiplierSnap => 71.0;
         private double skillMultiplierAgility => 2.0;
@@ -52,39 +53,35 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double strainDecay(double ms) => Math.Pow(0.15, ms / 1000);
 
-        protected override double CalculateInitialStrain(double time, DifficultyHitObject current) =>
-            currentStrain * strainDecay(time - current.Previous(0).StartTime);
+        protected override double CalculateInitialStrain(double deltaTime) => lastStrain * strainDecay(deltaTime);
 
-        protected override double StrainValueAt(DifficultyHitObject current)
+        protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
-            double decay = strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
+            var osuCurrent = (OsuDifficultyHitObject)current;
+            lastStrain = currentStrain;
 
-            double snapDifficulty = SnapAimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplierSnap;
-            double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current) * skillMultiplierAgility;
-            double flowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplierFlow;
-
-            if (Mods.Any(m => m is OsuModTouchDevice))
+            foreach (Movement movement in osuCurrent.Movements)
             {
-                snapDifficulty = Math.Pow(snapDifficulty, 0.89);
-                // we don't adjust agility here since agility represents TD difficulty in a decent enough way
-                flowDifficulty = Math.Pow(flowDifficulty, 1.1);
+                lastStrain = currentStrain;
+
+                double movementDecay = strainDecay(movement.Time);
+                currentStrain *= movementDecay;
+
+                if ((IncludeSliders && movement.IsNested) || !movement.IsNested)
+                {
+                    currentStrain += getMovementDifficulty(current, movement) * (1 - movementDecay);
+                }
+
+                if (current.BaseObject is Slider)
+                    sliderStrains.Add(currentStrain);
+
+                yield return new ObjectStrain
+                {
+                    Time = movement.EndTime,
+                    PreviousTime = movement.StartTime,
+                    Value = currentStrain,
+                };
             }
-
-            if (Mods.Any(m => m is OsuModRelax))
-            {
-                agilityDifficulty *= 0.0;
-                flowDifficulty *= 0.1;
-            }
-
-            double totalDifficulty = calculateTotalValue(snapDifficulty, agilityDifficulty, flowDifficulty);
-
-            currentStrain *= decay;
-            currentStrain += totalDifficulty * (1 - decay);
-
-            if (current.BaseObject is Slider)
-                sliderStrains.Add(currentStrain);
-
-            return currentStrain;
         }
 
         private double calculateTotalValue(double snapDifficulty, double agilityDifficulty, double flowDifficulty)
@@ -122,6 +119,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 return 1;
 
             return DifficultyCalculationUtils.Logistic(-k * Math.Log(ratio));
+        }
+
+        private double getMovementDifficulty(DifficultyHitObject currentObject, Movement currentMovement)
+        {
+            double movementSnapDifficulty = SnapAimEvaluator.EvaluateDifficultyOf(currentObject, currentMovement) * skillMultiplierSnap;
+            double movementAgilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(currentObject, currentMovement) * skillMultiplierAgility;
+            double movementFlowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(currentObject, currentMovement) * skillMultiplierFlow;
+
+            if (Mods.Any(m => m is OsuModTouchDevice))
+            {
+                movementSnapDifficulty = Math.Pow(movementSnapDifficulty, 0.89);
+                // we don't adjust agility here since agility represents TD difficulty in a decent enough way
+                movementFlowDifficulty = Math.Pow(movementFlowDifficulty, 1.1);
+            }
+
+            if (Mods.Any(m => m is OsuModRelax))
+            {
+                movementAgilityDifficulty *= 0.0;
+                movementFlowDifficulty *= 0.1;
+            }
+
+            return calculateTotalValue(movementSnapDifficulty, movementAgilityDifficulty, movementFlowDifficulty);
         }
 
         public double GetDifficultSliders()

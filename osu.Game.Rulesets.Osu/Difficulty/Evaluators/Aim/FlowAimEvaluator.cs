@@ -17,101 +17,96 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         /// <summary>
         /// Evaluates difficulty of "flow aim" - aiming pattern where player doesn't stop their cursor on every object and instead "flows" through them.
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, bool withSliderTravelDistance)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, Movement currentMovement)
         {
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
                 return 0;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
-            var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
-            var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
 
-            double currDistance = withSliderTravelDistance ? osuCurrObj.LazyJumpDistance : osuCurrObj.JumpDistance;
-            double prevDistance = withSliderTravelDistance ? osuLastObj.LazyJumpDistance : osuLastObj.JumpDistance;
+            var previousMovement = currentMovement.PreviousMovement!;
+            var prevPrevMovement = previousMovement.PreviousMovement!;
 
-            double currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
-
-            if (osuLastObj.BaseObject is Slider && withSliderTravelDistance)
-            {
-                // If the last object is a slider, then we extend the travel velocity through the slider into the current object.
-                double sliderDistance = osuLastObj.LazyTravelDistance + osuCurrObj.LazyJumpDistance;
-                currVelocity = Math.Max(currVelocity, sliderDistance / osuCurrObj.AdjustedDeltaTime);
-            }
-
-            double prevVelocity = prevDistance / osuLastObj.AdjustedDeltaTime;
+            double currVelocity = currentMovement.Distance / currentMovement.Time;
+            double prevVelocity = previousMovement.Distance / previousMovement.Time;
 
             double flowDifficulty = currVelocity;
 
             // Apply high circle size bonus to the base velocity
-            flowDifficulty *= osuCurrObj.SmallCircleBonus;
+            if (!currentMovement.IsNested)
+                flowDifficulty *= osuCurrObj.SmallCircleBonus;
 
             // Rhythm changes are harder to flow
-            flowDifficulty *= 1 + Math.Min(0.25,
-                Math.Pow((Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) - Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) / 50, 4));
-
-            if (osuCurrObj.AngularVelocity != null)
+            if (!currentMovement.IsNested)
             {
-                // Low angular velocity flow (angles are consistent) is easier to follow than erratic flow
-                flowDifficulty *= 0.8 + Math.Sqrt(osuCurrObj.AngularVelocity.Value / 270.0);
+                flowDifficulty *= 1 + Math.Min(0.25,
+                    Math.Pow((Math.Max(currentMovement.Time, previousMovement.Time) - Math.Min(currentMovement.Time, previousMovement.Time)) / 50, 4));
             }
+
+            // Low angular velocity flow (angles are consistent) is easier to follow than erratic flow
+            flowDifficulty *= 0.8 + Math.Sqrt(calculateAngularVelocity(currentMovement) / 270.0);
 
             // If all three notes are overlapping - don't reward bonuses as you don't have to do additional movement
             double overlappedNotesWeight = 1;
 
             if (current.Index > 2)
             {
-                double o1 = calculateOverlapFactor(osuCurrObj, osuLastObj);
-                double o2 = calculateOverlapFactor(osuCurrObj, osuLastLastObj);
-                double o3 = calculateOverlapFactor(osuLastObj, osuLastLastObj);
+                double o1 = calculateOverlapFactor(currentMovement, previousMovement);
+                double o2 = calculateOverlapFactor(currentMovement, prevPrevMovement);
+                double o3 = calculateOverlapFactor(previousMovement, prevPrevMovement);
 
                 overlappedNotesWeight = 1 - o1 * o2 * o3;
             }
 
-            if (osuCurrObj.Angle != null && osuLastObj.Angle != null)
-            {
-                // Acute angles are also hard to flow
-                // We square root velocity to make acute angle switches in streams aren't having difficulty higher than snap
-                flowDifficulty += Math.Sqrt(currVelocity) *
-                                  SnapAimEvaluator.CalcAcuteAngleBonus(osuCurrObj.Angle.Value) *
-                                  overlappedNotesWeight;
-            }
+            // Acute angles are also hard to flow
+            // We square root velocity to make acute angle switches in streams aren't having difficulty higher than snap
+            flowDifficulty += Math.Sqrt(currVelocity) *
+                              SnapAimEvaluator.CalcAcuteAngleBonus(currentMovement.Angle(previousMovement)) *
+                              overlappedNotesWeight;
 
             if (Math.Max(prevVelocity, currVelocity) != 0)
             {
-                if (withSliderTravelDistance)
-                {
-                    currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
-                    prevVelocity = prevDistance / osuLastObj.AdjustedDeltaTime;
-                }
-
                 // Scale with ratio of difference compared to 0.5 * max dist.
                 double distRatio = DifficultyCalculationUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
 
                 // Reward for % distance up to 125 / strainTime for overlaps where velocity is still changing.
-                double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime),
-                    Math.Abs(prevVelocity - currVelocity));
+                double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(currentMovement.Time, previousMovement.Time), Math.Abs(prevVelocity - currVelocity));
 
                 flowDifficulty += overlapVelocityBuff * distRatio * velocity_change_multiplier;
             }
 
-            if (osuCurrObj.BaseObject is Slider)
+            if (!currentMovement.IsNested)
             {
-                // Include slider velocity to make velocity more consistent with snap
-                flowDifficulty += osuCurrObj.TravelDistance / osuCurrObj.TravelTime;
+                // Final velocity is being raised to a power because flow difficulty scales harder with both high distance and time, and we want to account for that
+                flowDifficulty *= Math.Pow(flowDifficulty, 1.45);
             }
 
-            // Final velocity is being raised to a power because flow difficulty scales harder with both high distance and time, and we want to account for that
-            return Math.Pow(flowDifficulty, 1.45);
+            return flowDifficulty;
         }
 
-        private static double calculateOverlapFactor(OsuDifficultyHitObject first, OsuDifficultyHitObject second)
+        private static double calculateOverlapFactor(Movement first, Movement second)
         {
-            var firstBase = (OsuHitObject)first.BaseObject;
-            var secondBase = (OsuHitObject)second.BaseObject;
-            double objectRadius = firstBase.Radius;
+            double objectRadius = first.StartRadius;
 
-            double distance = Vector2.Distance(firstBase.StackedPosition, secondBase.StackedPosition);
+            double distance = Vector2.Distance(first.Start, second.Start);
             return Math.Clamp(1 - Math.Pow(Math.Max(distance - objectRadius, 0) / objectRadius, 2), 0, 1);
+        }
+
+        private static double calculateAngularVelocity(Movement current)
+        {
+            var previous = current.PreviousMovement;
+
+            if (previous?.PreviousMovement != null)
+            {
+                double currAngle = current.Angle(previous);
+                double prevAngle = previous.Angle(previous.PreviousMovement);
+
+                double angleDifference = Math.Abs(currAngle - prevAngle);
+                double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
+                return angleDifferenceAdjusted / (current.Time * 0.1);
+            }
+
+            return 0;
         }
     }
 }

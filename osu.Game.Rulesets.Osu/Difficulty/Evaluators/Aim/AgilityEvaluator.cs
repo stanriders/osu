@@ -16,22 +16,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         /// <summary>
         /// Evaluates the difficulty of fast aiming
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current)
+        public static double EvaluateDifficultyOf(DifficultyHitObject current, Movement currentMovement)
         {
             if (current.BaseObject is Spinner)
                 return 0;
 
-            var osuCurrObj = (OsuDifficultyHitObject)current;
-            var osuPrevObj = current.Index > 0 ? (OsuDifficultyHitObject)current.Previous(0) : null;
-
-            double travelDistance = osuPrevObj?.LazyTravelDistance ?? 0;
-            double distance = travelDistance + osuCurrObj.LazyJumpDistance;
+            double distance = currentMovement.Distance;
 
             double distanceScaled = Math.Min(distance, distance_cap) / distance_cap;
 
-            double strain = distanceScaled * 1000 / osuCurrObj.AdjustedDeltaTime;
+            double strain = distanceScaled * 1000 / currentMovement.Time;
 
-            strain *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);
+            strain *= highBpmBonus(currentMovement.Time);
 
             return strain * DifficultyCalculationUtils.Smootherstep(distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
         }

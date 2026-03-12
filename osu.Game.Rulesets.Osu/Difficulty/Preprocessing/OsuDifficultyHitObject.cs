@@ -8,6 +8,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
+using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Rulesets.Scoring;
 using osuTK;
 
@@ -24,11 +25,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         public const int MIN_DELTA_TIME = 25;
 
-        private const float maximum_slider_radius = NORMALISED_RADIUS * 2.4f;
-        private const float assumed_slider_radius = NORMALISED_RADIUS * 1.8f;
+        private float assumed_slider_radius = NORMALISED_RADIUS * 1.0f;
+        private float repeat_slider_radius = NORMALISED_RADIUS * 1.1f;
+        private float redundant_slider_radius = NORMALISED_RADIUS * 1.3f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
-        protected new OsuHitObject LastObject => (OsuHitObject)base.LastObject;
 
         /// <summary>
         /// <see cref="DifficultyHitObject.DeltaTime"/> capped to a minimum of <see cref="MIN_DELTA_TIME"/>ms.
@@ -47,11 +48,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public readonly double Preempt;
 
         /// <summary>
-        /// Normalised distance from the start position of the previous <see cref="OsuDifficultyHitObject"/> to the start position of this <see cref="OsuDifficultyHitObject"/>.
-        /// </summary>
-        public double JumpDistance { get; private set; }
-
-        /// <summary>
         /// Normalised distance from the "lazy" end position of the previous <see cref="OsuDifficultyHitObject"/> to the start position of this <see cref="OsuDifficultyHitObject"/>.
         /// <para>
         /// The "lazy" end position is the position at which the cursor ends up if the previous hitobject is followed with as minimal movement as possible (i.e. on the edge of slider follow circles).
@@ -60,49 +56,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public double LazyJumpDistance { get; private set; }
 
         /// <summary>
-        /// Normalised shortest distance to consider for a jump between the previous <see cref="OsuDifficultyHitObject"/> and this <see cref="OsuDifficultyHitObject"/>.
-        /// </summary>
-        /// <remarks>
-        /// This is bounded from above by <see cref="LazyJumpDistance"/>, and is smaller than the former if a more natural path is able to be taken through the previous <see cref="OsuDifficultyHitObject"/>.
-        /// </remarks>
-        /// <example>
-        /// Suppose a linear slider - circle pattern.
-        /// <br />
-        /// Following the slider lazily (see: <see cref="LazyJumpDistance"/>) will result in underestimating the true end position of the slider as being closer towards the start position.
-        /// As a result, <see cref="LazyJumpDistance"/> overestimates the jump distance because the player is able to take a more natural path by following through the slider to its end,
-        /// such that the jump is felt as only starting from the slider's true end position.
-        /// <br />
-        /// Now consider a slider - circle pattern where the circle is stacked along the path inside the slider.
-        /// In this case, the lazy end position correctly estimates the true end position of the slider and provides the more natural movement path.
-        /// </example>
-        public double MinimumJumpDistance { get; private set; }
-
-        /// <summary>
-        /// The time taken to travel through <see cref="MinimumJumpDistance"/>, with a minimum value of 25ms.
-        /// </summary>
-        public double MinimumJumpTime { get; private set; }
-
-        /// <summary>
-        /// Normalised distance between the start and end position of this <see cref="OsuDifficultyHitObject"/>.
-        /// </summary>
-        public double TravelDistance { get; private set; }
-
-        /// <summary>
-        /// The time taken to travel through <see cref="TravelDistance"/>, with a minimum value of 25ms for <see cref="Slider"/> objects.
-        /// </summary>
-        public double TravelTime { get; private set; }
-
-        /// <summary>
         /// The position of the cursor at the point of completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
         /// and was hit with as few movements as possible.
         /// </summary>
         public Vector2? LazyEndPosition { get; private set; }
-
-        /// <summary>
-        /// The distance travelled by the cursor upon completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
-        /// and was hit with as few movements as possible.
-        /// </summary>
-        public double LazyTravelDistance { get; private set; }
 
         /// <summary>
         /// The time taken by the cursor upon completion of this <see cref="OsuDifficultyHitObject"/> if it is a <see cref="Slider"/>
@@ -111,43 +68,33 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public double LazyTravelTime { get; private set; }
 
         /// <summary>
-        /// Angle the player has to take to hit this <see cref="OsuDifficultyHitObject"/>.
-        /// Calculated as the angle between the circles (current-2, current-1, current).
-        /// </summary>
-        public double? Angle { get; private set; }
-
-        public double? AngularVelocity { get; private set; }
-
-        /// <summary>
-        /// Angle of the vector created between current and current-1
-        /// normalised to consider symmetrical vectors in any axis to be the same angle.
-        /// </summary>
-        public double? NormalisedVectorAngle { get; private set; }
-
-        /// <summary>
         /// Selective bonus for maps with higher circle size.
         /// </summary>
         public double SmallCircleBonus { get; private set; }
 
-        private readonly OsuDifficultyHitObject? lastLastDifficultyObject;
+        public double PathLengthToMovementLengthRatio { get; set; } = 1;
+        public double MovementsToHeadToHeadVelocityRatio { get; set; } = 1;
+
+        public List<Movement> Movements { get; } = new List<Movement>();
+
         private readonly OsuDifficultyHitObject? lastDifficultyObject;
 
         public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
-            lastLastDifficultyObject = index > 1 ? (OsuDifficultyHitObject)objects[index - 2] : null;
             lastDifficultyObject = index > 0 ? (OsuDifficultyHitObject)objects[index - 1] : null;
 
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             AdjustedDeltaTime = Math.Max(DeltaTime, MIN_DELTA_TIME);
             LastObjectEndDeltaTime = lastDifficultyObject != null ? Math.Max(StartTime - lastDifficultyObject.EndTime, MIN_DELTA_TIME) : AdjustedDeltaTime;
 
-            SmallCircleBonus = Math.Max(1.0, 1.0 + (30 - BaseObject.Radius) / 70);
+            SmallCircleBonus = Math.Max(1.0, 1.0 + (30 - BaseObject.Radius) / 40);
 
             Preempt = BaseObject.TimePreempt / clockRate;
 
-            computeSliderCursorPosition();
-            setDistances(clockRate);
+            adjustPreviousObjectMovements();
+            addInitialMovement((OsuHitObject)lastObject, clockRate);
+            computeSliderMovements(clockRate);
         }
 
         public double OpacityAt(double time, bool hidden)
@@ -202,86 +149,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             return 0;
         }
 
-        private void setDistances(double clockRate)
-        {
-            if (BaseObject is Slider currentSlider)
-            {
-                // Bonus for repeat sliders until a better per nested object strain system can be achieved.
-                TravelDistance = LazyTravelDistance * Math.Max(1, Math.Pow(currentSlider.RepeatCount, 0.3));
-                TravelTime = Math.Max(LazyTravelTime / clockRate, MIN_DELTA_TIME);
-            }
-
-            MinimumJumpTime = AdjustedDeltaTime;
-
-            // We don't need to calculate either angle or distance when one of the last->curr objects is a spinner
-            if (BaseObject is Spinner || LastObject is Spinner)
-                return;
-
-            // We will scale distances by this factor, so we can assume a uniform CircleSize among beatmaps.
-            float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
-
-            Vector2 lastCursorPosition = lastDifficultyObject != null ? getEndCursorPosition(lastDifficultyObject) : LastObject.StackedPosition;
-
-            JumpDistance = (LastObject.StackedPosition - BaseObject.StackedPosition).Length * scalingFactor;
-            LazyJumpDistance = (BaseObject.StackedPosition - lastCursorPosition).Length * scalingFactor;
-            MinimumJumpDistance = LazyJumpDistance;
-
-            if (LastObject is Slider lastSlider && lastDifficultyObject != null)
-            {
-                double lastTravelTime = Math.Max(lastDifficultyObject.LazyTravelTime / clockRate, MIN_DELTA_TIME);
-                MinimumJumpTime = Math.Max(AdjustedDeltaTime - lastTravelTime, MIN_DELTA_TIME);
-
-                //
-                // There are two types of slider-to-object patterns to consider in order to better approximate the real movement a player will take to jump between the hitobjects.
-                //
-                // 1. The anti-flow pattern, where players cut the slider short in order to move to the next hitobject.
-                //
-                //      <======o==>  ← slider
-                //             |     ← most natural jump path
-                //             o     ← a follow-up hitcircle
-                //
-                // In this case the most natural jump path is approximated by LazyJumpDistance.
-                //
-                // 2. The flow pattern, where players follow through the slider to its visual extent into the next hitobject.
-                //
-                //      <======o==>---o
-                //                  ↑
-                //        most natural jump path
-                //
-                // In this case the most natural jump path is better approximated by a new distance called "tailJumpDistance" - the distance between the slider's tail and the next hitobject.
-                //
-                // Thus, the player is assumed to jump the minimum of these two distances in all cases.
-                //
-
-                float tailJumpDistance = Vector2.Subtract(lastSlider.TailCircle.StackedPosition, BaseObject.StackedPosition).Length * scalingFactor;
-                MinimumJumpDistance = Math.Max(0, Math.Min(LazyJumpDistance - (maximum_slider_radius - assumed_slider_radius), tailJumpDistance - maximum_slider_radius));
-            }
-
-            if (lastLastDifficultyObject != null && lastLastDifficultyObject.BaseObject is not Spinner)
-            {
-                if (lastDifficultyObject!.BaseObject is Slider prevSlider && lastDifficultyObject.TravelDistance > 0)
-                    lastCursorPosition = prevSlider.HeadCircle.StackedPosition;
-
-                Vector2 lastLastCursorPosition = getEndCursorPosition(lastLastDifficultyObject);
-
-                double angle = calculateAngle(BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition);
-                double sliderAngle = calculateSliderAngle(lastDifficultyObject!, lastLastCursorPosition);
-
-                Vector2 v = BaseObject.StackedPosition - lastCursorPosition;
-                NormalisedVectorAngle = Math.Atan2(Math.Abs(v.Y), Math.Abs(v.X));
-
-                Angle = Math.Min(angle, sliderAngle);
-
-                if (lastLastDifficultyObject.Angle != null)
-                {
-                    double angleDifference = Math.Abs(Angle.Value - lastLastDifficultyObject.Angle.Value);
-                    double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
-                    AngularVelocity = angleDifferenceAdjusted / (AdjustedDeltaTime * 0.1);
-                }
-            }
-        }
-
-        private void computeSliderCursorPosition()
+        private void computeSliderMovements(double clockRate)
         {
             if (BaseObject is not Slider slider)
                 return;
@@ -344,18 +212,25 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             LazyEndPosition = slider.StackedPosition + slider.Path.PositionAt(endTimeMin); // temporary lazy end position until a real result can be derived.
 
             Vector2 currCursorPosition = slider.StackedPosition;
+            double currCursorTime = slider.StartTime;
+            double currRadius = NORMALISED_RADIUS;
 
-            double scalingFactor = NORMALISED_RADIUS / slider.Radius; // lazySliderDistance is coded to be sensitive to scaling, this makes the maths easier with the thresholds being used.
+            float scalingFactor = NORMALISED_RADIUS / (float)slider.Radius; // lazySliderDistance is coded to be sensitive to scaling, this makes the maths easier with the thresholds being used.
 
             for (int i = 1; i < nestedObjects.Count; i++)
             {
-                var currMovementObj = (OsuHitObject)nestedObjects[i];
+                var currNestedObj = (OsuHitObject)nestedObjects[i];
 
-                Vector2 currMovement = Vector2.Subtract(currMovementObj.StackedPosition, currCursorPosition);
-                double currMovementLength = scalingFactor * currMovement.Length;
+                Vector2 currMovement = currNestedObj.StackedPosition - currCursorPosition;
+                double newCurrTime = currNestedObj.StartTime;
 
                 // Amount of movement required so that the cursor position needs to be updated.
-                double requiredMovement = assumed_slider_radius;
+                double nestedRadius = assumed_slider_radius;
+
+                if (currNestedObj is SliderRepeat)
+                {
+                    nestedRadius = repeat_slider_radius;
+                }
 
                 if (i == nestedObjects.Count - 1)
                 {
@@ -363,25 +238,37 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                     // There is both a lazy end position as well as the actual end slider position. We assume the player takes the simpler movement.
                     // For sliders that are circular, the lazy end position may actually be farther away than the sliders true end.
                     // This code is designed to prevent buffing situations where lazy end is actually a less efficient movement.
-                    Vector2 lazyMovement = Vector2.Subtract((Vector2)LazyEndPosition, currCursorPosition);
+                    Vector2 lazyMovement = (Vector2)LazyEndPosition - currCursorPosition;
 
                     if (lazyMovement.Length < currMovement.Length)
+                    {
                         currMovement = lazyMovement;
-
-                    currMovementLength = scalingFactor * currMovement.Length;
-                }
-                else if (currMovementObj is SliderRepeat)
-                {
-                    // For a slider repeat, assume a tighter movement threshold to better assess repeat sliders.
-                    requiredMovement = NORMALISED_RADIUS;
+                        newCurrTime = trackingEndTime;
+                    }
                 }
 
-                if (currMovementLength > requiredMovement)
+                double currMovementLength = currMovement.Length * scalingFactor;
+
+                if (currMovementLength > nestedRadius)
                 {
-                    // this finds the positional delta from the required radius and the current position, and updates the currCursorPosition accordingly, as well as rewarding distance.
-                    currCursorPosition = Vector2.Add(currCursorPosition, Vector2.Multiply(currMovement, (float)((currMovementLength - requiredMovement) / currMovementLength)));
-                    currMovementLength *= (currMovementLength - requiredMovement) / currMovementLength;
-                    LazyTravelDistance += currMovementLength;
+                    double movementLengthMultiplier = (currMovementLength - nestedRadius) / currMovementLength;
+
+                    var newCurrPosition = currCursorPosition + currMovement * (float)movementLengthMultiplier;
+
+                    Movements.Add(new Movement
+                    {
+                        Start = currCursorPosition,
+                        StartTime = currCursorTime / clockRate,
+                        StartRadius = currRadius / scalingFactor,
+                        End = newCurrPosition,
+                        EndTime = newCurrTime / clockRate,
+                        EndRadius = nestedRadius / scalingFactor,
+                        IsNested = true
+                    });
+
+                    currCursorPosition = newCurrPosition;
+                    currCursorTime = newCurrTime;
+                    currRadius = nestedRadius;
                 }
 
                 if (i == nestedObjects.Count - 1)
@@ -389,33 +276,151 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             }
         }
 
-        private double calculateSliderAngle(OsuDifficultyHitObject lastDifficultyObject, Vector2 lastLastCursorPosition)
+        private static bool staysWithinRadius(Movement movementA, Movement movementB, float radius)
         {
-            Vector2 lastCursorPosition = getEndCursorPosition(lastDifficultyObject);
+            var smallestMovement = movementA.Distance < movementB.Distance ? movementA : movementB;
+            var biggestMovement = movementA.Distance > movementB.Distance ? movementA : movementB;
 
-            if (lastDifficultyObject.BaseObject is Slider prevSlider && lastDifficultyObject.TravelDistance > 0)
+            float dStart = distancePointToMovement(smallestMovement.Start, biggestMovement);
+            float dEnd = distancePointToMovement(smallestMovement.End, biggestMovement);
+
+            return dStart <= radius && dEnd <= radius;
+        }
+
+        private static float distancePointToMovement(Vector2 point, Movement movement)
+        {
+            Vector2 ab = movement.End - movement.Start;
+            float t = Vector2.Dot(point - movement.Start, ab) / ab.LengthSquared;
+            t = Math.Clamp(t, 0, 1);
+            Vector2 closest = movement.Start + t * ab;
+            return Vector2.Distance(point, closest);
+        }
+
+        private void addInitialMovement(OsuHitObject osuLastObj, double clockRate)
+        {
+            var prevMovement = lastDifficultyObject?.Movements.LastOrDefault();
+            var prevEndPosition = prevMovement?.End ?? lastDifficultyObject?.BaseObject.StackedPosition ?? osuLastObj.StackedEndPosition;
+            double prevEndTime = prevMovement?.EndTime ?? lastDifficultyObject?.EndTime ?? (osuLastObj.StartTime / clockRate);
+
+            var initialMovement = new Movement
             {
-                OsuHitObject secondLastNestedObject = (OsuHitObject)prevSlider.NestedHitObjects[^2];
-                lastLastCursorPosition = secondLastNestedObject.StackedPosition;
+                Start = prevEndPosition,
+                StartTime = prevEndTime,
+                StartRadius = prevMovement?.EndRadius ?? (float?)lastDifficultyObject?.BaseObject.Radius ?? 1f,
+                End = BaseObject.StackedPosition,
+                EndTime = StartTime,
+                EndRadius = BaseObject.Radius
+            };
+            Movements.Add(initialMovement);
+
+            LazyJumpDistance = initialMovement.Distance;
+        }
+
+        private void adjustPreviousObjectMovements()
+        {
+            if (lastDifficultyObject?.BaseObject is not Slider slider)
+                return;
+
+            float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
+
+            // remove slider movements from the previous object that are equal to a head->head jump
+            var headToHeadMovement = new Movement
+            {
+                Start = lastDifficultyObject.BaseObject.StackedPosition,
+                StartTime = lastDifficultyObject.StartTime,
+                StartRadius = lastDifficultyObject.BaseObject.Radius,
+                End = BaseObject.StackedPosition,
+                EndTime = StartTime,
+                EndRadius = BaseObject.Radius
+            };
+
+            var movementsToRemove = new List<Movement>();
+
+            // we only want to remove movements that repeat head-to-head movements if they are of similar velocity
+            if (lastDifficultyObject.Movements.Count > 1)
+            {
+                double sliderNestedDistance = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance);
+                double sliderNestedTime = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Time);
+
+                var lastMovement = lastDifficultyObject.Movements.Last();
+                var initialMovement = new Movement
+                {
+                    Start = lastMovement.End,
+                    StartTime = lastMovement.EndTime,
+                    StartRadius = lastMovement.EndRadius,
+                    End = BaseObject.StackedPosition,
+                    EndTime = StartTime,
+                    EndRadius = BaseObject.Radius
+                };
+
+                double sliderMovementsVelocity = (sliderNestedDistance + initialMovement.Distance) / (sliderNestedTime + initialMovement.Time);
+                double headToHeadVelocity = headToHeadMovement.Distance / headToHeadMovement.Time;
+
+                double velocityRatio = Math.Min(sliderMovementsVelocity, headToHeadVelocity) / Math.Max(sliderMovementsVelocity, headToHeadVelocity);
+                lastDifficultyObject.MovementsToHeadToHeadVelocityRatio = velocityRatio;
             }
 
-            return calculateAngle(BaseObject.StackedPosition, lastCursorPosition, lastLastCursorPosition);
-        }
+            if (slider.RepeatCount < 1 && lastDifficultyObject.MovementsToHeadToHeadVelocityRatio > 0.9)
+            {
+                for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
+                {
+                    var nestedMovement = lastDifficultyObject.Movements[i];
+                    if (!nestedMovement.IsNested)
+                        continue;
 
-        private double calculateAngle(Vector2 currentPosition, Vector2 lastPosition, Vector2 lastLastPosition)
-        {
-            Vector2 v1 = lastLastPosition - lastPosition;
-            Vector2 v2 = currentPosition - lastPosition;
+                    if (staysWithinRadius(headToHeadMovement, nestedMovement, redundant_slider_radius / scalingFactor))
+                    {
+                        //if (nestedMovement.Distance > headToHeadMovement.Distance)
+                        {
+                            // if a movement repeats head-to-head movement it can be removed, but only if all subsequent movements also follow the same line
+                            movementsToRemove.Add(nestedMovement);
+                        }
+                    }
+                    else if (movementsToRemove.Count > 0)
+                    {
+                        // cancel movement removal if the next movement doesn't also stay within radius since we'll need to move the cursor for both this and all previous movements to complete the slider
+                        movementsToRemove.Clear();
+                        break;
+                    }
+                }
+            }
 
-            float dot = Vector2.Dot(v1, v2);
-            float det = v1.X * v2.Y - v1.Y * v2.X;
+            for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
+            {
+                var nestedMovement = lastDifficultyObject.Movements[i];
+                if (!nestedMovement.IsNested)
+                    continue;
 
-            return Math.Abs(Math.Atan2(det, dot));
-        }
+                // remove all movements shorter than the follow radius and adjust remaining movements to be continuous
+                if (nestedMovement.Distance < redundant_slider_radius)
+                {
+                    if (i < lastDifficultyObject.Movements.Count - 1)
+                    {
+                        var nextNestedMovement = lastDifficultyObject.Movements[i + 1];
+                        nextNestedMovement.Start = nestedMovement.Start;
+                        nextNestedMovement.StartTime = nestedMovement.StartTime;
+                        nextNestedMovement.StartRadius = nestedMovement.StartRadius;
+                    }
 
-        private Vector2 getEndCursorPosition(OsuDifficultyHitObject difficultyHitObject)
-        {
-            return difficultyHitObject.LazyEndPosition ?? difficultyHitObject.BaseObject.StackedPosition;
+                    movementsToRemove.Add(nestedMovement);
+                }
+            }
+
+            foreach (var movement in movementsToRemove)
+            {
+                lastDifficultyObject.Movements.Remove(movement);
+            }
+
+            // set path to movement length ratio after we're done removing all the redundant movements
+            double movementDistance = lastDifficultyObject.Movements.Count > 1
+                ? lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance) + (redundant_slider_radius / scalingFactor)
+                : headToHeadMovement.Distance;
+
+            if (movementDistance > redundant_slider_radius)
+            {
+                double sliderLength = slider.Path.Distance * scalingFactor;
+                lastDifficultyObject.PathLengthToMovementLengthRatio = Math.Pow(Math.Clamp(movementDistance / sliderLength, 0, 1), sliderLength * 0.001);
+            }
         }
     }
 }

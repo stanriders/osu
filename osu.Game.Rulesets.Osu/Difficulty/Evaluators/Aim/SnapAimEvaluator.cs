@@ -133,7 +133,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
 
             // Apply high circle size bonus
-            if (!currentMovement.IsNested)
+            if (currentMovement.PrimaryMovement)
                 aimStrain *= osuCurrObj.SmallCircleBonus;
 
             aimStrain *= highBpmBonus(currentMovement.Time, currentMovement.Distance);

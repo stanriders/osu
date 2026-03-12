@@ -32,13 +32,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double flowDifficulty = currVelocity;
 
-            // Apply high circle size bonus to the base velocity
-            if (!currentMovement.IsNested)
+            if (currentMovement.PrimaryMovement)
+            {
+                // Apply high circle size bonus to the base velocity
                 flowDifficulty *= osuCurrObj.SmallCircleBonus;
 
-            // Rhythm changes are harder to flow
-            if (!currentMovement.IsNested)
-            {
+                // Rhythm changes are harder to flow
                 flowDifficulty *= 1 + Math.Min(0.25,
                     Math.Pow((Math.Max(currentMovement.Time, previousMovement.Time) - Math.Min(currentMovement.Time, previousMovement.Time)) / 50, 4));
             }
@@ -75,7 +74,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 flowDifficulty += overlapVelocityBuff * distRatio * velocity_change_multiplier;
             }
 
-            if (!currentMovement.IsNested)
+            if (currentMovement.PrimaryMovement)
             {
                 // Final velocity is being raised to a power because flow difficulty scales harder with both high distance and time, and we want to account for that
                 flowDifficulty *= Math.Pow(flowDifficulty, 1.45);

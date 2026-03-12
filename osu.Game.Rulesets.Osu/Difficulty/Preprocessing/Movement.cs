@@ -8,13 +8,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 {
     public class Movement
     {
+        /// <summary>
+        /// First (primary) movement of the object
+        /// </summary>
+        public bool PrimaryMovement { get; set; }
+
         public Vector2 Start { get; set; }
         public double StartTime { get; set; }
         public Vector2 End { get; set; }
         public double EndTime { get; set; }
         public double StartRadius { get; set; }
         public double EndRadius { get; set; }
-        public bool IsNested { get; set; }
 
         public Movement? PreviousMovement { get; set; }
         public Movement? NextMovement { get; set; }

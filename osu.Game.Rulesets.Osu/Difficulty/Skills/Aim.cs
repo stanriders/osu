@@ -67,7 +67,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 double movementDecay = strainDecay(movement.Time);
                 currentStrain *= movementDecay;
 
-                if ((IncludeSliders && movement.IsNested) || !movement.IsNested)
+                if ((IncludeSliders && !movement.PrimaryMovement) || movement.PrimaryMovement)
                 {
                     currentStrain += getMovementDifficulty(current, movement) * (1 - movementDecay);
                 }

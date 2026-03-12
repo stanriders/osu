@@ -8,7 +8,6 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Objects;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
-using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Rulesets.Scoring;
 using osuTK;
 
@@ -262,8 +261,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                         StartRadius = currRadius / scalingFactor,
                         End = newCurrPosition,
                         EndTime = newCurrTime / clockRate,
-                        EndRadius = nestedRadius / scalingFactor,
-                        IsNested = true
+                        EndRadius = nestedRadius / scalingFactor
                     });
 
                     currCursorPosition = newCurrPosition;
@@ -304,6 +302,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
             var initialMovement = new Movement
             {
+                PrimaryMovement = true,
                 Start = prevEndPosition,
                 StartTime = prevEndTime,
                 StartRadius = prevMovement?.EndRadius ?? (float?)lastDifficultyObject?.BaseObject.Radius ?? 1f,
@@ -339,8 +338,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             // we only want to remove movements that repeat head-to-head movements if they are of similar velocity
             if (lastDifficultyObject.Movements.Count > 1)
             {
-                double sliderNestedDistance = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance);
-                double sliderNestedTime = lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Time);
+                double sliderNestedDistance = lastDifficultyObject.Movements.Where(x => !x.PrimaryMovement).Sum(x => x.Distance);
+                double sliderNestedTime = lastDifficultyObject.Movements.Where(x => !x.PrimaryMovement).Sum(x => x.Time);
 
                 var lastMovement = lastDifficultyObject.Movements.Last();
                 var initialMovement = new Movement
@@ -365,7 +364,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
                 {
                     var nestedMovement = lastDifficultyObject.Movements[i];
-                    if (!nestedMovement.IsNested)
+                    if (nestedMovement.PrimaryMovement)
                         continue;
 
                     if (staysWithinRadius(headToHeadMovement, nestedMovement, redundant_slider_radius / scalingFactor))
@@ -388,7 +387,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             for (int i = 1; i < lastDifficultyObject.Movements.Count; i++)
             {
                 var nestedMovement = lastDifficultyObject.Movements[i];
-                if (!nestedMovement.IsNested)
+                if (nestedMovement.PrimaryMovement)
                     continue;
 
                 // remove all movements shorter than the follow radius and adjust remaining movements to be continuous
@@ -413,7 +412,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
             // set path to movement length ratio after we're done removing all the redundant movements
             double movementDistance = lastDifficultyObject.Movements.Count > 1
-                ? lastDifficultyObject.Movements.Where(x => x.IsNested).Sum(x => x.Distance) + (redundant_slider_radius / scalingFactor)
+                ? lastDifficultyObject.Movements.Where(x => !x.PrimaryMovement).Sum(x => x.Distance) + (redundant_slider_radius / scalingFactor)
                 : headToHeadMovement.Distance;
 
             if (movementDistance > redundant_slider_radius)

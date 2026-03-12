@@ -34,14 +34,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double skillMultiplierSnap => 71.0;
         private double skillMultiplierAgility => 2.0;
         private double skillMultiplierFlow => 244.0;
-        private double skillMultiplierTotal => 1.07;
+        private double skillMultiplierTotal => 1.08;
         private double meanExponent => 1.2;
 
         /// <summary>
         /// The number of sections with the highest strains, which the peak strain reductions will apply to.
         /// This is done in order to decrease their impact on the overall difficulty of the map for this skill.
         /// </summary>
-        private int reducedSectionCount => 10;
+        private int reducedSectionCount => 5;
 
         /// <summary>
         /// The baseline multiplier applied to the section with the biggest strain.

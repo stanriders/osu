@@ -15,13 +15,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         private readonly Mod[] mods;
         private readonly int totalHits;
-        private readonly double overallDifficulty;
 
-        public OsuRatingCalculator(Mod[] mods, int totalHits, double overallDifficulty)
+        public OsuRatingCalculator(Mod[] mods, int totalHits)
         {
             this.mods = mods;
             this.totalHits = totalHits;
-            this.overallDifficulty = overallDifficulty;
         }
 
         public double ComputeAimRating(double aimDifficultyValue)
@@ -40,12 +38,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 aimRating *= 1.0 - magnetisedStrength;
             }
 
-            double ratingMultiplier = 1.0;
-
-            // It is important to consider accuracy difficulty when scaling with accuracy.
-            ratingMultiplier *= 0.98 + Math.Pow(Math.Max(0, overallDifficulty), 2) / 2500;
-
-            return aimRating * Math.Cbrt(ratingMultiplier);
+            return aimRating;
         }
 
         public double ComputeSpeedRating(double speedDifficultyValue)
@@ -86,11 +79,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 readingRating *= 1.0 - magnetisedStrength;
             }
 
-            double ratingMultiplier = 1.0;
-
-            ratingMultiplier *= 0.75 + Math.Pow(Math.Max(0, overallDifficulty), 2.2) / 800;
-
-            return readingRating * Math.Cbrt(ratingMultiplier);
+            return readingRating;
         }
 
         public double ComputeFlashlightRating(double flashlightDifficultyValue)
@@ -125,9 +114,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Account for shorter maps having a higher ratio of 0 combo/100 combo flashlight radius.
             ratingMultiplier *= 0.7 + 0.1 * Math.Min(1.0, totalHits / 200.0) +
                                 (totalHits > 200 ? 0.2 * Math.Min(1.0, (totalHits - 200) / 200.0) : 0.0);
-
-            // It is important to consider accuracy difficulty when scaling with accuracy.
-            ratingMultiplier *= 0.98 + Math.Pow(Math.Max(0, overallDifficulty), 2) / 2500;
 
             return flashlightRating * Math.Sqrt(ratingMultiplier);
         }

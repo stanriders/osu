@@ -13,6 +13,8 @@ using osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
+using osu.Game.Rulesets.Osu.Scoring;
+using osu.Game.Rulesets.Scoring;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -78,6 +80,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             double totalDifficulty = calculateTotalValue(snapDifficulty, agilityDifficulty, flowDifficulty);
 
+            totalDifficulty *= 0.98 + Math.Pow(Math.Max(0, CalculateRateAdjustedOverallDifficulty(current)), 2) / 2500;
+
             currentStrain *= decay;
             currentStrain += totalDifficulty * (1 - decay);
 
@@ -85,6 +89,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 sliderStrains.Add(currentStrain);
 
             return currentStrain;
+        }
+
+        public static double CalculateRateAdjustedOverallDifficulty(DifficultyHitObject current)
+        {
+            double hitWindowGreat = current.HitWindow(HitResult.Great) / current.ClockRate;
+
+            return (79.5 - hitWindowGreat) / 6;
         }
 
         private double calculateTotalValue(double snapDifficulty, double agilityDifficulty, double flowDifficulty)

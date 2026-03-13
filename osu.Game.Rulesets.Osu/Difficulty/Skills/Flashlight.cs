@@ -7,6 +7,7 @@ using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Scoring;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -31,10 +32,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
+            double difficulty = FlashlightEvaluator.EvaluateDifficultyOf(current, Mods);
+
+            difficulty *= 0.98 + Math.Pow(Math.Max(0, CalculateRateAdjustedOverallDifficulty(current)), 2) / 2500;
+
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += FlashlightEvaluator.EvaluateDifficultyOf(current, Mods) * skillMultiplier;
+            currentStrain += difficulty * skillMultiplier;
 
             return currentStrain;
+        }
+
+        public static double CalculateRateAdjustedOverallDifficulty(DifficultyHitObject current)
+        {
+            double hitWindowGreat = current.HitWindow(HitResult.Great) / current.ClockRate;
+
+            return (79.5 - hitWindowGreat) / 6;
         }
 
         public override double DifficultyValue() => GetCurrentStrainPeaks().Sum();

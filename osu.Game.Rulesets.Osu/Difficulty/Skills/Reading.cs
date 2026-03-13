@@ -11,6 +11,7 @@ using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
 using osu.Game.Rulesets.Osu.Mods;
+using osu.Game.Rulesets.Scoring;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -37,11 +38,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             objectList.Add(current);
 
-            currentDifficulty *= strainDecay(current.DeltaTime);
+            double difficulty = ReadingEvaluator.EvaluateDifficultyOf(current, hasHiddenMod);
 
-            currentDifficulty += ReadingEvaluator.EvaluateDifficultyOf(current, hasHiddenMod) * skillMultiplier;
+            difficulty *= 0.75 + Math.Pow(Math.Max(0, CalculateRateAdjustedOverallDifficulty(current)), 2.2) / 800;
+
+            currentDifficulty *= strainDecay(current.DeltaTime);
+            currentDifficulty += difficulty * skillMultiplier;
 
             return currentDifficulty;
+        }
+
+        public static double CalculateRateAdjustedOverallDifficulty(DifficultyHitObject current)
+        {
+            double hitWindowGreat = current.HitWindow(HitResult.Great) / current.ClockRate;
+
+            return (79.5 - hitWindowGreat) / 6;
         }
 
         protected override void ApplyDifficultyTransformation(double[] difficulties)

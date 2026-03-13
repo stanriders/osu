@@ -33,7 +33,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double skillMultiplierSnap => 71.0;
         private double skillMultiplierAgility => 2.0;
-        private double skillMultiplierFlow => 244.0;
+        private double skillMultiplierFlow => 235.0;
         private double skillMultiplierTotal => 1.1;
         private double meanExponent => 1.2;
 
@@ -85,7 +85,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             if (osuPrev != null && osuCurr.SnapProbability != null && osuPrev.SnapProbability != null)
             {
-                snapFlowChangeBonus += 0.1 * Math.Pow(Math.Max(osuCurr.SnapProbability.Value, osuPrev.SnapProbability.Value) - Math.Min(osuCurr.SnapProbability.Value, osuPrev.SnapProbability.Value), 2);
+                snapFlowChangeBonus += 0.2 * Math.Pow(Math.Max(osuCurr.SnapProbability.Value, osuPrev.SnapProbability.Value) - Math.Min(osuCurr.SnapProbability.Value, osuPrev.SnapProbability.Value), 2);
             }
 
             currentStrain *= decay;

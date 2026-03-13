@@ -36,7 +36,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double skillMultiplierSnap => 71.0;
         private double skillMultiplierAgility => 2.0;
         private double skillMultiplierFlow => 244.0;
-        private double skillMultiplierTotal => 1.1;
+        private double skillMultiplierTotal => 1.11;
         private double meanExponent => 1.2;
 
         /// <summary>
@@ -80,8 +80,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             double totalDifficulty = calculateTotalValue(snapDifficulty, agilityDifficulty, flowDifficulty);
 
-            totalDifficulty *= 0.98 + Math.Pow(Math.Max(0, CalculateRateAdjustedOverallDifficulty(current)), 2) / 2500;
-
             currentStrain *= decay;
             currentStrain += totalDifficulty * (1 - decay);
 
@@ -89,13 +87,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 sliderStrains.Add(currentStrain);
 
             return currentStrain;
-        }
-
-        public static double CalculateRateAdjustedOverallDifficulty(DifficultyHitObject current)
-        {
-            double hitWindowGreat = current.HitWindow(HitResult.Great) / current.ClockRate;
-
-            return (79.5 - hitWindowGreat) / 6;
         }
 
         private double calculateTotalValue(double snapDifficulty, double agilityDifficulty, double flowDifficulty)

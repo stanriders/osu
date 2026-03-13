@@ -21,7 +21,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
         }
 
-        private double skillMultiplier => 0.056;
+        private double skillMultiplier => 0.057;
         private double strainDecayBase => 0.15;
 
         private double currentStrain;
@@ -32,21 +32,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            double difficulty = FlashlightEvaluator.EvaluateDifficultyOf(current, Mods);
-
-            difficulty *= 0.98 + Math.Pow(Math.Max(0, CalculateRateAdjustedOverallDifficulty(current)), 2) / 2500;
-
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += difficulty * skillMultiplier;
+            currentStrain += FlashlightEvaluator.EvaluateDifficultyOf(current, Mods) * skillMultiplier;
 
             return currentStrain;
-        }
-
-        public static double CalculateRateAdjustedOverallDifficulty(DifficultyHitObject current)
-        {
-            double hitWindowGreat = current.HitWindow(HitResult.Great) / current.ClockRate;
-
-            return (79.5 - hitWindowGreat) / 6;
         }
 
         public override double DifficultyValue() => GetCurrentStrainPeaks().Sum();

@@ -57,7 +57,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            double decay = strainDecay(((OsuDifficultyHitObject)current).AdjustedDeltaTime);
+            var osuCurr = (OsuDifficultyHitObject)current;
+            var osuPrev = (OsuDifficultyHitObject?)current.Previous(0);
+
+            double decay = strainDecay(osuCurr.AdjustedDeltaTime);
 
             double snapDifficulty = SnapAimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skillMultiplierSnap;
             double agilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(current) * skillMultiplierAgility;
@@ -76,10 +79,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
                 flowDifficulty *= 0.1;
             }
 
-            double totalDifficulty = calculateTotalValue(snapDifficulty, agilityDifficulty, flowDifficulty);
+            double totalDifficulty = calculateTotalValue(osuCurr, snapDifficulty, agilityDifficulty, flowDifficulty);
+
+            double snapFlowChangeBonus = 1;
+
+            if (osuPrev != null && osuCurr.SnapProbability != null && osuPrev.SnapProbability != null)
+            {
+                snapFlowChangeBonus += 0.1 * Math.Pow(Math.Max(osuCurr.SnapProbability.Value, osuPrev.SnapProbability.Value) - Math.Min(osuCurr.SnapProbability.Value, osuPrev.SnapProbability.Value), 2);
+            }
 
             currentStrain *= decay;
-            currentStrain += totalDifficulty * (1 - decay);
+            currentStrain += totalDifficulty * snapFlowChangeBonus * (1 - decay);
 
             if (current.BaseObject is Slider)
                 sliderStrains.Add(currentStrain);
@@ -87,7 +97,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return currentStrain;
         }
 
-        private double calculateTotalValue(double snapDifficulty, double agilityDifficulty, double flowDifficulty)
+        private double calculateTotalValue(OsuDifficultyHitObject current, double snapDifficulty, double agilityDifficulty, double flowDifficulty)
         {
             // We compare flow to combined snap and agility because snap by itself doesn't have enough difficulty to be above flow on streams
             // Agility on the other hand is supposed to measure the rate of cursor velocity changes while snapping
@@ -96,6 +106,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             double pSnap = calculateSnapFlowProbability(flowDifficulty / combinedSnapDifficulty);
             double pFlow = 1 - pSnap;
+
+            current.SnapProbability = pSnap;
 
             double totalDifficulty = combinedSnapDifficulty * pSnap + flowDifficulty * pFlow;
 

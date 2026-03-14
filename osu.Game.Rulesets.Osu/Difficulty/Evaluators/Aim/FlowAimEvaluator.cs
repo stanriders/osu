@@ -22,6 +22,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
                 return 0;
 
+            var osuNextObj = (OsuDifficultyHitObject?)current.Next(0);
             var osuCurrObj = (OsuDifficultyHitObject)current;
             var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
@@ -67,22 +68,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 overlappedNotesWeight = 1 - o1 * o2 * o3;
             }
 
-            if (osuCurrObj.Angle != null && osuLastObj.Angle != null)
+            if (osuNextObj?.Angle != null)
             {
                 // Acute angles are also hard to flow
                 // We square root velocity to make acute angle switches in streams aren't having difficulty higher than snap
+                // We also take _next_ object's angle since we want to calculate how acute the prev-curr-next angle is instead of prev2-prev-curr
                 flowDifficulty += Math.Sqrt(currVelocity) *
-                                  SnapAimEvaluator.CalcAcuteAngleBonus(osuCurrObj.Angle.Value) *
+                                  SnapAimEvaluator.CalcAcuteAngleBonus(osuNextObj.Angle.Value) *
                                   overlappedNotesWeight;
             }
 
             if (Math.Max(prevVelocity, currVelocity) != 0)
             {
                 if (withSliderTravelDistance)
-                {
                     currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
-                    prevVelocity = prevDistance / osuLastObj.AdjustedDeltaTime;
-                }
 
                 // Scale with ratio of difference compared to 0.5 * max dist.
                 double distRatio = DifficultyCalculationUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
@@ -91,10 +90,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime),
                     Math.Abs(prevVelocity - currVelocity));
 
-                flowDifficulty += overlapVelocityBuff * distRatio * velocity_change_multiplier;
+                flowDifficulty += overlapVelocityBuff *
+                                  distRatio *
+                                  velocity_change_multiplier *
+                                  overlappedNotesWeight;
             }
 
-            if (osuCurrObj.BaseObject is Slider)
+            if (osuCurrObj.BaseObject is Slider && withSliderTravelDistance)
             {
                 // Include slider velocity to make velocity more consistent with snap
                 flowDifficulty += osuCurrObj.TravelDistance / osuCurrObj.TravelTime;

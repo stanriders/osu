@@ -68,13 +68,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 overlappedNotesWeight = 1 - o1 * o2 * o3;
             }
 
-            if (osuNextObj?.Angle != null)
+            if (osuCurrObj.Angle != null)
             {
                 // Acute angles are also hard to flow
                 // We square root velocity to make acute angle switches in streams aren't having difficulty higher than snap
-                // We also take _next_ object's angle since we want to calculate how acute the prev-curr-next angle is instead of prev2-prev-curr
                 flowDifficulty += Math.Sqrt(currVelocity) *
-                                  SnapAimEvaluator.CalcAcuteAngleBonus(osuNextObj.Angle.Value) *
+                                  SnapAimEvaluator.CalcAcuteAngleBonus(osuCurrObj.Angle.Value) *
                                   overlappedNotesWeight;
             }
 

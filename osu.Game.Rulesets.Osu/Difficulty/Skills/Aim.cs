@@ -112,7 +112,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         // This logistic function is a solution, which fits nicely with the general idea of interpolation and provides a tuneable constant
         private static double calculateSnapFlowProbability(double ratio)
         {
-            const double k = 17.27;
+            const double k = 10;
 
             if (ratio == 0)
                 return 0;

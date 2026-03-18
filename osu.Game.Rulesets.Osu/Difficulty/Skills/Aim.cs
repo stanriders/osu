@@ -33,7 +33,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double skillMultiplierSnap => 71.0;
         private double skillMultiplierAgility => 2.0;
-        private double skillMultiplierFlow => 245.0;
+        private double skillMultiplierFlow => 252.0;
         private double skillMultiplierTotal => 1.1;
         private double meanExponent => 1.2;
 
@@ -112,7 +112,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         // This logistic function is a solution, which fits nicely with the general idea of interpolation and provides a tuneable constant
         private static double calculateSnapFlowProbability(double ratio)
         {
-            const double k = 7.27;
+            const double k = 17.27;
 
             if (ratio == 0)
                 return 0;

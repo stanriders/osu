@@ -31,6 +31,36 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double strain = distanceScaled * 1000 / osuCurrObj.AdjustedDeltaTime;
 
+            if (osuCurrObj.Angle != null && osuPrevObj?.Angle != null)
+            {
+                double currAngle = osuCurrObj.Angle.Value;
+                double lastAngle = osuPrevObj.Angle.Value;
+
+                double currDistance = osuCurrObj.LazyJumpDistance;
+                double currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
+
+                double prevDistance = osuPrevObj.LazyJumpDistance;
+                double prevVelocity = prevDistance / osuPrevObj.AdjustedDeltaTime;
+
+                // Rewarding angles, take the smaller velocity as base.
+                double angleBonus = Math.Min(currVelocity, prevVelocity);
+
+                if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuPrevObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuPrevObj.AdjustedDeltaTime)) // If rhythms are the same.
+                {
+                    double acuteAngleBonus = SnapAimEvaluator.CalcAcuteAngleBonus(currAngle);
+
+                    // Penalize angle repetition.
+                    acuteAngleBonus *= 0.08 + 0.92 * (1 - Math.Min(acuteAngleBonus, Math.Pow(SnapAimEvaluator.CalcAcuteAngleBonus(lastAngle), 3)));
+
+                    // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
+                    acuteAngleBonus *= angleBonus *
+                                       DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400) *
+                                       DifficultyCalculationUtils.Smootherstep(currDistance, 0, OsuDifficultyHitObject.NORMALISED_DIAMETER * 2);
+
+                    strain += acuteAngleBonus * 20.41;
+                }
+            }
+
             strain *= osuCurrObj.SmallCircleBonus;
 
             strain *= highBpmBonus(osuCurrObj.AdjustedDeltaTime);

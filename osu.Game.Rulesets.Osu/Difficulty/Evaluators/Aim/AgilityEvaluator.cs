@@ -29,7 +29,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double distanceScaled = Math.Min(distance, distance_cap) / distance_cap;
 
-            double strain = distanceScaled * 1000 / osuCurrObj.AdjustedDeltaTime;
+            double strain = distanceScaled * 100 / osuCurrObj.AdjustedDeltaTime;
 
             if (osuCurrObj.Angle != null && osuPrevObj?.Angle != null)
             {
@@ -57,8 +57,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                                        DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400) *
                                        DifficultyCalculationUtils.Smootherstep(currDistance, 0, OsuDifficultyHitObject.NORMALISED_DIAMETER * 2);
 
-                    strain += acuteAngleBonus * 20.41;
+                    strain += acuteAngleBonus * 2.41;
                 }
+
+                const int radius = OsuDifficultyHitObject.NORMALISED_RADIUS;
+                const int diameter = OsuDifficultyHitObject.NORMALISED_DIAMETER;
+
+                // Apply wiggle bonus for jumps that are [radius, 3*diameter] in distance, with < 110 angle
+                // https://www.desmos.com/calculator/dp0v0nvowc
+                strain += 1.02 * angleBonus
+                         * DifficultyCalculationUtils.Smootherstep(currDistance, radius, diameter)
+                         * Math.Pow(DifficultyCalculationUtils.ReverseLerp(currDistance, diameter * 3, diameter), 1.8)
+                         * DifficultyCalculationUtils.Smootherstep(currAngle, double.DegreesToRadians(110), double.DegreesToRadians(60))
+                         * DifficultyCalculationUtils.Smootherstep(prevDistance, radius, diameter)
+                         * Math.Pow(DifficultyCalculationUtils.ReverseLerp(prevDistance, diameter * 3, diameter), 1.8)
+                         * DifficultyCalculationUtils.Smootherstep(lastAngle, double.DegreesToRadians(110), double.DegreesToRadians(60));
             }
 
             strain *= osuCurrObj.SmallCircleBonus;
@@ -68,6 +81,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             return strain * DifficultyCalculationUtils.Smootherstep(distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
         }
 
-        private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.3, Math.Pow(ms / 1000, 0.9)));
+        private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.3, ms / 1000));
     }
 }

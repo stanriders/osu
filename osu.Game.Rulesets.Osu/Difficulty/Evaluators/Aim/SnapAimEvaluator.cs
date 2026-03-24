@@ -146,7 +146,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             // Penalize angle repetition.
             aimStrain *= vectorAngleRepetition(osuCurrObj, osuLastObj);
 
-            aimStrain += wiggleBonus * wiggle_multiplier;
+            //aimStrain += wiggleBonus * wiggle_multiplier;
             aimStrain += velocityChangeBonus * velocity_change_multiplier;
 
             // Add in acute angle bonus or wide angle bonus, whichever is larger.

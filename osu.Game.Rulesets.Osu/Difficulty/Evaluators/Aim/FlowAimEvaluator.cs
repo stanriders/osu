@@ -78,7 +78,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 // Acute angles are also hard to flow
                 // todo: explain why min(curr,next)
                 flowDifficulty += currVelocity *
-                                  Math.Min(SnapAimEvaluator.CalcAcuteAngleBonus(osuCurrObj.Angle.Value), SnapAimEvaluator.CalcAcuteAngleBonus(osuNextObj.Angle.Value)) *
+                                  Math.Min(CalcAcuteAngleBonus(osuCurrObj.Angle.Value), CalcAcuteAngleBonus(osuNextObj.Angle.Value)) *
                                   overlappedNotesWeight;
             }
 
@@ -121,5 +121,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double distance = Vector2.Distance(firstBase.StackedPosition, secondBase.StackedPosition);
             return Math.Clamp(1 - Math.Pow(Math.Max(distance - objectRadius, 0) / objectRadius, 2), 0, 1);
         }
+
+        public static double CalcAcuteAngleBonus(double angle) => Math.Pow(DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(180), double.DegreesToRadians(40)), 1.5);
     }
 }

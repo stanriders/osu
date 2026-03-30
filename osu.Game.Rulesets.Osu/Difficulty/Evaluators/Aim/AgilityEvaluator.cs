@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 {
     public static class AgilityEvaluator
     {
-        private const double distance_cap = OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25; // 1.25 circles distance between centers
+        private const double distance_cap = OsuDifficultyHitObject.NORMALISED_DIAMETER;
 
         /// <summary>
         /// Evaluates the difficulty of fast aiming
@@ -27,7 +27,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double travelDistance = osuPrevObj?.LazyTravelDistance ?? 0;
             double distance = travelDistance + osuCurrObj.LazyJumpDistance;
 
-            double distanceScaled = Math.Min(distance, distance_cap) / distance_cap;
+            double distanceScaled = DifficultyCalculationUtils.ReverseLerp(distance, 0, distance_cap);
 
             double strain = distanceScaled * 1000 / osuCurrObj.AdjustedDeltaTime;
 

@@ -47,7 +47,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             flowDifficulty *= Math.Sqrt(osuCurrObj.SmallCircleBonus);
 
             // Rhythm changes are harder to flow
-            flowDifficulty *= 1 + Math.Min(0.15, Math.Pow(Math.Abs(osuCurrObj.AdjustedDeltaTime - osuLastObj.AdjustedDeltaTime) / 50, 4));
+            flowDifficulty *= 1 + Math.Min(0.1, Math.Pow(Math.Abs(osuCurrObj.AdjustedDeltaTime - osuLastObj.AdjustedDeltaTime) / 50, 4));
 
             if (osuCurrObj.Angle != null && osuLastObj.Angle != null)
             {

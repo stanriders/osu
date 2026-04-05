@@ -11,7 +11,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 {
     public static class AgilityEvaluator
     {
-        private const double distance_cap = OsuDifficultyHitObject.NORMALISED_DIAMETER;
+        private const double distance_cap = OsuDifficultyHitObject.NORMALISED_RADIUS;
 
         /// <summary>
         /// Evaluates the difficulty of fast aiming

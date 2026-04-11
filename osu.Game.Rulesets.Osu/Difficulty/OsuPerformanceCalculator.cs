@@ -267,6 +267,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Scale speed value by normalized accuracy.
             speedValue *= Math.Pow(effectiveAccuracy, 2);
 
+            // Scale speed by actual accuracy as well to make accuracy scaling more in-line with what players would expect
+            speedValue *= Math.Pow(accuracy, 2);
+
             return speedValue;
         }
 

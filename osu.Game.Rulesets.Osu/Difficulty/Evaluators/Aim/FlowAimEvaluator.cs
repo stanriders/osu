@@ -50,9 +50,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             flowDifficulty *= 1 + Math.Min(0.25,
                 Math.Pow((Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) - Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) / 50, 4));
 
-            if (osuCurrObj.Angle != null && osuLastObj.Angle != null)
+            if (osuCurrObj.AngleUnsigned != null && osuLastObj.AngleUnsigned != null)
             {
-                double angleDifference = Math.Abs(osuCurrObj.Angle.Value - osuLastObj.Angle.Value);
+                double angleDifference = Math.Abs(osuCurrObj.AngleUnsigned.Value - osuLastObj.AngleUnsigned.Value);
                 double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
                 double angularVelocity = angleDifferenceAdjusted / (osuCurrObj.AdjustedDeltaTime * 0.1);
 

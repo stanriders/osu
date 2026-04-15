@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 {
     public static class FlowAimEvaluator
     {
-        private const double velocity_change_multiplier = 2.0;
+        private const double velocity_change_multiplier = 0.52;
 
         /// <summary>
         /// Evaluates difficulty of "flow aim" - aiming pattern where player doesn't stop their cursor on every object and instead "flows" through them.
@@ -78,7 +78,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 // Acute angles are also hard to flow
                 // todo: explain why min(curr,next)
                 flowDifficulty += currVelocity *
-                                  Math.Min(SnapAimEvaluator.CalcAcuteAngleBonus(osuCurrObj.Angle.Value), SnapAimEvaluator.CalcAcuteAngleBonus(osuNextObj.Angle.Value)) *
+                                  Math.Min(SnapAimEvaluator.CalcAngleAcuteness(osuCurrObj.Angle.Value), SnapAimEvaluator.CalcAngleAcuteness(osuNextObj.Angle.Value)) *
                                   overlappedNotesWeight;
             }
 
@@ -109,7 +109,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             }
 
             // Final velocity is being raised to a power because flow difficulty scales harder with both high distance and time, and we want to account for that
-            return Math.Pow(flowDifficulty, 1.4);
+            flowDifficulty = Math.Pow(flowDifficulty, 1.45);
+
+            // Reduce difficulty for low spacing since spacing below radius is always to be flowed
+            return flowDifficulty * DifficultyCalculationUtils.Smootherstep(currDistance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
         }
 
         private static double calculateOverlapFactor(OsuDifficultyHitObject first, OsuDifficultyHitObject second)

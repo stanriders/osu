@@ -69,7 +69,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 flowDifficulty += currVelocity *
                                   Math.Min(SnapAimEvaluator.CalcAngleAcuteness(osuCurrObj.Angle.Value), SnapAimEvaluator.CalcAngleAcuteness(osuNextObj.Angle.Value)) *
                                   calculateOverlapWeight(osuNextObj, osuCurrObj, osuLastObj) *
-                                  acute_angle_multiplier;
+                                  1.5;
             }
 
             if (Math.Max(prevVelocity, currVelocity) != 0)

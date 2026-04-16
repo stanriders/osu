@@ -13,6 +13,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
     public static class FlowAimEvaluator
     {
         private const double velocity_change_multiplier = 0.52;
+        private const double acute_angle_multiplier = 1.0;
 
         /// <summary>
         /// Evaluates difficulty of "flow aim" - aiming pattern where player doesn't stop their cursor on every object and instead "flows" through them.
@@ -61,25 +62,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 flowDifficulty *= 0.8 + Math.Sqrt(angularVelocity / 270.0);
             }
 
-            // If all three notes are overlapping - don't reward bonuses as you don't have to do additional movement
-            double overlappedNotesWeight = 1;
-
-            if (current.Index > 2)
-            {
-                double o1 = calculateOverlapFactor(osuCurrObj, osuLastObj);
-                double o2 = calculateOverlapFactor(osuCurrObj, osuLastLastObj);
-                double o3 = calculateOverlapFactor(osuLastObj, osuLastLastObj);
-
-                overlappedNotesWeight = 1 - o1 * o2 * o3;
-            }
-
             if (osuCurrObj.Angle != null && osuNextObj?.Angle != null)
             {
                 // Acute angles are also hard to flow
                 // todo: explain why min(curr,next)
                 flowDifficulty += currVelocity *
                                   Math.Min(SnapAimEvaluator.CalcAngleAcuteness(osuCurrObj.Angle.Value), SnapAimEvaluator.CalcAngleAcuteness(osuNextObj.Angle.Value)) *
-                                  overlappedNotesWeight;
+                                  calculateOverlapWeight(osuNextObj, osuCurrObj, osuLastObj) *
+                                  acute_angle_multiplier;
             }
 
             if (Math.Max(prevVelocity, currVelocity) != 0)
@@ -98,7 +88,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
                 flowDifficulty += overlapVelocityBuff *
                                   distRatio *
-                                  overlappedNotesWeight *
+                                  calculateOverlapWeight(osuCurrObj, osuLastObj, osuLastLastObj) *
                                   velocity_change_multiplier;
             }
 
@@ -113,6 +103,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             // Reduce difficulty for low spacing since spacing below radius is always to be flowed
             return flowDifficulty * DifficultyCalculationUtils.Smootherstep(currDistance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
+        }
+
+        // If all three notes are overlapping - don't reward bonuses as you don't have to do additional movement
+        private static double calculateOverlapWeight(OsuDifficultyHitObject first, OsuDifficultyHitObject second, OsuDifficultyHitObject third)
+        {
+            double o1 = calculateOverlapFactor(first, second);
+            double o2 = calculateOverlapFactor(first, third);
+            double o3 = calculateOverlapFactor(second, third);
+
+            return 1 - o1 * o2 * o3;
         }
 
         private static double calculateOverlapFactor(OsuDifficultyHitObject first, OsuDifficultyHitObject second)

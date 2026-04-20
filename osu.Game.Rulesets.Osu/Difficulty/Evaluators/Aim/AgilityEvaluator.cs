@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double distanceScaled = Math.Min(distance, distance_cap) / distance_cap;
 
-            double strain = distanceScaled * 10 / osuCurrObj.AdjustedDeltaTime;
+            double strain = 10 / osuCurrObj.AdjustedDeltaTime;
 
             strain *= Math.Pow(osuCurrObj.SmallCircleBonus, 1.5);
 

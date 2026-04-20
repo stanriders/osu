@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double distanceScaled = Math.Min(distance, distance_cap) / distance_cap;
 
-            double strain = distanceScaled * 1000 / osuCurrObj.AdjustedDeltaTime;
+            double strain = distanceScaled * 10 / osuCurrObj.AdjustedDeltaTime;
 
             strain *= Math.Pow(osuCurrObj.SmallCircleBonus, 1.5);
 
@@ -37,6 +37,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             return strain;
         }
 
-        private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.2, ms / 1000));
+        private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.2, Math.Pow(ms / 1000, 2)));
     }
 }

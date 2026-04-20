@@ -70,7 +70,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
                 double acuteAngleBonus = 0;
 
-                if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
+                /*if (Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
                 {
                     acuteAngleBonus = CalcAngleAcuteness(currAngle);
 
@@ -80,7 +80,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                     // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
                     acuteAngleBonus *= velocityInfluence * DifficultyCalculationUtils.Smootherstep(DifficultyCalculationUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400) *
                                        DifficultyCalculationUtils.Smootherstep(currDistance, 0, diameter * 2);
-                }
+                }*/
 
                 double wideAngleBonus = calcAngleWideness(currAngle);
 

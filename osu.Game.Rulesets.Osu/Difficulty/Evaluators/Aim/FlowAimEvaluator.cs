@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 {
     public static class FlowAimEvaluator
     {
-        private const double velocity_change_multiplier = 0.5;
+        private const double velocity_change_multiplier = 0.48;
 
         /// <summary>
         /// Evaluates difficulty of "flow aim" - aiming pattern where player doesn't stop their cursor on every object and instead "flows" through them.
@@ -75,8 +75,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             if (osuCurrObj.Angle != null)
             {
                 // Acute angles are also hard to flow
-                // We square root velocity to make acute angle switches in streams aren't having difficulty higher than snap
-                flowDifficulty += Math.Sqrt(currVelocity) *
+                flowDifficulty += currVelocity *
                                   SnapAimEvaluator.CalcAngleAcuteness(osuCurrObj.Angle.Value) *
                                   overlappedNotesWeight;
             }
@@ -98,7 +97,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 flowDifficulty += overlapVelocityBuff *
                                   distRatio *
                                   overlappedNotesWeight *
-                                  0.35;
+                                  velocity_change_multiplier;
             }
 
             if (osuCurrObj.BaseObject is Slider && withSliderTravelDistance)

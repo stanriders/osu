@@ -12,7 +12,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 {
     public static class FlowAimEvaluator
     {
-        private const double velocity_change_multiplier = 2.0;
+        private const double velocity_change_multiplier = 0.52;
 
         /// <summary>
         /// Evaluates difficulty of "flow aim" - aiming pattern where player doesn't stop their cursor on every object and instead "flows" through them.
@@ -34,13 +34,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             if (currentMovement.PrimaryMovement)
             {
-                // Apply high circle size bonus to the base velocity
-                flowDifficulty *= osuCurrObj.SmallCircleBonus;
-
-                // Rhythm changes are harder to flow
-                flowDifficulty *= 1 + Math.Min(0.25,
-                    Math.Pow((Math.Max(currentMovement.Time, previousMovement.Time) - Math.Min(currentMovement.Time, previousMovement.Time)) / 50, 4));
+                // Apply high circle size bonus to the base velocity.
+                // We use reduced CS bonus here because the bonus was made for an evaluator with a different d/t scaling
+                flowDifficulty *= Math.Sqrt(osuCurrObj.SmallCircleBonus);
             }
+
+            // Rhythm changes are harder to flow
+            flowDifficulty *= 1 + Math.Min(0.25,
+                Math.Pow((Math.Max(currentMovement.Time, previousMovement.Time) - Math.Min(currentMovement.Time, previousMovement.Time)) / 50, 4));
 
             // Low angular velocity flow (angles are consistent) is easier to follow than erratic flow
             flowDifficulty *= 0.8 + Math.Sqrt(calculateAngularVelocity(currentMovement) / 270.0);
@@ -58,9 +59,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             }
 
             // Acute angles are also hard to flow
-            // We square root velocity to make acute angle switches in streams aren't having difficulty higher than snap
-            flowDifficulty += Math.Sqrt(currVelocity) *
-                              SnapAimEvaluator.CalcAcuteAngleBonus(currentMovement.Angle(previousMovement)) *
+            flowDifficulty += currVelocity *
+                              SnapAimEvaluator.CalcAngleAcuteness(currentMovement.Angle(previousMovement)) *
                               overlappedNotesWeight;
 
             if (Math.Max(prevVelocity, currVelocity) != 0)
@@ -71,7 +71,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 // Reward for % distance up to 125 / strainTime for overlaps where velocity is still changing.
                 double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(currentMovement.Time, previousMovement.Time), Math.Abs(prevVelocity - currVelocity));
 
-                flowDifficulty += overlapVelocityBuff * distRatio * velocity_change_multiplier;
+                flowDifficulty += overlapVelocityBuff *
+                                  distRatio *
+                                  overlappedNotesWeight *
+                                  velocity_change_multiplier;
             }
 
             if (currentMovement.PrimaryMovement)
@@ -80,7 +83,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 flowDifficulty *= Math.Pow(flowDifficulty, 1.45);
             }
 
-            return flowDifficulty;
+            // Reduce difficulty for low spacing since spacing below radius is always to be flowed
+            return flowDifficulty * DifficultyCalculationUtils.Smootherstep(currentMovement.Distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
         }
 
         private static double calculateOverlapFactor(Movement first, Movement second)

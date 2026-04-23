@@ -151,27 +151,27 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             const double note_limit = 6;
 
             double constantAngleCount = 0;
-            double notesProcessed = 0;
 
             var loopMovement = current;
 
-            while (notesProcessed < note_limit)
+            for (int index = 0; index < note_limit; index++)
             {
                 loopMovement = loopMovement.PreviousMovement;
 
                 if (loopMovement.IsNull())
                     break;
 
-                if (Math.Abs(current.Time - loopMovement.Time) > 25)
+                // Only consider vectors in the same jump section, stopping to change rhythm ruins momentum
+                if (Math.Max(current.Time, loopMovement.Time) > 1.1 * Math.Min(current.Time, loopMovement.Time))
                     break;
 
                 if (current.PreviousMovement != null && loopMovement.PreviousMovement != null)
                 {
                     double angleDifference = Math.Abs(current.NormalizedAngleVector(current.PreviousMovement) - loopMovement.NormalizedAngleVector(loopMovement.PreviousMovement));
+                    // Refer to this desmos for tuning, constants need to be precise so that values stay within the range of 0 and 1.
+                    // https://www.desmos.com/calculator/a8jesv5sv2
                     constantAngleCount += Math.Cos(8 * Math.Min(double.DegreesToRadians(11.25), angleDifference));
                 }
-
-                notesProcessed++;
             }
 
             double vectorRepetition = Math.Pow(Math.Min(0.5 / constantAngleCount, 1), 2);
@@ -188,50 +188,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             return Math.Pow(baseNerf + (1 - baseNerf) * vectorRepetition * maximum_vector_influence * stackFactor, 2);
         }
 
-        /*
-        private static double vectorAngleRepetition(OsuDifficultyHitObject current, OsuDifficultyHitObject previous)
-        {
-            if (current.Angle == null || previous.Angle == null)
-                return 1;
-
-            const double note_limit = 6;
-
-            double constantAngleCount = 0;
-
-            for (int index = 0; index < note_limit; index++)
-            {
-                var loopObj = (OsuDifficultyHitObject)current.Previous(index);
-
-                if (loopObj.IsNull())
-                    break;
-
-                // Only consider vectors in the same jump section, stopping to change rhythm ruins momentum
-                if (Math.Max(current.AdjustedDeltaTime, loopObj.AdjustedDeltaTime) > 1.1 * Math.Min(current.AdjustedDeltaTime, loopObj.AdjustedDeltaTime))
-                    break;
-
-                if (loopObj.NormalisedVectorAngle.IsNotNull() && current.NormalisedVectorAngle.IsNotNull())
-                {
-                    double angleDifference = Math.Abs(current.NormalisedVectorAngle.Value - loopObj.NormalisedVectorAngle.Value);
-                    // Refer to this desmos for tuning, constants need to be precise so that values stay within the range of 0 and 1.
-                    // https://www.desmos.com/calculator/a8jesv5sv2
-                    constantAngleCount += Math.Cos(8 * Math.Min(double.DegreesToRadians(11.25), angleDifference));
-                }
-            }
-
-            double vectorRepetition = Math.Pow(Math.Min(0.5 / constantAngleCount, 1), 2);
-
-            double stackFactor = DifficultyCalculationUtils.Smootherstep(current.LazyJumpDistance, 0, OsuDifficultyHitObject.NORMALISED_DIAMETER);
-
-            double currAngle = current.Angle.Value;
-            double lastAngle = previous.Angle.Value;
-
-            double angleDifferenceAdjusted = Math.Cos(2 * Math.Min(double.DegreesToRadians(45), Math.Abs(currAngle - lastAngle) * stackFactor));
-
-            double baseNerf = 1 - maximum_repetition_nerf * CalcAngleAcuteness(lastAngle) * angleDifferenceAdjusted;
-
-            return Math.Pow(baseNerf + (1 - baseNerf) * vectorRepetition * maximum_vector_influence * stackFactor, 2);
-        }
-        */
         private static double calcAngleWideness(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(40), double.DegreesToRadians(140));
 
         public static double CalcAngleAcuteness(double angle) => DifficultyCalculationUtils.Smoothstep(angle, double.DegreesToRadians(140), double.DegreesToRadians(40));

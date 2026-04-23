@@ -231,55 +231,56 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             int index = 0;
             double currentTimeGap = 0;
 
-            OsuDifficultyHitObject loopObjPrev0 = current;
-            OsuDifficultyHitObject? loopObjPrev1 = null;
-            OsuDifficultyHitObject? loopObjPrev2 = null;
-
             var currentFirstMovement = current.Movements.First();
+
+            Movement loopMovement = currentFirstMovement;
+            Movement? loopMovementPrev1 = null;
+            Movement? loopMovementPrev2 = null;
 
             while (currentTimeGap < minimum_angle_relevancy_time)
             {
-                var loopObj = (OsuDifficultyHitObject)current.Previous(index);
+                loopMovement = loopMovement.PreviousMovement!;
 
-                if (loopObj.IsNull())
+                if (loopMovement.IsNull())
                     break;
 
-                var loopFirstMovement = loopObj.Movements.First();
-
                 // Account less for objects that are close to the time limit.
-                double longIntervalFactor = 1 - DifficultyCalculationUtils.ReverseLerp(loopObj.AdjustedDeltaTime, maximum_angle_relevancy_time, minimum_angle_relevancy_time);
+                double longIntervalFactor = 1 - DifficultyCalculationUtils.ReverseLerp(loopMovement.Time, maximum_angle_relevancy_time, minimum_angle_relevancy_time);
 
-                if (loopFirstMovement.PreviousMovement.IsNotNull() && currentFirstMovement.PreviousMovement.IsNotNull())
+                if (loopMovement.PreviousMovement.IsNotNull() && currentFirstMovement.PreviousMovement.IsNotNull())
                 {
-                    double angleDifference = Math.Abs(currentFirstMovement.Angle(currentFirstMovement.PreviousMovement) - loopFirstMovement.Angle(loopFirstMovement.PreviousMovement));
+                    double angleDifference = Math.Abs(currentFirstMovement.Angle(currentFirstMovement.PreviousMovement) - loopMovement.Angle(loopMovement.PreviousMovement));
                     double angleDifferenceAlternating = Math.PI;
 
-                    /*if (loopObjPrev0.Angle != null && loopObjPrev1?.Angle != null && loopObjPrev2?.Angle != null)
+                    if (loopMovementPrev1?.PreviousMovement != null && loopMovementPrev2?.PreviousMovement != null)
                     {
-                        angleDifferenceAlternating = Math.Abs(loopObjPrev1.Angle.Value - loopObj.Angle.Value);
-                        angleDifferenceAlternating += Math.Abs(loopObjPrev2.Angle.Value - loopObjPrev0.Angle.Value);
+                        double loopObjPrev0Angle = loopMovement.Angle(loopMovement.PreviousMovement);
+                        double loopObjPrev1Angle = loopMovementPrev1.Angle(loopMovementPrev1.PreviousMovement);
+                        double loopObjPrev2Angle = loopMovementPrev2.Angle(loopMovementPrev2.PreviousMovement);
+
+                        angleDifferenceAlternating = Math.Abs(loopObjPrev1Angle - loopObjPrev0Angle);
+                        angleDifferenceAlternating += Math.Abs(loopObjPrev2Angle - loopObjPrev0Angle);
 
                         double weight = 1.0;
 
                         // Be sure that one of the angles is very sharp, when other is wide
-                        weight *= DifficultyCalculationUtils.ReverseLerp(Math.Min(loopObj.Angle.Value, loopObjPrev0.Angle.Value) * 180 / Math.PI, 20, 5);
-                        weight *= DifficultyCalculationUtils.ReverseLerp(Math.Max(loopObj.Angle.Value, loopObjPrev0.Angle.Value) * 180 / Math.PI, 60, 120);
+                        weight *= DifficultyCalculationUtils.ReverseLerp(Math.Min(loopObjPrev0Angle, loopObjPrev0Angle) * 180 / Math.PI, 20, 5);
+                        weight *= DifficultyCalculationUtils.ReverseLerp(Math.Max(loopObjPrev0Angle, loopObjPrev0Angle) * 180 / Math.PI, 60, 120);
 
                         // Lerp between max angle difference and rescaled alternating difference, with more harsh scaling compared to normal difference
                         angleDifferenceAlternating = double.Lerp(Math.PI, 0.1 * angleDifferenceAlternating, weight);
-                    }*/
+                    }
 
-                    double stackFactor = DifficultyCalculationUtils.Smootherstep(loopObj.LazyJumpDistance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
+                    double stackFactor = DifficultyCalculationUtils.Smootherstep(loopMovement.Distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
 
                     constantAngleCount += Math.Cos(3 * Math.Min(double.DegreesToRadians(30), Math.Min(angleDifference, angleDifferenceAlternating) * stackFactor)) * longIntervalFactor;
                 }
 
-                currentTimeGap = current.StartTime - loopObj.StartTime;
+                currentTimeGap = current.StartTime - loopMovement.StartTime;
                 index++;
 
-                loopObjPrev2 = loopObjPrev1;
-                loopObjPrev1 = loopObjPrev0;
-                loopObjPrev0 = loopObj;
+                loopMovementPrev2 = loopMovementPrev1;
+                loopMovementPrev1 = loopMovement;
             }
 
             return Math.Clamp(2 / constantAngleCount, 0.2, 1);

@@ -292,7 +292,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Lots of arbitrary values from testing.
             // Considering to use derivation from perfect accuracy in a probabilistic manner - assume normal distribution.
             double accuracyValue = Math.Pow(1.52163, overallDifficulty) * Math.Pow(betterAccuracyPercentage, 24) * 2.83 *
-                                   Math.Pow((11 - (10.0 * attributes.RhythmFactor) + attributes.SpeedDifficulty) / 5, 0.35);
+                                   Math.Pow((1 + attributes.SpeedDifficulty * (3 - 2 * attributes.RhythmFactor)) / 6, 0.35);
 
             // Bonus for many hitcircles - it's harder to keep good accuracy up for longer.
             accuracyValue *= amountHitObjectsWithAccuracy < 1000

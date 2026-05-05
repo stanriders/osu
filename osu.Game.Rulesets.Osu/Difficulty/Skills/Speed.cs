@@ -20,14 +20,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Speed : Skill
     {
+        public readonly bool WithRhythm;
+
+        private double skillMultiplier => 1.16;
+
         private readonly List<double> sliderStrains = new List<double>();
 
         private double currentStrain;
         private double harmonicWeightSum;
 
-        public Speed(Mod[] mods)
+        public Speed(Mod[] mods, bool withRhythm)
             : base(mods)
         {
+            this.WithRhythm = withRhythm;
         }
 
         private double strainDecay(double ms) => DiffUtils.Pow(0.3, ms / 1000);
@@ -44,7 +49,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentStrain *= decay;
             currentStrain += calculateAdjustedDifficulty(current) * (1 - decay) * skill_multiplier;
 
-            double currentRhythm = RhythmEvaluator.EvaluateDifficultyOf(current);
+            double currentRhythm = WithRhythm ? RhythmEvaluator.EvaluateDifficultyOf(current) : 1;
 
             double totalStrain = currentStrain * currentRhythm;
 

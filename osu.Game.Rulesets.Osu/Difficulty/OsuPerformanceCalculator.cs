@@ -294,10 +294,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double accuracyValue = Math.Pow(1.52163, overallDifficulty) * Math.Pow(betterAccuracyPercentage, 24) * 2.83 * Math.Pow((1 + attributes.SpeedDifficulty) / 5, 0.35);
 
             // Bonus for many hitcircles - it's harder to keep good accuracy up for longer.
-            int lengthBonusObjectAmount = Math.Min(amountHitObjectsWithAccuracy, amountHitObjectsWithAccuracy);
-            accuracyValue *= lengthBonusObjectAmount < 1000
-                ? Math.Pow(lengthBonusObjectAmount / 1000.0, 0.3)
-                : Math.Pow(lengthBonusObjectAmount / 1000.0, 0.1);
+            accuracyValue *= amountHitObjectsWithAccuracy < 1000
+                ? Math.Pow(amountHitObjectsWithAccuracy / 1000.0, 0.3)
+                : Math.Pow(amountHitObjectsWithAccuracy / 1000.0, 0.1);
 
             // Increasing the accuracy value by object count for Blinds isn't ideal, so the minimum buff is given.
             if (score.Mods.Any(m => m is OsuModBlinds))

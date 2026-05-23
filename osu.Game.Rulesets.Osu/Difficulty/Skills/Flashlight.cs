@@ -6,8 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
+using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Evaluators;
+using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Osu.Mods;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
@@ -16,12 +19,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Flashlight : StrainSkill
     {
-        public Flashlight(Mod[] mods)
+        private readonly int totalObjects;
+
+        public Flashlight(Mod[] mods, int totalObjects)
             : base(mods)
         {
+            this.totalObjects = totalObjects;
         }
 
-        private double skillMultiplier => 0.056;
+        private double skillMultiplier => 0.058;
         private double strainDecayBase => 0.15;
 
         private double currentStrain;
@@ -33,10 +39,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
+            if (!Mods.Any(m => m is OsuModFlashlight))
+            {
+                yield return new ObjectStrain
+                {
+                    Time = current.StartTime,
+                    PreviousTime = current.Previous(0)?.StartTime ?? 0,
+                    Value = 0,
+                };
+            }
+
             lastStrain = currentStrain;
 
             currentStrain *= strainDecay(current.DeltaTime);
-            currentStrain += FlashlightEvaluator.EvaluateDifficultyOf(current, Mods) * skillMultiplier;
+            currentStrain += calculateAdjustedDifficulty(current) * skillMultiplier;
 
             yield return new ObjectStrain
             {
@@ -46,7 +62,46 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             };
         }
 
-        public override double DifficultyValue() => GetCurrentStrainPeaks().Sum();
+        private double calculateAdjustedDifficulty(DifficultyHitObject current)
+        {
+            double difficulty = FlashlightEvaluator.EvaluateDifficultyOf(current, Mods);
+
+            if (Mods.Any(m => m is OsuModTouchDevice))
+                difficulty = Math.Pow(difficulty, 0.9);
+
+            if (Mods.Any(m => m is OsuModMagnetised))
+            {
+                float magnetisedStrength = Mods.OfType<OsuModMagnetised>().First().AttractionStrength.Value;
+                difficulty *= 1.0 - magnetisedStrength;
+            }
+
+            if (Mods.Any(m => m is OsuModDeflate))
+            {
+                float deflateInitialScale = Mods.OfType<OsuModDeflate>().First().StartScale.Value;
+                difficulty *= Math.Clamp(DifficultyCalculationUtils.ReverseLerp(deflateInitialScale, 11, 1), 0.1, 1);
+            }
+
+            if (Mods.Any(m => m is OsuModRelax))
+                difficulty *= 0.7;
+
+            if (Mods.Any(m => m is OsuModAutopilot))
+                difficulty *= 0.4;
+
+            difficulty *= 0.985 + Math.Pow(Math.Max(0, ((OsuDifficultyHitObject)current).OverallDifficulty), 2) / 4000;
+
+            return difficulty;
+        }
+
+        public override double DifficultyValue()
+        {
+            double sum = GetCurrentStrainPeaks().Sum();
+
+            // Account for shorter maps having a higher ratio of 0 combo/100 combo flashlight radius.
+            sum *= 0.7 + 0.1 * Math.Min(1.0, totalObjects / 200.0) +
+                   (totalObjects > 200 ? 0.2 * Math.Min(1.0, (totalObjects - 200) / 200.0) : 0.0);
+
+            return sum;
+        }
 
         public static double DifficultyToPerformance(double difficulty) => 25 * Math.Pow(difficulty, 2);
     }

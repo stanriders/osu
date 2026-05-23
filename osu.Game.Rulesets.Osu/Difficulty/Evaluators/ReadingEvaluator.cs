@@ -66,12 +66,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 sliderDifficulty += velocity * previousRepeatedSliderBonus * 0.6;
             }
 
-            double difficulty = DifficultyCalculationUtils.Norm(1.5, preemptDifficulty, hiddenDifficulty, noteDensityDifficulty, sliderDifficulty);
+            double readingDifficulty = DifficultyCalculationUtils.Norm(1.5, preemptDifficulty, hiddenDifficulty, noteDensityDifficulty, sliderDifficulty);
 
             // Having less time to process information is harder
-            difficulty *= highBpmBonus(currObj.AdjustedDeltaTime);
+            readingDifficulty *= highBpmBonus(currObj.AdjustedDeltaTime);
 
-            return difficulty;
+            return readingDifficulty;
         }
 
         /// <summary>

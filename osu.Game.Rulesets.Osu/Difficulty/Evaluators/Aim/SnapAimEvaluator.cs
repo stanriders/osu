@@ -44,11 +44,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double currVelocity = currentMovement.Distance / currentMovement.Time;
             double prevVelocity = previousMovement.Distance / previousMovement.Time;
 
-            double aimStrain = currVelocity; // Start strain with regular velocity.
+            double snapDifficulty = currVelocity; // Start difficulty with regular velocity.
 
             // Penalize angle repetition.
             if (prevPrevMovement != null)
-                aimStrain *= vectorAngleRepetition(currentMovement, previousMovement, prevPrevMovement);
+                snapDifficulty *= vectorAngleRepetition(currentMovement, previousMovement, prevPrevMovement);
 
             if (prevPrevMovement != null)
             {
@@ -104,7 +104,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 }
 
                 // Add in acute angle bonus or wide angle bonus, whichever is larger.
-                aimStrain += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
+                snapDifficulty += Math.Max(acuteAngleBonus * acute_angle_multiplier, wideAngleBonus * wide_angle_multiplier);
 
                 // Apply wiggle bonus for jumps that are [radius, 3*diameter] in distance, with < 110 angle
                 // https://www.desmos.com/calculator/dp0v0nvowc
@@ -116,7 +116,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                                      * Math.Pow(DifficultyCalculationUtils.ReverseLerp(previousMovement.Distance, diameter * 3, diameter), 1.8)
                                      * DifficultyCalculationUtils.Smootherstep(lastAngle, double.DegreesToRadians(110), double.DegreesToRadians(60));
 
-                aimStrain += wiggleBonus * wiggle_multiplier;
+                snapDifficulty += wiggleBonus * wiggle_multiplier;
             }
 
             if (Math.Max(prevVelocity, currVelocity) != 0)
@@ -132,16 +132,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 // Penalize for rhythm changes.
                 velocityChangeBonus *= Math.Pow(Math.Min(currentMovement.Time, previousMovement.Time) / Math.Max(currentMovement.Time, previousMovement.Time), 2);
 
-                aimStrain += velocityChangeBonus * velocity_change_multiplier;
+                snapDifficulty += velocityChangeBonus * velocity_change_multiplier;
             }
 
             // Apply high circle size bonus
             if (currentMovement.PrimaryMovement)
-                aimStrain *= osuCurrObj.SmallCircleBonus;
+                snapDifficulty *= osuCurrObj.SmallCircleBonus;
 
-            aimStrain *= highBpmBonus(currentMovement.Time);
+            snapDifficulty *= highBpmBonus(currentMovement.Time);
 
-            return aimStrain;
+            return snapDifficulty;
         }
 
         private static double highBpmBonus(double ms) => 1 / (1 - Math.Pow(0.03, Math.Pow(ms / 1000, 0.65)));

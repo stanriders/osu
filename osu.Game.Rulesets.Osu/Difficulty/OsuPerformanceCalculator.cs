@@ -294,7 +294,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Lots of arbitrary values from testing.
             // Considering to use derivation from perfect accuracy in a probabilistic manner - assume normal distribution.
 
-            double accuracyValue = 212 *
+            double accuracyValue = 200 *
                                    Math.Pow(7.5 / (double)deviation, 1.4) *
                                    Math.Pow((1 + attributes.SpeedDifficulty * (3 - 2 * attributes.RhythmFactor)) / 6, 0.35) *
                                    Math.Pow(betterAccuracyPercentage, 3);

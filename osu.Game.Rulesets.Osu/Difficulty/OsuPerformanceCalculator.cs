@@ -294,9 +294,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Lots of arbitrary values from testing.
             // Considering to use derivation from perfect accuracy in a probabilistic manner - assume normal distribution.
 
-            double factorage = Math.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.2);
+            double factorage = Math.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
 
-            double accuracyValue = 175 *
+            double accuracyValue = 170 *
                                    Math.Pow(7.5 / (double)deviation, 1.4) *
                                    factorage *
                                    Math.Pow(betterAccuracyPercentage, 3);
@@ -308,7 +308,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             // Bonus for many hitcircles - it's harder to keep good accuracy up for longer.
             accuracyValue *= amountHitObjectsWithAccuracy < 1000
-                ? Math.Pow(amountHitObjectsWithAccuracy / 1000.0, 0.3)
+                ? Math.Pow(amountHitObjectsWithAccuracy / 1000.0, 0.25)
                 : Math.Pow(amountHitObjectsWithAccuracy / 1000.0, 0.1);
 
             // Increasing the accuracy value by object count for Blinds isn't ideal, so the minimum buff is given.

@@ -21,14 +21,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 return 0;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
-            var osuPrevObj = current.Index > 0 ? (OsuDifficultyHitObject)current.Previous(0) : null;
 
-            double travelDistance = osuPrevObj?.LazyTravelDistance ?? 0;
-            double distance = travelDistance + osuCurrObj.LazyJumpDistance;
-
-            double distanceScaled = Math.Min(distance, distance_cap) / distance_cap;
-
-            double agilityDifficulty = distanceScaled * 1000 / osuCurrObj.AdjustedDeltaTime;
+            double agilityDifficulty = 1000 / osuCurrObj.AdjustedDeltaTime;
 
             agilityDifficulty *= Math.Pow(osuCurrObj.SmallCircleBonus, 1.5);
 

@@ -150,7 +150,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 // Penalize for rhythm changes.
                 velocityChangeBonus *= Math.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 2);
 
-                snapDifficulty += velocityChangeBonus * velocity_change_multiplier;
+                //snapDifficulty += velocityChangeBonus * velocity_change_multiplier;
             }
 
             // Reward sliders based on velocity.

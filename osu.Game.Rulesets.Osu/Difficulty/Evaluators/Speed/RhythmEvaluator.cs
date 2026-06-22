@@ -162,12 +162,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
                         if (island.DeltaCount > 1)
                         {
-                            rhythmComplexitySum += Math.Pow(effectiveRatio * startRatio, 0.75) * currHistoricalDecay;
+                            rhythmComplexitySum += Math.Pow(effectiveRatio, 0.75) * startRatio * currHistoricalDecay;
                         }
                         else
                         {
                             // constant difficulty for single-note islands
-                            rhythmComplexitySum += 0.8 * currHistoricalDecay;
+                            rhythmComplexitySum += 0.85 * currHistoricalDecay;
                         }
 
                         startRatio = effectiveRatio;
@@ -214,7 +214,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
             // Take only the fractional part of the value since we're only interested in punishing multiples
             double deltaDifferenceFraction = deltaDifference - Math.Truncate(deltaDifference);
 
-            return 1.0 + 11 * Math.Min(0.5, DifficultyCalculationUtils.SmoothstepBellCurve(deltaDifferenceFraction));
+            return 1.0 + 7 * Math.Min(0.5, DifficultyCalculationUtils.SmoothstepBellCurve(deltaDifferenceFraction));
         }
 
         private class Island : IEquatable<Island>

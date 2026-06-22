@@ -162,12 +162,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
                         if (island.DeltaCount > 1)
                         {
-                            rhythmComplexitySum += Math.Sqrt(effectiveRatio * startRatio) * currHistoricalDecay;
+                            rhythmComplexitySum += Math.Pow(effectiveRatio * startRatio, 0.75) * currHistoricalDecay;
                         }
                         else
                         {
                             // constant difficulty for single-note islands
-                            rhythmComplexitySum += 0.7 * currHistoricalDecay;
+                            rhythmComplexitySum += 0.8 * currHistoricalDecay;
                         }
 
                         startRatio = effectiveRatio;
@@ -206,7 +206,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
             // If the current island is long we don't want the sum to have as big of an effect
             rhythmComplexitySum *= DifficultyCalculationUtils.ReverseLerp(island.DeltaCount, 22, 3);
 
-            return Math.Sqrt(4 + rhythmComplexitySum * rhythm_overall_multiplier) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though);
+            return Math.Sqrt(4 + rhythmComplexitySum * 1.0) / 2.0; // produces multiplier that can be applied to strain. range [1, infinity) (not really though);
         }
 
         private static double getEffectiveRatio(double deltaDifference)
@@ -214,7 +214,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
             // Take only the fractional part of the value since we're only interested in punishing multiples
             double deltaDifferenceFraction = deltaDifference - Math.Truncate(deltaDifference);
 
-            return 1.0 + rhythm_ratio_multiplier * Math.Min(0.5, DifficultyCalculationUtils.SmoothstepBellCurve(deltaDifferenceFraction));
+            return 1.0 + 11 * Math.Min(0.5, DifficultyCalculationUtils.SmoothstepBellCurve(deltaDifferenceFraction));
         }
 
         private class Island : IEquatable<Island>

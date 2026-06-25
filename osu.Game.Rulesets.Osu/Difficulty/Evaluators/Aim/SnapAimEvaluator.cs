@@ -148,9 +148,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 double velocityChangeBonus = overlapVelocityBuff * distRatio;
 
                 // Penalize for rhythm changes.
-                velocityChangeBonus *= Math.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 10);
+                velocityChangeBonus *= Math.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 1);
 
-                snapDifficulty += velocityChangeBonus * velocity_change_multiplier;
+                snapDifficulty += velocityChangeBonus * 0.7;
             }
 
             // Reward sliders based on velocity.

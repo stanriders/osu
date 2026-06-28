@@ -1,7 +1,6 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-using System;
 using System.Collections.Generic;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -17,8 +16,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
     /// </summary>
     public class Stamina : StrainSkill
     {
-        private double skillMultiplier => 1.1;
-        private double strainDecayBase => 0.4;
+        private const double skill_multiplier = 1.1;
+        private const double strain_decay_base = 0.4;
 
         public readonly bool SingleColourStamina;
         private readonly bool isConvert;
@@ -39,20 +38,20 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
             this.isConvert = isConvert;
         }
 
-        private double strainDecay(double ms) => Math.Pow(strainDecayBase, ms / 1000);
+        private double strainDecay(double ms) => DiffUtils.Pow(strain_decay_base, ms / 1000);
 
         protected override IEnumerable<ObjectStrain> StrainValuesAt(DifficultyHitObject current)
         {
             lastStrain = currentStrain;
 
             currentStrain *= strainDecay(current.DeltaTime);
-            double staminaDifficulty = StaminaEvaluator.EvaluateDifficultyOf(current) * skillMultiplier;
+            double staminaDifficulty = StaminaEvaluator.EvaluateDifficultyOf(current) * skill_multiplier;
 
             // Safely prevents previous strains from shifting as new notes are added.
             var currentObject = current as TaikoDifficultyHitObject;
             int index = currentObject?.ColourData.MonoStreak?.HitObjects.IndexOf(currentObject) ?? 0;
 
-            double monoLengthBonus = isConvert ? 1.0 : 1.0 + 0.5 * DifficultyCalculationUtils.ReverseLerp(index, 5, 20);
+            double monoLengthBonus = isConvert ? 1.0 : 1.0 + 0.5 * DiffUtils.ReverseLerp(index, 5, 20);
 
             // Mono-streak bonus is only applied to colour-based stamina to reward longer sequences of same-colour hits within patterns.
             if (!SingleColourStamina)
@@ -64,7 +63,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
             // To avoid over-rewarding these maps based purely on stamina strain, we dampen the strain value once the index exceeds 10.
             double strainValue =
                 SingleColourStamina
-                    ? DifficultyCalculationUtils.Logistic(-(index - 10) / 2.0, currentStrain)
+                    ? DiffUtils.Logistic(-(index - 10) / 2.0, currentStrain)
                     : currentStrain;
 
             yield return new ObjectStrain

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
+using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Mods;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Mods;
@@ -91,7 +92,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 lastObj = currentObj;
             }
 
-            flashlightDifficulty = Math.Pow(smallDistNerf * flashlightDifficulty, 2.0);
+            flashlightDifficulty = DiffUtils.Pow(smallDistNerf * flashlightDifficulty, 2);
 
             // Additional bonus for Hidden due to there being no approach circles.
             if (mods.OfType<OsuModHidden>().Any())

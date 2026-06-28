@@ -43,7 +43,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
                 // Rhythm changes are harder to flow
                 flowDifficulty *= 1 + Math.Min(0.25,
-                    Math.Pow((Math.Max(currentMovement.Time, previousMovement.Time) - Math.Min(currentMovement.Time, previousMovement.Time)) / 50, 4));
+                    DiffUtils.Pow((Math.Max(currentMovement.Time, previousMovement.Time) - Math.Min(currentMovement.Time, previousMovement.Time)) / 50, 4));
 
                 // Low angular velocity flow (angles are consistent) is easier to follow than erratic flow
 
@@ -72,7 +72,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 if (Math.Max(prevVelocity, currVelocity) != 0)
                 {
                     // Scale with ratio of difference compared to 0.5 * max dist.
-                    double distRatio = DifficultyCalculationUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
+                    double distRatio = DiffUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
 
                     // Reward for % distance up to 125 / strainTime for overlaps where velocity is still changing.
                     double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(currentMovement.Time, previousMovement.Time),
@@ -89,7 +89,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             }
 
             // Reduce difficulty for low spacing since spacing below radius is always to be flowed
-            return flowDifficulty * DifficultyCalculationUtils.Smootherstep(currentMovement.Distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
+            return flowDifficulty * DiffUtils.Smootherstep(currentMovement.Distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
         }
 
         private static double calculateOverlapFactor(Movement first, Movement second)
@@ -97,7 +97,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double objectRadius = first.StartRadius;
 
             double distance = Vector2.Distance(first.Start, second.Start);
-            return Math.Clamp(1 - Math.Pow(Math.Max(distance - objectRadius, 0) / objectRadius, 2), 0, 1);
+            return Math.Clamp(1 - DiffUtils.Pow(Math.Max(distance - objectRadius, 0) / objectRadius, 2), 0, 1);
         }
     }
 }

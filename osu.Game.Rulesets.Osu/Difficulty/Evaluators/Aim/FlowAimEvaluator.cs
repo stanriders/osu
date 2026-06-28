@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -17,12 +16,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         /// <summary>
         /// Evaluates difficulty of "flow aim" - aiming pattern where player doesn't stop their cursor on every object and instead "flows" through them.
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, Movement currentMovement)
+        public static double EvaluateDifficultyOf(Movement currentMovement)
         {
-            if (current.BaseObject is Spinner || current.Index <= 1 || current.Previous(0).BaseObject is Spinner)
+            var osuCurrObj = currentMovement.DifficultyHitObject;
+            if (osuCurrObj.BaseObject is Spinner || osuCurrObj.Index <= 1 || osuCurrObj.Previous(0).BaseObject is Spinner)
                 return 0;
-
-            var osuCurrObj = (OsuDifficultyHitObject)current;
 
             var previousMovement = currentMovement.PreviousMovement!;
             var prevPrevMovement = previousMovement.PreviousMovement!;
@@ -55,7 +53,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 // If all three notes are overlapping - don't reward bonuses as you don't have to do additional movement
                 double overlappedNotesWeight = 1;
 
-                if (current.Index > 2)
+                if (osuCurrObj.Index > 2)
                 {
                     double o1 = calculateOverlapFactor(currentMovement, previousMovement);
                     double o2 = calculateOverlapFactor(currentMovement, prevPrevMovement);

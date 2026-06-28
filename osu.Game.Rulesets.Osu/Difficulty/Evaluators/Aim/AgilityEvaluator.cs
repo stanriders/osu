@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -16,9 +15,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         /// <summary>
         /// Evaluates the difficulty of fast aiming
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, Movement currentMovement)
+        public static double EvaluateDifficultyOf(Movement currentMovement)
         {
-            if (current.BaseObject is Spinner)
+            if (currentMovement.DifficultyHitObject.BaseObject is Spinner)
                 return 0;
 
             double distance = currentMovement.Distance;
@@ -27,7 +26,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double agilityDifficulty = distanceScaled * 1000 / currentMovement.Time;
 
-            agilityDifficulty *= DiffUtils.Pow(((OsuDifficultyHitObject)current).SmallCircleBonus, 1.5);
+            agilityDifficulty *= DiffUtils.Pow(currentMovement.DifficultyHitObject.SmallCircleBonus, 1.5);
 
             agilityDifficulty *= highBpmBonus(currentMovement.Time);
 

@@ -260,7 +260,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
                     var newCurrPosition = currCursorPosition + currMovement * (float)movementLengthMultiplier;
 
-                    Movements.Add(new Movement
+                    Movements.Add(new Movement(this)
                     {
                         Start = currCursorPosition,
                         StartTime = currCursorTime / clockRate,
@@ -308,7 +308,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             var prevEndPosition = prevMovement?.End ?? lastDifficultyObject?.BaseObject.StackedPosition ?? osuLastObj.StackedEndPosition;
             double prevEndTime = prevMovement?.EndTime ?? lastDifficultyObject?.EndTime ?? (osuLastObj.StartTime / clockRate);
 
-            var initialMovement = new Movement
+            var initialMovement = new Movement(this)
             {
                 PrimaryMovement = true,
                 Start = prevEndPosition,
@@ -333,7 +333,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
 
             // remove slider movements from the previous object that are equal to a head->head jump
-            var headToHeadMovement = new Movement
+            var headToHeadMovement = new Movement(this)
             {
                 Start = lastDifficultyObject.BaseObject.StackedPosition,
                 StartTime = lastDifficultyObject.StartTime,
@@ -352,7 +352,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 double sliderNestedTime = lastDifficultyObject.Movements.Where(x => !x.PrimaryMovement).Sum(x => x.Time);
 
                 var lastMovement = lastDifficultyObject.Movements.Last();
-                var initialMovement = new Movement
+                var initialMovement = new Movement(this)
                 {
                     Start = lastMovement.End,
                     StartTime = lastMovement.EndTime,

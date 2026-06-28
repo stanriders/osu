@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Osu.Objects;
@@ -33,12 +32,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         /// <item><description>and slider difficulty.</description></item>
         /// </list>
         /// </summary>
-        public static double EvaluateDifficultyOf(DifficultyHitObject current, Movement currentMovement)
+        public static double EvaluateDifficultyOf(Movement currentMovement)
         {
-            if (current.BaseObject is Spinner || current.Index < 1 || current.Previous(0).BaseObject is Spinner)
+            var osuCurrObj = currentMovement.DifficultyHitObject;
+            if (osuCurrObj.BaseObject is Spinner || osuCurrObj.Index < 1 || osuCurrObj.Previous(0).BaseObject is Spinner)
                 return 0;
-
-            var osuCurrObj = (OsuDifficultyHitObject)current;
 
             var previousMovement = currentMovement.PreviousMovement!;
             var prevPrevMovement = previousMovement.PreviousMovement;
@@ -87,8 +85,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
                 wideAngleBonus *= Math.Min(wideAngleCurrVelocity, wideAnglePrevVelocity);
 
-                var osuLastObj = (OsuDifficultyHitObject)current.Previous(0);
-                var osuLast2Obj = (OsuDifficultyHitObject)current.Previous(2);
+                var osuLastObj = (OsuDifficultyHitObject)osuCurrObj.Previous(0);
+                var osuLast2Obj = (OsuDifficultyHitObject)osuCurrObj.Previous(2);
 
                 if (osuLast2Obj != null)
                 {
@@ -169,7 +167,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
                 if (current.PreviousMovement != null && loopMovement.PreviousMovement != null)
                 {
-                    double angleDifference = Math.Abs(current.NormalizedAngleVector(current.PreviousMovement) - loopMovement.NormalizedAngleVector(loopMovement.PreviousMovement));
+                    double angleDifference = Math.Abs(current.NormalisedAngleVector() - loopMovement.NormalisedAngleVector());
                     // Refer to this desmos for tuning, constants need to be precise so that values stay within the range of 0 and 1.
                     // https://www.desmos.com/calculator/a8jesv5sv2
                     constantAngleCount += Math.Cos(8 * Math.Min(double.DegreesToRadians(11.25), angleDifference));

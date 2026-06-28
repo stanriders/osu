@@ -69,7 +69,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
                 if ((IncludeSliders && !movement.PrimaryMovement) || movement.PrimaryMovement)
                 {
-                    currentStrain += getMovementDifficulty(current, movement) * (1 - movementDecay);
+                    currentStrain += getMovementDifficulty(movement) * (1 - movementDecay);
                 }
 
                 if (current.BaseObject is Slider)
@@ -134,11 +134,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return DiffUtils.Logistic(-k * Math.Log(ratio));
         }
 
-        private double getMovementDifficulty(DifficultyHitObject currentObject, Movement currentMovement)
+        private double getMovementDifficulty(Movement currentMovement)
         {
-            double movementSnapDifficulty = SnapAimEvaluator.EvaluateDifficultyOf(currentObject, currentMovement) * skill_multiplier_snap;
-            double movementAgilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(currentObject, currentMovement) * skill_multiplier_agility;
-            double movementFlowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(currentObject, currentMovement) * skill_multiplier_flow;
+            double movementSnapDifficulty = SnapAimEvaluator.EvaluateDifficultyOf(currentMovement) * skill_multiplier_snap;
+            double movementAgilityDifficulty = AgilityEvaluator.EvaluateDifficultyOf(currentMovement) * skill_multiplier_agility;
+            double movementFlowDifficulty = FlowAimEvaluator.EvaluateDifficultyOf(currentMovement) * skill_multiplier_flow;
 
             return calculateTotalValue(movementSnapDifficulty, movementAgilityDifficulty, movementFlowDifficulty);
         }

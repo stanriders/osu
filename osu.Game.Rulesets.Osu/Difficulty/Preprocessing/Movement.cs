@@ -9,15 +9,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
     public class Movement
     {
         /// <summary>
-        /// First (primary) movement of the object
+        /// Whether this is the first (primary) movement of the object
         /// </summary>
-        public bool PrimaryMovement { get; set; }
+        public bool PrimaryMovement { get; init; }
 
         public Vector2 Start { get; set; }
         public double StartTime { get; set; }
+        public double StartRadius { get; set; }
+
         public Vector2 End { get; set; }
         public double EndTime { get; set; }
-        public double StartRadius { get; set; }
         public double EndRadius { get; set; }
 
         public Movement? PreviousMovement { get; set; }
@@ -25,6 +26,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         public double Time => Math.Max(EndTime - StartTime, OsuDifficultyHitObject.MIN_DELTA_TIME);
         public double Distance => (End * (OsuDifficultyHitObject.NORMALISED_RADIUS / (float)Math.Max(StartRadius, EndRadius)) - Start * (OsuDifficultyHitObject.NORMALISED_RADIUS / (float)Math.Max(EndRadius, StartRadius))).Length;
+
+        public readonly OsuDifficultyHitObject DifficultyHitObject;
+
+        public Movement(OsuDifficultyHitObject difficultyHitObject)
+        {
+            DifficultyHitObject = difficultyHitObject;
+        }
 
         public override string ToString()
         {
@@ -43,15 +51,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
             return signed ? angle : Math.Abs(angle);
         }
 
-        public double NormalizedAngleVector(Movement other)
+        public double NormalisedAngleVector()
         {
-            Vector2 v1 = other.Start - other.End;
-            Vector2 v2 = End - Start;
+            Vector2 v = End - Start;
 
-            float dot = Vector2.Dot(v1, v2);
-            float det = v1.X * v2.Y - v1.Y * v2.X;
-
-            return Math.Atan2(Math.Abs(v2.Y), Math.Abs(v2.X));
+            return Math.Atan2(Math.Abs(v.Y), Math.Abs(v.X));
         }
     }
 }

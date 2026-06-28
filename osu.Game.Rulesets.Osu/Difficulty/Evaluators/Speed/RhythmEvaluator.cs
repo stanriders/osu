@@ -122,11 +122,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                         if (Math.Max(prevPrevObj.DeltaTime, delta_min_value) > prevDelta + deltaDifferenceEpsilon && prevDelta > currDelta + deltaDifferenceEpsilon)
                             effectiveDifficulty *= 0.125;
 
-                        // repeated island size (ex: triplet -> triplet)
-                        // TODO: remove this nerf since its staying here only for balancing purposes because of the flawed ratio calculation
-                        if (previousIsland.DeltaCount == island.DeltaCount)
-                            effectiveDifficulty *= 0.5;
-
                         bool isSpeedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
 
                         if (isSpeedingUp)

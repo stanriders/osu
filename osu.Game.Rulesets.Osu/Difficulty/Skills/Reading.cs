@@ -15,14 +15,19 @@ using osu.Game.Rulesets.Osu.Mods;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
+    public class ReadingAttributes : HarmonicSkillAttributes
+    {
+
+    }
+
     public class Reading : HarmonicSkill
     {
         private readonly List<DifficultyHitObject> objectList = new List<DifficultyHitObject>();
 
         private readonly bool hasHiddenMod;
 
-        public Reading(Mod[] mods)
-            : base(mods)
+        public Reading(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+            : base(mods, difficultyHitObjects)
         {
             hasHiddenMod = mods.OfType<OsuModHidden>().Any(m => !m.OnlyFadeApproachCircles.Value);
         }
@@ -108,7 +113,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return reducedNoteCount;
         }
 
-        public override double CountTopWeightedObjectDifficulties(double difficultyValue)
+        public override SkillAttributes Process()
+        {
+            var baseAttributes = (HarmonicSkillAttributes)base.Process();
+
+            return new ReadingAttributes
+            {
+                Difficulty = baseAttributes.Difficulty,
+                ObjectDifficulties = baseAttributes.ObjectDifficulties,
+                TopWeightedObjectDifficultiesCount = baseAttributes.TopWeightedObjectDifficultiesCount
+            };
+        }
+
+        protected override double CountTopWeightedObjectDifficulties(double difficultyValue)
         {
             if (ObjectDifficulties.Count == 0)
                 return 0.0;

@@ -21,8 +21,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
         private double currentStrain;
 
-        public Reading(Mod[] mods)
-            : base(mods)
+        public Reading(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+            : base(mods, difficultyHitObjects)
         {
         }
 

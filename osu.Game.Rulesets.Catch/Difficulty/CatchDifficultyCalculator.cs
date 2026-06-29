@@ -37,7 +37,7 @@ namespace osu.Game.Rulesets.Catch.Difficulty
 
             CatchDifficultyAttributes attributes = new CatchDifficultyAttributes
             {
-                StarRating = Math.Sqrt(skills.OfType<Movement>().Single().DifficultyValue()) * difficulty_multiplier,
+                StarRating = Math.Sqrt(skills.OfType<Movement>().Single().Process().Difficulty) * difficulty_multiplier,
                 Mods = mods,
                 MaxCombo = beatmap.GetMaxCombo(),
             };
@@ -74,11 +74,11 @@ namespace osu.Game.Rulesets.Catch.Difficulty
             return objects;
         }
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
         {
             return new Skill[]
             {
-                new Movement(mods),
+                new Movement(mods, difficultyHitObjects),
             };
         }
 

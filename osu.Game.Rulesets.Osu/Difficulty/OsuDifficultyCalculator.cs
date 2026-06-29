@@ -39,26 +39,32 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             var flashlight = skills.OfType<Flashlight>().SingleOrDefault();
             var reading = skills.OfType<Reading>().Single();
 
-            double aimDifficultyValue = aim.DifficultyValue();
-            double aimNoSlidersDifficultyValue = aimWithoutSliders.DifficultyValue();
-            double speedDifficultyValue = speed.DifficultyValue();
-            double readingDifficultyValue = reading.DifficultyValue();
+            var aimAttributes = (AimAttributes)aim.Process();
+            var aimWithoutSlidersAttributes = (AimAttributes)aimWithoutSliders.Process();
+            var speedAttributes = (SpeedAttributes)speed.Process();
+            var flashlightAttributes = flashlight?.Process();
+            var readingAttributes = (ReadingAttributes)reading.Process();
 
-            double aimDifficultStrainCount = aim.CountTopWeightedStrains(aimDifficultyValue);
-            double speedDifficultStrainCount = speed.CountTopWeightedObjectDifficulties(speedDifficultyValue);
-            double readingDifficultNoteCount = reading.CountTopWeightedObjectDifficulties(readingDifficultyValue);
+            double aimDifficultyValue = aimAttributes.Difficulty;
+            double aimNoSlidersDifficultyValue = aimWithoutSlidersAttributes.Difficulty;
+            double speedDifficultyValue = speedAttributes.Difficulty;
+            double readingDifficultyValue = readingAttributes.Difficulty;
 
-            double speedNotes = speed.RelevantObjectCount();
+            double aimDifficultStrainCount = aimAttributes.TopWeightedStrainsCount;
+            double speedDifficultStrainCount = speedAttributes.TopWeightedObjectDifficultiesCount;
+            double readingDifficultNoteCount = readingAttributes.TopWeightedObjectDifficultiesCount;
 
-            double aimNoSlidersTopWeightedSliderCount = aimWithoutSliders.CountTopWeightedSliders(aimNoSlidersDifficultyValue);
-            double aimNoSlidersDifficultStrainCount = aimWithoutSliders.CountTopWeightedStrains(aimNoSlidersDifficultyValue);
+            double speedNotes = speedAttributes.RelevantObjectCount;
+
+            double aimNoSlidersTopWeightedSliderCount = aimWithoutSlidersAttributes.TopWeightedSlidersCount;
+            double aimNoSlidersDifficultStrainCount = aimWithoutSlidersAttributes.TopWeightedStrainsCount;
 
             double aimTopWeightedSliderFactor = aimNoSlidersTopWeightedSliderCount / Math.Max(1, aimNoSlidersDifficultStrainCount - aimNoSlidersTopWeightedSliderCount);
 
-            double speedTopWeightedSliderCount = speed.CountTopWeightedSliders(speedDifficultyValue);
+            double speedTopWeightedSliderCount = speedAttributes.TopWeightedSlidersCount;
             double speedTopWeightedSliderFactor = speedTopWeightedSliderCount / Math.Max(1, speedDifficultStrainCount - speedTopWeightedSliderCount);
 
-            double difficultSliders = aim.GetDifficultSliders();
+            double difficultSliders = aimAttributes.DifficultSlidersCount;
 
             int hitCircleCount = beatmap.HitObjects.Count(h => h is HitCircle);
             int sliderCount = beatmap.HitObjects.Count(h => h is Slider);
@@ -77,7 +83,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double flashlightRating = 0.0;
 
             if (flashlight is not null)
-                flashlightRating = calculateDifficultyRating(flashlight.DifficultyValue());
+                flashlightRating = calculateDifficultyRating(flashlightAttributes!.Difficulty);
 
             double sliderNestedScorePerObject = LegacyScoreUtils.CalculateNestedScorePerObject(beatmap, totalHits);
             double legacyScoreBaseMultiplier = LegacyScoreUtils.CalculateDifficultyPeppyStars(WorkingBeatmap.Beatmap);
@@ -160,18 +166,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return objects;
         }
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
         {
             var skills = new List<Skill>
             {
-                new Aim(mods, true),
-                new Aim(mods, false),
-                new Speed(mods),
-                new Reading(mods)
+                new Aim(mods, difficultyHitObjects, true),
+                new Aim(mods, difficultyHitObjects, false),
+                new Speed(mods, difficultyHitObjects),
+                new Reading(mods, difficultyHitObjects)
             };
 
             if (mods.Any(h => h is OsuModFlashlight))
-                skills.Add(new Flashlight(mods, beatmap.HitObjects.Count));
+                skills.Add(new Flashlight(mods, difficultyHitObjects, beatmap.HitObjects.Count));
 
             return skills.ToArray();
         }

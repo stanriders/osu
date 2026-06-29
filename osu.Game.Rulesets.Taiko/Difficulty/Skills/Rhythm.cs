@@ -17,8 +17,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         protected override double SkillMultiplier => 1.0;
         protected override double StrainDecayBase => 0.4;
 
-        public Rhythm(Mod[] mods)
-            : base(mods)
+        public Rhythm(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+            : base(mods, difficultyHitObjects)
         {
         }
 

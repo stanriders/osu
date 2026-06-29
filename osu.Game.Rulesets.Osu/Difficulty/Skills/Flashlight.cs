@@ -20,8 +20,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     {
         private readonly int totalObjects;
 
-        public Flashlight(Mod[] mods, int totalObjects)
-            : base(mods)
+        public Flashlight(Mod[] mods, DifficultyHitObject[] difficultyHitObjects, int totalObjects)
+            : base(mods, difficultyHitObjects)
         {
             this.totalObjects = totalObjects;
         }
@@ -75,7 +75,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return difficulty;
         }
 
-        public override double DifficultyValue()
+        protected override double Aggregate()
         {
             double sum = GetCurrentStrainPeaks().Sum();
 

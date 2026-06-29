@@ -10,6 +10,11 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
+    public class VariableLengthStrainSkillAttributes : SkillAttributes
+    {
+        public required double TopWeightedStrainsCount { get; init; }
+    }
+
     /// <summary>
     /// Similar to <see cref="StrainSkill"/>, but instead of strains having a fixed length, strains can be any length.
     /// A new <see cref="StrainPeak"/> is created for each <see cref="DifficultyHitObject"/>.
@@ -43,6 +48,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         private readonly double maxStoredLength;
 
         private readonly List<StrainPeak> strainPeaks = new List<StrainPeak>();
+        private readonly List<double> objectDifficulties = new List<double>();
 
         private double totalLength;
 
@@ -58,8 +64,8 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <param name="mods">The mods.</param>
         /// <param name="decayWeight">The weight by which each strain value decays.</param>
         /// <param name="maxSectionLength">The maximum length of each strain section.</param>
-        protected VariableLengthStrainSkill(Mod[] mods, double decayWeight = 0.9, int maxSectionLength = 400)
-            : base(mods)
+        protected VariableLengthStrainSkill(Mod[] mods, DifficultyHitObject[] difficultyHitObjects, double decayWeight = 0.9, int maxSectionLength = 400)
+            : base(mods, difficultyHitObjects)
         {
             DecayWeight = decayWeight;
             MaxSectionLength = maxSectionLength;
@@ -75,7 +81,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Process a <see cref="DifficultyHitObject"/> and update current strain values accordingly.
         /// </summary>
-        protected sealed override double ProcessInternal(DifficultyHitObject current)
+        protected double ProcessObject(DifficultyHitObject current)
         {
             // If we're on the first object, set up the first section to end `MaxSectionLength` after it.
             if (current.Index == 0)
@@ -221,18 +227,37 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// Calculates the number of strains weighted against the top strain.
         /// The result is scaled by clock rate as it affects the total number of strains.
         /// </summary>
-        public virtual double CountTopWeightedStrains(double difficultyValue)
+        protected virtual double CountTopWeightedStrains(double difficultyValue)
         {
-            if (ObjectDifficulties.Count == 0)
+            if (objectDifficulties.Count == 0)
                 return 0.0;
 
             double consistentTopStrain = difficultyValue * (1 - DecayWeight); // What would the top strain be if all strain values were identical
 
             if (consistentTopStrain == 0)
-                return ObjectDifficulties.Count;
+                return objectDifficulties.Count;
 
             // Use a weighted sum of all strains. Constants are arbitrary and give nice values
-            return ObjectDifficulties.Sum(s => 1.1 / (1 + Math.Exp(-10 * (s / consistentTopStrain - 0.88))));
+            return objectDifficulties.Sum(s => 1.1 / (1 + Math.Exp(-10 * (s / consistentTopStrain - 0.88))));
+        }
+
+        protected abstract double Aggregate();
+
+        public override SkillAttributes Process()
+        {
+            foreach (var difficultyHitObject in DifficultyHitObjects)
+            {
+                objectDifficulties.Add(ProcessObject(difficultyHitObject));
+            }
+
+            double difficulty = Aggregate();
+
+            return new VariableLengthStrainSkillAttributes
+            {
+                Difficulty = difficulty,
+                ObjectDifficulties = objectDifficulties,
+                TopWeightedStrainsCount = CountTopWeightedStrains(difficulty)
+            };
         }
 
         /// <summary>

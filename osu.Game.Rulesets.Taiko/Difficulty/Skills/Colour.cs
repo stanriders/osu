@@ -20,8 +20,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         // slower maps.
         protected override double StrainDecayBase => 0.8;
 
-        public Colour(Mod[] mods)
-            : base(mods)
+        public Colour(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+            : base(mods, difficultyHitObjects)
         {
         }
 

@@ -29,8 +29,8 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         /// <param name="mods">Mods for use in skill calculations.</param>
         /// <param name="singleColourStamina">Reads when Stamina is from a single coloured pattern.</param>
         /// <param name="isConvert">Determines if the currently evaluated beatmap is converted.</param>
-        public Stamina(Mod[] mods, bool singleColourStamina, bool isConvert)
-            : base(mods)
+        public Stamina(Mod[] mods, DifficultyHitObject[] difficultyHitObjects, bool singleColourStamina, bool isConvert)
+            : base(mods, difficultyHitObjects)
         {
             SingleColourStamina = singleColourStamina;
             this.isConvert = isConvert;

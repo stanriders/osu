@@ -214,7 +214,7 @@ namespace osu.Game.Tests.Visual.UserInterface
             protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
                 => Array.Empty<DifficultyHitObject>();
 
-            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
+            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
                 => Array.Empty<Skill>();
         }
 

@@ -16,6 +16,12 @@ using osu.Game.Rulesets.Osu.Objects;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
+    public class AimAttributes : VariableLengthStrainSkillAttributes
+    {
+        public required double DifficultSlidersCount { get; init; }
+        public required double TopWeightedSlidersCount { get; init; }
+    }
+
     /// <summary>
     /// Represents the skill required to correctly aim at every object in the map with a uniform CircleSize and normalized distances.
     /// </summary>
@@ -23,8 +29,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     {
         public readonly bool IncludeSliders;
 
-        public Aim(Mod[] mods, bool includeSliders)
-            : base(mods)
+        public Aim(Mod[] mods, DifficultyHitObject[] difficultyHitObjects, bool includeSliders)
+            : base(mods, difficultyHitObjects)
         {
             IncludeSliders = includeSliders;
         }
@@ -141,7 +147,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return DiffUtils.Logistic(-k * Math.Log(ratio));
         }
 
-        public double GetDifficultSliders()
+        public override SkillAttributes Process()
+        {
+            var baseAttributes = (VariableLengthStrainSkillAttributes)base.Process();
+
+            return new AimAttributes
+            {
+                Difficulty = baseAttributes.Difficulty,
+                ObjectDifficulties = baseAttributes.ObjectDifficulties,
+                TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount,
+                DifficultSlidersCount = getDifficultSliders(),
+                TopWeightedSlidersCount = countTopWeightedSliders(baseAttributes.Difficulty)
+            };
+        }
+
+        private double getDifficultSliders()
         {
             if (sliderStrains.Count == 0)
                 return 0;
@@ -154,7 +174,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return sliderStrains.Sum(strain => 1.0 / (1.0 + Math.Exp(-(strain / maxSliderStrain * 12.0 - 6.0))));
         }
 
-        public double CountTopWeightedSliders(double difficultyValue)
+        private double countTopWeightedSliders(double difficultyValue)
         {
             if (sliderStrains.Count == 0)
                 return 0;
@@ -168,7 +188,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return sliderStrains.Sum(s => DiffUtils.Logistic(s / consistentTopStrain, 0.88, 10, 1.1));
         }
 
-        public override double DifficultyValue()
+        protected override double Aggregate()
         {
             double difficulty = 0;
             double time = 0;

@@ -64,7 +64,19 @@ namespace osu.Game.Benchmarks
 
         [Benchmark]
         public void CalculateDifficultyMania() => maniaCalculator.Calculate();
+        /*
+        [Benchmark]
+        public void CalculateTimedDifficultyOsu() => osuCalculator.CalculateTimed();
 
+        [Benchmark]
+        public void CalculateTimedDifficultyTaiko() => taikoCalculator.CalculateTimed();
+
+        [Benchmark]
+        public void CalculateTimedDifficultyCatch() => catchCalculator.CalculateTimed();
+
+        [Benchmark]
+        public void CalculateTimedDifficultyMania() => maniaCalculator.CalculateTimed();
+        */
         [Benchmark]
         public void CalculateDifficultyOsuHundredTimes()
         {

@@ -9,6 +9,11 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
+    public class HarmonicSkillAttributes : SkillAttributes
+    {
+        public required double TopWeightedObjectDifficultiesCount { get; init; }
+    }
+
     public abstract class HarmonicSkill : Skill
     {
         /// <summary>
@@ -29,8 +34,10 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected virtual double DecayExponent => 0.9;
 
-        protected HarmonicSkill(Mod[] mods)
-            : base(mods)
+        protected readonly List<double> ObjectDifficulties = new List<double>();
+
+        protected HarmonicSkill(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+            : base(mods, difficultyHitObjects)
         {
         }
 
@@ -39,16 +46,30 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected abstract double ObjectDifficultyOf(DifficultyHitObject current);
 
-        protected sealed override double ProcessInternal(DifficultyHitObject current)
-            => ObjectDifficultyOf(current);
-
         /// <summary>
         /// Transforms the object difficulties specifically for final difficulty summation.
         /// This can be used to decrease weight of certain objects based on a skill-specific criteria.
         /// </summary>
         protected virtual List<double> GetTransformedDifficulties(List<double> difficulties) => difficulties;
 
-        public override double DifficultyValue()
+        public override SkillAttributes Process()
+        {
+            foreach (var difficultyHitObject in DifficultyHitObjects)
+            {
+                ObjectDifficulties.Add(ObjectDifficultyOf(difficultyHitObject));
+            }
+
+            double difficulty = aggregate();
+
+            return new HarmonicSkillAttributes
+            {
+                Difficulty = difficulty,
+                ObjectDifficulties = ObjectDifficulties,
+                TopWeightedObjectDifficultiesCount = CountTopWeightedObjectDifficulties(difficulty)
+            };
+        }
+
+        private double aggregate()
         {
             if (ObjectDifficulties.Count == 0)
                 return 0;
@@ -82,7 +103,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Calculates the number of object difficulties weighted against the top object difficulty.
         /// </summary>
-        public virtual double CountTopWeightedObjectDifficulties(double difficultyValue)
+        protected virtual double CountTopWeightedObjectDifficulties(double difficultyValue)
         {
             if (ObjectDifficulties.Count == 0)
                 return 0.0;

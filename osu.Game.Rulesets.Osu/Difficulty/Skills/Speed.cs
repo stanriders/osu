@@ -15,6 +15,12 @@ using osu.Game.Rulesets.Osu.Objects;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
+    public class SpeedAttributes : HarmonicSkillAttributes
+    {
+        public double RelevantObjectCount { get; init; }
+        public double TopWeightedSlidersCount { get; init; }
+    }
+
     /// <summary>
     /// Represents the skill required to press keys with regards to keeping up with the speed at which objects need to be hit.
     /// </summary>
@@ -27,8 +33,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         protected override double HarmonicScale => 20;
         protected override double DecayExponent => 0.9;
 
-        public Speed(Mod[] mods)
-            : base(mods)
+        public Speed(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+            : base(mods, difficultyHitObjects)
         {
         }
 
@@ -66,7 +72,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return difficulty;
         }
 
-        public double RelevantObjectCount()
+        public override SkillAttributes Process()
+        {
+            var baseAttributes = (HarmonicSkillAttributes)base.Process();
+
+            return new SpeedAttributes
+            {
+                Difficulty = baseAttributes.Difficulty,
+                ObjectDifficulties = baseAttributes.ObjectDifficulties,
+                TopWeightedObjectDifficultiesCount = baseAttributes.TopWeightedObjectDifficultiesCount,
+                RelevantObjectCount = relevantObjectCount(),
+                TopWeightedSlidersCount = countTopWeightedSliders(baseAttributes.Difficulty)
+            };
+        }
+
+        private double relevantObjectCount()
         {
             if (ObjectDifficulties.Count == 0)
                 return 0;
@@ -79,7 +99,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return ObjectDifficulties.Sum(strain => 1.0 / (1.0 + Math.Exp(-(strain / maxStrain * 12.0 - 6.0))));
         }
 
-        public double CountTopWeightedSliders(double difficultyValue)
+        private double countTopWeightedSliders(double difficultyValue)
         {
             if (sliderStrains.Count == 0)
                 return 0;

@@ -17,7 +17,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     public class ReadingAttributes : HarmonicSkillAttributes
     {
-
+        public ReadingAttributes(HarmonicSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            TopWeightedObjectDifficultiesCount = baseAttributes.TopWeightedObjectDifficultiesCount;
+        }
     }
 
     public class Reading : HarmonicSkill
@@ -113,21 +118,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return reducedNoteCount;
         }
 
-        public override SkillAttributes Process()
-        {
-            var baseAttributes = (HarmonicSkillAttributes)base.Process();
+        public override ISkillAttributes Process() => new ReadingAttributes((HarmonicSkillAttributes)base.Process());
 
-            return new ReadingAttributes
-            {
-                Difficulty = baseAttributes.Difficulty,
-                ObjectDifficulties = baseAttributes.ObjectDifficulties,
-                TopWeightedObjectDifficultiesCount = baseAttributes.TopWeightedObjectDifficultiesCount
-            };
-        }
-
-        protected override double CountTopWeightedObjectDifficulties(double difficultyValue)
+        protected override double CountTopWeightedObjectDifficulties(List<double> objectDifficulties, double difficultyValue)
         {
-            if (ObjectDifficulties.Count == 0)
+            if (objectDifficulties.Count == 0)
                 return 0.0;
 
             if (ObjectWeightSum == 0)
@@ -138,7 +133,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (consistentTopNote == 0)
                 return 0;
 
-            return ObjectDifficulties.Sum(d => DiffUtils.Logistic(d / consistentTopNote, 1.15, 5, 1.1));
+            return objectDifficulties.Sum(d => DiffUtils.Logistic(d / consistentTopNote, 1.15, 5, 1.1));
         }
     }
 }

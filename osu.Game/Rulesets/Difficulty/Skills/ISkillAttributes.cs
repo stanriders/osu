@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public class SkillAttributes
+    public interface ISkillAttributes
     {
-        public required double Difficulty { get; init; }
-        public required List<double> ObjectDifficulties { get; init; }
+        double Difficulty { get; init; }
+        List<double> ObjectDifficulties { get; init; }
     }
 }

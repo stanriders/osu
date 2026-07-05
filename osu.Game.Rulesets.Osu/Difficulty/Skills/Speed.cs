@@ -19,6 +19,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     {
         public double RelevantObjectCount { get; init; }
         public double TopWeightedSlidersCount { get; init; }
+
+        public SpeedAttributes(HarmonicSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            TopWeightedObjectDifficultiesCount = baseAttributes.TopWeightedObjectDifficultiesCount;
+        }
     }
 
     /// <summary>
@@ -72,31 +79,28 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return difficulty;
         }
 
-        public override SkillAttributes Process()
+        public override ISkillAttributes Process()
         {
             var baseAttributes = (HarmonicSkillAttributes)base.Process();
 
-            return new SpeedAttributes
+            return new SpeedAttributes(baseAttributes)
             {
-                Difficulty = baseAttributes.Difficulty,
-                ObjectDifficulties = baseAttributes.ObjectDifficulties,
-                TopWeightedObjectDifficultiesCount = baseAttributes.TopWeightedObjectDifficultiesCount,
-                RelevantObjectCount = relevantObjectCount(),
+                RelevantObjectCount = relevantObjectCount(baseAttributes.ObjectDifficulties),
                 TopWeightedSlidersCount = countTopWeightedSliders(baseAttributes.Difficulty)
             };
         }
 
-        private double relevantObjectCount()
+        private double relevantObjectCount(List<double> objectDifficulties)
         {
-            if (ObjectDifficulties.Count == 0)
+            if (objectDifficulties.Count == 0)
                 return 0;
 
-            double maxStrain = ObjectDifficulties.Max();
+            double maxStrain = objectDifficulties.Max();
 
             if (maxStrain == 0)
                 return 0;
 
-            return ObjectDifficulties.Sum(strain => 1.0 / (1.0 + Math.Exp(-(strain / maxStrain * 12.0 - 6.0))));
+            return objectDifficulties.Sum(strain => 1.0 / (1.0 + Math.Exp(-(strain / maxStrain * 12.0 - 6.0))));
         }
 
         private double countTopWeightedSliders(double difficultyValue)

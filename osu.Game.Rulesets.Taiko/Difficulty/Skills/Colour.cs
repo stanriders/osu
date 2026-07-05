@@ -8,6 +8,17 @@ using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 {
+    public class ColourAttributes : StrainSkillAttributes
+    {
+        public ColourAttributes(StrainSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            StrainPeaks = baseAttributes.StrainPeaks;
+            TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount;
+        }
+    }
+
     /// <summary>
     /// Calculates the colour coefficient of taiko difficulty.
     /// </summary>
@@ -29,5 +40,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
         {
             return ColourEvaluator.EvaluateDifficultyOf(current);
         }
+
+        public override ISkillAttributes Process() => new ColourAttributes((StrainSkillAttributes)base.Process());
     }
 }

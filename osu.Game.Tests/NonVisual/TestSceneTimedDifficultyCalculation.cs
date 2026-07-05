@@ -173,7 +173,7 @@ namespace osu.Game.Tests.NonVisual
             {
             }
 
-            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills)
+            protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkillAttributes[] skills)
                 => new TestDifficultyAttributes { Objects = beatmap.HitObjects.ToArray() };
 
             protected override IEnumerable<DifficultyHitObject> CreateDifficultyHitObjects(IBeatmap beatmap, Mod[] mods)
@@ -194,18 +194,22 @@ namespace osu.Game.Tests.NonVisual
                 return objects;
             }
 
-            protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects) => new Skill[] { new PassThroughSkill(mods, difficultyHitObjects) };
+            protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects) => new ISkill[] { new PassThroughSkill() };
 
-            private class PassThroughSkill : Skill
+            private class PassThroughSkill : ISkill
             {
-                public PassThroughSkill(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
-                    : base(mods, difficultyHitObjects)
+                public class EmptySkillAttributes : ISkillAttributes
                 {
+                    public double Difficulty { get; init; }
+                    public List<double> ObjectDifficulties { get; init; }
                 }
 
-                public override SkillAttributes Process()
+                public IReadOnlyList<Mod> Mods { get; init; }
+                public IReadOnlyList<DifficultyHitObject> DifficultyHitObjects { get; init; }
+
+                public ISkillAttributes Process()
                 {
-                    return new SkillAttributes() { Difficulty = 0, ObjectDifficulties = [] };
+                    return new EmptySkillAttributes() { Difficulty = 0, ObjectDifficulties = [] };
                 }
             }
         }

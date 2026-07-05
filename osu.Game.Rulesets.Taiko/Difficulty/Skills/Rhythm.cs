@@ -9,6 +9,17 @@ using osu.Game.Rulesets.Taiko.Difficulty.Evaluators;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 {
+    public class RhythmAttributes : StrainSkillAttributes
+    {
+        public RhythmAttributes(StrainSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            StrainPeaks = baseAttributes.StrainPeaks;
+            TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount;
+        }
+    }
+
     /// <summary>
     /// Calculates the rhythm coefficient of taiko difficulty.
     /// </summary>
@@ -32,5 +43,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
             return difficulty;
         }
+
+        public override ISkillAttributes Process() => new RhythmAttributes((StrainSkillAttributes)base.Process());
     }
 }

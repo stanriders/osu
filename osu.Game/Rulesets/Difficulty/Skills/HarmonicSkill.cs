@@ -9,12 +9,14 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public class HarmonicSkillAttributes : SkillAttributes
+    public class HarmonicSkillAttributes : ISkillAttributes
     {
-        public required double TopWeightedObjectDifficultiesCount { get; init; }
+        public double Difficulty { get; init; }
+        public List<double> ObjectDifficulties { get; init; } = new List<double>();
+        public double TopWeightedObjectDifficultiesCount { get; init; }
     }
 
-    public abstract class HarmonicSkill : Skill
+    public abstract class HarmonicSkill : ISkill
     {
         /// <summary>
         /// The sum of object weights, calculated during summation.
@@ -34,11 +36,13 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected virtual double DecayExponent => 0.9;
 
-        protected readonly List<double> ObjectDifficulties = new List<double>();
+        public IReadOnlyList<Mod> Mods { get; init; }
+        public IReadOnlyList<DifficultyHitObject> DifficultyHitObjects { get; init; }
 
         protected HarmonicSkill(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
-            : base(mods, difficultyHitObjects)
         {
+            Mods = mods;
+            DifficultyHitObjects = difficultyHitObjects;
         }
 
         /// <summary>
@@ -52,31 +56,33 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         protected virtual List<double> GetTransformedDifficulties(List<double> difficulties) => difficulties;
 
-        public override SkillAttributes Process()
+        public virtual ISkillAttributes Process()
         {
+            var objectDifficulties = new List<double>();
+
             foreach (var difficultyHitObject in DifficultyHitObjects)
             {
-                ObjectDifficulties.Add(ObjectDifficultyOf(difficultyHitObject));
+                objectDifficulties.Add(ObjectDifficultyOf(difficultyHitObject));
             }
 
-            double difficulty = aggregate();
+            double difficulty = aggregate(objectDifficulties);
 
             return new HarmonicSkillAttributes
             {
                 Difficulty = difficulty,
-                ObjectDifficulties = ObjectDifficulties,
-                TopWeightedObjectDifficultiesCount = CountTopWeightedObjectDifficulties(difficulty)
+                ObjectDifficulties = objectDifficulties,
+                TopWeightedObjectDifficultiesCount = CountTopWeightedObjectDifficulties(objectDifficulties, difficulty)
             };
         }
 
-        private double aggregate()
+        private double aggregate(List<double> objectDifficulties)
         {
-            if (ObjectDifficulties.Count == 0)
+            if (objectDifficulties.Count == 0)
                 return 0;
 
             // Objects with 0 difficulty are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
             // These objects will not contribute to the difficulty.
-            var difficulties = ObjectDifficulties;
+            var difficulties = objectDifficulties;
 
             if (difficulties.Count == 0)
                 return 0;
@@ -103,9 +109,9 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// <summary>
         /// Calculates the number of object difficulties weighted against the top object difficulty.
         /// </summary>
-        protected virtual double CountTopWeightedObjectDifficulties(double difficultyValue)
+        protected virtual double CountTopWeightedObjectDifficulties(List<double> objectDifficulties, double difficultyValue)
         {
-            if (ObjectDifficulties.Count == 0)
+            if (objectDifficulties.Count == 0)
                 return 0.0;
 
             if (ObjectWeightSum == 0)
@@ -116,7 +122,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
             if (consistentTopObject == 0)
                 return 0;
 
-            return ObjectDifficulties.Sum(d => DiffUtils.Logistic(d / consistentTopObject, 0.88, 10, 1.1));
+            return objectDifficulties.Sum(d => DiffUtils.Logistic(d / consistentTopObject, 0.88, 10, 1.1));
         }
 
         public static double DifficultyToPerformance(double difficulty) => 4.0 * DiffUtils.Pow(difficulty, 3);

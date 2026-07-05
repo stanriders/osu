@@ -28,43 +28,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkillAttributes[] skillAttributes)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new OsuDifficultyAttributes { Mods = mods };
 
-            var aim = skills.OfType<Aim>().Single(a => a.IncludeSliders);
-            var aimWithoutSliders = skills.OfType<Aim>().Single(a => !a.IncludeSliders);
-            var speed = skills.OfType<Speed>().Single();
-            var flashlight = skills.OfType<Flashlight>().SingleOrDefault();
-            var reading = skills.OfType<Reading>().Single();
+            var aimAttributes = skillAttributes.OfType<AimAttributes>().Single(a => a.WithSliders);
+            var aimWithoutSlidersAttributes = skillAttributes.OfType<AimAttributes>().Single(a => !a.WithSliders);
+            var speedAttributes = skillAttributes.OfType<SpeedAttributes>().Single();
+            var flashlightAttributes = skillAttributes.OfType<FlashlightAttributes>().SingleOrDefault();
+            var readingAttributes = skillAttributes.OfType<ReadingAttributes>().Single();
 
-            var aimAttributes = (AimAttributes)aim.Process();
-            var aimWithoutSlidersAttributes = (AimAttributes)aimWithoutSliders.Process();
-            var speedAttributes = (SpeedAttributes)speed.Process();
-            var flashlightAttributes = flashlight?.Process();
-            var readingAttributes = (ReadingAttributes)reading.Process();
-
-            double aimDifficultyValue = aimAttributes.Difficulty;
-            double aimNoSlidersDifficultyValue = aimWithoutSlidersAttributes.Difficulty;
-            double speedDifficultyValue = speedAttributes.Difficulty;
-            double readingDifficultyValue = readingAttributes.Difficulty;
-
-            double aimDifficultStrainCount = aimAttributes.TopWeightedStrainsCount;
-            double speedDifficultStrainCount = speedAttributes.TopWeightedObjectDifficultiesCount;
-            double readingDifficultNoteCount = readingAttributes.TopWeightedObjectDifficultiesCount;
-
-            double speedNotes = speedAttributes.RelevantObjectCount;
-
-            double aimNoSlidersTopWeightedSliderCount = aimWithoutSlidersAttributes.TopWeightedSlidersCount;
-            double aimNoSlidersDifficultStrainCount = aimWithoutSlidersAttributes.TopWeightedStrainsCount;
-
-            double aimTopWeightedSliderFactor = aimNoSlidersTopWeightedSliderCount / Math.Max(1, aimNoSlidersDifficultStrainCount - aimNoSlidersTopWeightedSliderCount);
-
-            double speedTopWeightedSliderCount = speedAttributes.TopWeightedSlidersCount;
-            double speedTopWeightedSliderFactor = speedTopWeightedSliderCount / Math.Max(1, speedDifficultStrainCount - speedTopWeightedSliderCount);
-
-            double difficultSliders = aimAttributes.DifficultSlidersCount;
+            double aimTopWeightedSliderFactor = aimWithoutSlidersAttributes.TopWeightedSlidersCount / Math.Max(1, aimWithoutSlidersAttributes.TopWeightedStrainsCount - aimWithoutSlidersAttributes.TopWeightedSlidersCount);
+            double speedTopWeightedSliderFactor = speedAttributes.TopWeightedSlidersCount / Math.Max(1, speedAttributes.TopWeightedObjectDifficultiesCount - speedAttributes.TopWeightedSlidersCount);
 
             int hitCircleCount = beatmap.HitObjects.Count(h => h is HitCircle);
             int sliderCount = beatmap.HitObjects.Count(h => h is Slider);
@@ -72,18 +48,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             int totalHits = beatmap.HitObjects.Count;
 
-            double sliderFactor = aimDifficultyValue > 0
-                ? calculateAimDifficultyRating(aimNoSlidersDifficultyValue) / calculateAimDifficultyRating(aimDifficultyValue)
+            double sliderFactor = aimAttributes.Difficulty > 0
+                ? calculateAimDifficultyRating(aimWithoutSlidersAttributes.Difficulty) / calculateAimDifficultyRating(aimAttributes.Difficulty)
                 : 1;
 
-            double aimRating = calculateAimDifficultyRating(aimDifficultyValue);
-            double speedRating = calculateDifficultyRating(speedDifficultyValue);
-            double readingRating = calculateDifficultyRating(readingDifficultyValue);
+            double aimRating = calculateAimDifficultyRating(aimAttributes.Difficulty);
+            double speedRating = calculateDifficultyRating(speedAttributes.Difficulty);
+            double readingRating = calculateDifficultyRating(readingAttributes.Difficulty);
 
             double flashlightRating = 0.0;
 
-            if (flashlight is not null)
-                flashlightRating = calculateDifficultyRating(flashlightAttributes!.Difficulty);
+            if (flashlightAttributes is not null)
+                flashlightRating = calculateDifficultyRating(flashlightAttributes.Difficulty);
 
             double sliderNestedScorePerObject = LegacyScoreUtils.CalculateNestedScorePerObject(beatmap, totalHits);
             double legacyScoreBaseMultiplier = LegacyScoreUtils.CalculateDifficultyPeppyStars(WorkingBeatmap.Beatmap);
@@ -106,15 +82,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 StarRating = starRating,
                 Mods = mods,
                 AimDifficulty = aimRating,
-                AimDifficultSliderCount = difficultSliders,
+                AimDifficultSliderCount = aimAttributes.DifficultSlidersCount,
                 SpeedDifficulty = speedRating,
-                SpeedNoteCount = speedNotes,
+                SpeedNoteCount = speedAttributes.RelevantObjectCount,
                 FlashlightDifficulty = flashlightRating,
                 ReadingDifficulty = readingRating,
                 SliderFactor = sliderFactor,
-                AimDifficultStrainCount = aimDifficultStrainCount,
-                SpeedDifficultStrainCount = speedDifficultStrainCount,
-                ReadingDifficultNoteCount = readingDifficultNoteCount,
+                AimDifficultStrainCount = aimAttributes.TopWeightedStrainsCount,
+                SpeedDifficultStrainCount = speedAttributes.TopWeightedObjectDifficultiesCount,
+                ReadingDifficultNoteCount = readingAttributes.TopWeightedObjectDifficultiesCount,
                 AimTopWeightedSliderFactor = aimTopWeightedSliderFactor,
                 SpeedTopWeightedSliderFactor = speedTopWeightedSliderFactor,
                 MaxCombo = beatmap.GetMaxCombo(),
@@ -166,9 +142,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             return objects;
         }
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
         {
-            var skills = new List<Skill>
+            var skills = new List<ISkill>
             {
                 new Aim(mods, difficultyHitObjects, true),
                 new Aim(mods, difficultyHitObjects, false),

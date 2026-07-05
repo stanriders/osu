@@ -10,6 +10,19 @@ using osu.Game.Rulesets.Taiko.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 {
+    public class StaminaAttributes : StrainSkillAttributes
+    {
+        public bool SingleColourStamina { get; init; }
+
+        public StaminaAttributes(StrainSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            StrainPeaks = baseAttributes.StrainPeaks;
+            TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount;
+        }
+    }
+
     /// <summary>
     /// Calculates the stamina coefficient of taiko difficulty.
     /// </summary>
@@ -64,5 +77,13 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
             SingleColourStamina
                 ? 0
                 : currentStrain * strainDecay(time - current.Previous(0).StartTime);
+
+        public override ISkillAttributes Process()
+        {
+            return new StaminaAttributes((StrainSkillAttributes)base.Process())
+            {
+                SingleColourStamina = SingleColourStamina
+            };
+        }
     }
 }

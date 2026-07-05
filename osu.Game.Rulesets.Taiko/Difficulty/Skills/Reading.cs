@@ -11,6 +11,17 @@ using osu.Game.Rulesets.Taiko.Objects;
 
 namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 {
+    public class ReadingAttributes : StrainSkillAttributes
+    {
+        public ReadingAttributes(StrainSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            StrainPeaks = baseAttributes.StrainPeaks;
+            TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount;
+        }
+    }
+
     /// <summary>
     /// Calculates the reading coefficient of taiko difficulty.
     /// </summary>
@@ -44,5 +55,7 @@ namespace osu.Game.Rulesets.Taiko.Difficulty.Skills
 
             return currentStrain;
         }
+
+        public override ISkillAttributes Process() => new ReadingAttributes((StrainSkillAttributes)base.Process());
     }
 }

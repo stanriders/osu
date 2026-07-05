@@ -40,12 +40,12 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
         {
         }
 
-        protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
+        protected override ISkill[] CreateSkills(IBeatmap beatmap, Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
         {
             isConvert = beatmap.BeatmapInfo.Ruleset.OnlineID == 0;
             isRelax = mods.Any(h => h is TaikoModRelax);
 
-            return new Skill[]
+            return new ISkill[]
             {
                 new Rhythm(mods, difficultyHitObjects),
                 new Reading(mods, difficultyHitObjects),
@@ -95,22 +95,16 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
             return difficultyHitObjects;
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, Skill[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkillAttributes[] skillAttributes)
         {
             if (beatmap.HitObjects.Count == 0)
                 return new TaikoDifficultyAttributes { Mods = mods };
 
-            var rhythm = skills.OfType<Rhythm>().Single();
-            var reading = skills.OfType<Reading>().Single();
-            var colour = skills.OfType<Colour>().Single();
-            var stamina = skills.OfType<Stamina>().Single(s => !s.SingleColourStamina);
-            var singleColourStamina = skills.OfType<Stamina>().Single(s => s.SingleColourStamina);
-
-            var staminaAttributes = (StrainSkillAttributes)stamina.Process();
-            var rhythmAttributes = (StrainSkillAttributes)rhythm.Process();
-            var readingAttributes = (StrainSkillAttributes)reading.Process();
-            var colourAttributes = (StrainSkillAttributes)colour.Process();
-            var singleColourStaminaAttributes = singleColourStamina.Process();
+            var rhythmAttributes = skillAttributes.OfType<RhythmAttributes>().Single();
+            var readingAttributes = skillAttributes.OfType<ReadingAttributes>().Single();
+            var colourAttributes = skillAttributes.OfType<ColourAttributes>().Single();
+            var staminaAttributes = skillAttributes.OfType<StaminaAttributes>().Single(s => !s.SingleColourStamina);
+            var singleColourStaminaAttributes = skillAttributes.OfType<StaminaAttributes>().Single(s => s.SingleColourStamina);
 
             double staminaDifficultyValue = staminaAttributes.Difficulty;
 

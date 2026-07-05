@@ -9,17 +9,19 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public class StrainSkillAttributes : SkillAttributes
+    public class StrainSkillAttributes : ISkillAttributes
     {
-        public required List<double> StrainPeaks { get; init; }
-        public required double TopWeightedStrainsCount { get; init; }
+        public double Difficulty { get; init; }
+        public List<double> ObjectDifficulties { get; init; } = new List<double>();
+        public List<double> StrainPeaks { get; init; } = new List<double>();
+        public double TopWeightedStrainsCount { get; init; }
     }
 
     /// <summary>
     /// Used to processes strain values of <see cref="DifficultyHitObject"/>s, keep track of strain levels caused by the processed objects
     /// and to calculate a final difficulty value representing the difficulty of hitting all the processed objects.
     /// </summary>
-    public abstract class StrainSkill : Skill
+    public abstract class StrainSkill : ISkill
     {
         /// <summary>
         /// The weight by which each strain value decays.
@@ -37,9 +39,13 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         private readonly List<double> strainPeaks = new List<double>();
         private readonly List<double> objectDifficulties = new List<double>();
 
+        public IReadOnlyList<Mod> Mods { get; init; }
+        public IReadOnlyList<DifficultyHitObject> DifficultyHitObjects { get; init; }
+
         protected StrainSkill(Mod[] mods, DifficultyHitObject[] difficultyHitObjects)
-            : base(mods, difficultyHitObjects)
         {
+            Mods = mods;
+            DifficultyHitObjects = difficultyHitObjects;
         }
 
         /// <summary>
@@ -144,7 +150,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
             return difficulty;
         }
 
-        public override SkillAttributes Process()
+        public virtual ISkillAttributes Process()
         {
             foreach (var difficultyHitObject in DifficultyHitObjects)
             {

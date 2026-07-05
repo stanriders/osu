@@ -10,9 +10,11 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public class VariableLengthStrainSkillAttributes : SkillAttributes
+    public class VariableLengthStrainSkillAttributes : ISkillAttributes
     {
-        public required double TopWeightedStrainsCount { get; init; }
+        public double Difficulty { get; init; }
+        public List<double> ObjectDifficulties { get; init; } = new List<double>();
+        public double TopWeightedStrainsCount { get; init; }
     }
 
     /// <summary>
@@ -23,7 +25,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
     /// This class intends to replace <see cref="StrainSkill"/> eventually as it fixes bugs with that implementation.
     /// Has not yet been applied globally as it changes resultant PP values in ways which may require discretion.
     /// </remarks>
-    public abstract class VariableLengthStrainSkill : Skill
+    public abstract class VariableLengthStrainSkill : ISkill
     {
         /// <summary>
         /// The weight by which each strain value decays.
@@ -58,15 +60,20 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         private readonly List<(double StrainValue, double StartTime)> queuedStrains = new List<(double, double)>();
 
+        public IReadOnlyList<Mod> Mods { get; init; }
+        public IReadOnlyList<DifficultyHitObject> DifficultyHitObjects { get; init; }
+
         /// <summary>
         /// Create a new <see cref="VariableLengthStrainSkill"/>.
         /// </summary>
         /// <param name="mods">The mods.</param>
+        /// <param name="difficultyHitObjects"></param>
         /// <param name="decayWeight">The weight by which each strain value decays.</param>
         /// <param name="maxSectionLength">The maximum length of each strain section.</param>
         protected VariableLengthStrainSkill(Mod[] mods, DifficultyHitObject[] difficultyHitObjects, double decayWeight = 0.9, int maxSectionLength = 400)
-            : base(mods, difficultyHitObjects)
         {
+            Mods = mods;
+            DifficultyHitObjects = difficultyHitObjects;
             DecayWeight = decayWeight;
             MaxSectionLength = maxSectionLength;
 
@@ -243,7 +250,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
         protected abstract double Aggregate();
 
-        public override SkillAttributes Process()
+        public virtual ISkillAttributes Process()
         {
             foreach (var difficultyHitObject in DifficultyHitObjects)
             {

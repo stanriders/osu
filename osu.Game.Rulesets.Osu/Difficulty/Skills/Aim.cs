@@ -18,8 +18,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
     public class AimAttributes : VariableLengthStrainSkillAttributes
     {
+        public required bool WithSliders { get; init; }
         public required double DifficultSlidersCount { get; init; }
         public required double TopWeightedSlidersCount { get; init; }
+
+        public AimAttributes(VariableLengthStrainSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount;
+        }
     }
 
     /// <summary>
@@ -147,15 +155,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             return DiffUtils.Logistic(-k * Math.Log(ratio));
         }
 
-        public override SkillAttributes Process()
+        public override ISkillAttributes Process()
         {
             var baseAttributes = (VariableLengthStrainSkillAttributes)base.Process();
 
-            return new AimAttributes
+            return new AimAttributes(baseAttributes)
             {
-                Difficulty = baseAttributes.Difficulty,
-                ObjectDifficulties = baseAttributes.ObjectDifficulties,
-                TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount,
+                WithSliders = IncludeSliders,
                 DifficultSlidersCount = getDifficultSliders(),
                 TopWeightedSlidersCount = countTopWeightedSliders(baseAttributes.Difficulty)
             };

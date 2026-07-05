@@ -13,6 +13,17 @@ using osu.Game.Rulesets.Osu.Mods;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 {
+    public class FlashlightAttributes : StrainSkillAttributes
+    {
+        public FlashlightAttributes(StrainSkillAttributes baseAttributes)
+        {
+            Difficulty = baseAttributes.Difficulty;
+            ObjectDifficulties = baseAttributes.ObjectDifficulties;
+            StrainPeaks = baseAttributes.StrainPeaks;
+            TopWeightedStrainsCount = baseAttributes.TopWeightedStrainsCount;
+        }
+    }
+
     /// <summary>
     /// Represents the skill required to memorise and hit every object in a map with the Flashlight mod enabled.
     /// </summary>
@@ -73,6 +84,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             difficulty *= 0.985 + DiffUtils.Pow(Math.Max(0, ((OsuDifficultyHitObject)current).OverallDifficulty), 2) / 4000;
 
             return difficulty;
+        }
+
+        public override ISkillAttributes Process()
+        {
+            return new FlashlightAttributes((StrainSkillAttributes)base.Process());
         }
 
         protected override double Aggregate()

@@ -2,7 +2,7 @@
   "profiles": {
     "All Benchmarks": {
       "commandName": "Project",
-      "commandLineArgs": "--filter *CalculateDifficulty*"
+      "commandLineArgs": "--filter *"
     }
   }
 }

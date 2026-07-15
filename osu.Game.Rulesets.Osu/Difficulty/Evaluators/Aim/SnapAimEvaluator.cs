@@ -107,12 +107,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                     var last2BaseObject = (OsuHitObject)osuLast2Obj.BaseObject;
 
                     float scalingFactor = radius / (float)lastBaseObject.Radius;
-                    float distance = (last2BaseObject.StackedPosition * scalingFactor - lastBaseObject.StackedPosition * scalingFactor).Length / diameter;
+                    float distance = (last2BaseObject.StackedPosition - lastBaseObject.StackedPosition).Length * scalingFactor;
 
-                    if (distance < 1)
+                    if (distance < diameter)
                     {
-                        wideAngleBonus *= 1 - 0.35 * (1 - distance)
-                                                   * DiffUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, radius, diameter * 1.5);
+                        const double wide_angle_object_repetition_nerf = 0.55;
+
+                        wideAngleBonus *= 1 - wide_angle_object_repetition_nerf
+                            * DiffUtils.ReverseLerp(distance, diameter, 0)
+                            * DiffUtils.ReverseLerp(osuCurrObj.LazyJumpDistance, radius, diameter * 1.5);
                     }
                 }
 

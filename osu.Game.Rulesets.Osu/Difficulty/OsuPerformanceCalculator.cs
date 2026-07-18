@@ -277,12 +277,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (score.Mods.Any(h => h is OsuModRelax) || deviation == null)
                 return 0.0;
 
-            const double accuracy_pp_multiplier = 160.0;
+            const double accuracy_pp_multiplier = 200.0;
 
             double tappingDifficultyFactor = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
 
             double accuracyValue = accuracy_pp_multiplier *
-                                   Math.Pow(DiffUtils.Erf(12.5 / deviation.Value), 5) *
+                                   Math.Pow(DiffUtils.Erf(11.0 / deviation.Value), 5) *
                                    tappingDifficultyFactor;
 
             int amountHitObjectsWithAccuracy = attributes.HitCircleCount;

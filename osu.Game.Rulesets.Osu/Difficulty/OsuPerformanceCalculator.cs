@@ -177,6 +177,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 AimEstimatedSliderBreaks = aimEstimatedSliderBreaks,
                 SpeedEstimatedSliderBreaks = speedEstimatedSliderBreaks,
                 SpeedDeviation = speedDeviation,
+                Deviation = deviation,
                 Total = totalValue
             };
         }
@@ -276,35 +277,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (score.Mods.Any(h => h is OsuModRelax) || deviation == null)
                 return 0.0;
 
-            // This percentage only considers HitCircles of any value - in this part of the calculation we focus on hitting the timing hit window.
-            double betterAccuracyPercentage;
+            const double accuracy_pp_multiplier = 160.0;
+
+            double tappingDifficultyFactor = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
+
+            double accuracyValue = accuracy_pp_multiplier *
+                                   Math.Pow(DiffUtils.Erf(12.5 / deviation.Value), 5) *
+                                   tappingDifficultyFactor;
+
             int amountHitObjectsWithAccuracy = attributes.HitCircleCount;
             if (!usingClassicSliderAccuracy || usingScoreV2)
                 amountHitObjectsWithAccuracy += attributes.SliderCount;
-
-            if (amountHitObjectsWithAccuracy > 0)
-                betterAccuracyPercentage = ((countGreat - Math.Max(totalHits - amountHitObjectsWithAccuracy, 0)) * 6 + countOk * 2 + countMeh) / (double)(amountHitObjectsWithAccuracy * 6);
-            else
-                betterAccuracyPercentage = 0;
-
-            // It is possible to reach a negative accuracy with this formula. Cap it at zero - zero points.
-            if (betterAccuracyPercentage < 0)
-                betterAccuracyPercentage = 0;
-
-            // Lots of arbitrary values from testing.
-            // Considering to use derivation from perfect accuracy in a probabilistic manner - assume normal distribution.
-
-            double factorage = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
-
-            double accuracyValue = 170 *
-                                   Math.Pow(7.5 / (double)deviation, 1.4) *
-                                   factorage *
-                                   Math.Pow(betterAccuracyPercentage, 3);
-
-            /*double accuracyValue = DiffUtils.Pow(1.52163, overallDifficulty) *
-                                   DiffUtils.Pow(betterAccuracyPercentage, 24) *
-                                   2.83 *
-                                   DiffUtils.Pow((1 + attributes.SpeedDifficulty * (3 - 2 * attributes.RhythmFactor)) / 6, 0.35);*/
 
             // Bonus for many hitcircles - it's harder to keep good accuracy up for longer.
             accuracyValue *= amountHitObjectsWithAccuracy < 1000

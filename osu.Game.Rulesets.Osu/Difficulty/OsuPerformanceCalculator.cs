@@ -294,17 +294,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             // Lots of arbitrary values from testing.
             // Considering to use derivation from perfect accuracy in a probabilistic manner - assume normal distribution.
 
-            double factorage = Math.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
+            double factorage = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
 
             double accuracyValue = 170 *
                                    Math.Pow(7.5 / (double)deviation, 1.4) *
                                    factorage *
                                    Math.Pow(betterAccuracyPercentage, 3);
 
-            /*double accuracyValue = Math.Pow(1.52163, overallDifficulty) *
-                                   Math.Pow(betterAccuracyPercentage, 24) *
+            /*double accuracyValue = DiffUtils.Pow(1.52163, overallDifficulty) *
+                                   DiffUtils.Pow(betterAccuracyPercentage, 24) *
                                    2.83 *
-                                   Math.Pow((1 + attributes.SpeedDifficulty * (3 - 2 * attributes.RhythmFactor)) / 6, 0.35);*/
+                                   DiffUtils.Pow((1 + attributes.SpeedDifficulty * (3 - 2 * attributes.RhythmFactor)) / 6, 0.35);*/
 
             // Bonus for many hitcircles - it's harder to keep good accuracy up for longer.
             accuracyValue *= amountHitObjectsWithAccuracy < 1000
@@ -485,8 +485,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
                     // Compute the deviation assuming 300s and 100s are normally distributed, and 50s are uniformly distributed.
                     // Begin with 300s and 100s first. Ignoring 50s, we can be 99% confident that the deviation is not higher than:
-                    double deviationOnCircles = greatHitWindow / (Math.Sqrt(2) * DifficultyCalculationUtils.ErfInv(pLowerBound));
-                    double adjustFor100 = Math.Sqrt(2 / Math.PI) * okHitWindow * Math.Exp(-0.5 * Math.Pow(okHitWindow / deviationOnCircles, 2)) / (deviationOnCircles * DifficultyCalculationUtils.Erf(okHitWindow / (Math.Sqrt(2) * deviationOnCircles)));
+                    double deviationOnCircles = greatHitWindow / (DiffUtils.SQRT2 * DiffUtils.ErfInv(pLowerBound));
+                    double adjustFor100 = Math.Sqrt(2 / Math.PI) * okHitWindow * Math.Exp(-0.5 * DiffUtils.Pow(okHitWindow / deviationOnCircles, 2)) / (deviationOnCircles * DiffUtils.Erf(okHitWindow / (DiffUtils.SQRT2 * deviationOnCircles)));
 
                     deviationOnCircles *= Math.Sqrt(1 - adjustFor100);
 
@@ -501,7 +501,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                     double mehVariance = (mehHitWindow * mehHitWindow + okHitWindow * mehHitWindow + okHitWindow * okHitWindow) / 3;
 
                     // Find the total deviation.
-                    deviationOnCircles = Math.Sqrt(((greatCountCircles + okCountCircles) * Math.Pow(deviationOnCircles, 2) + mehCountCircles * mehVariance) / (greatCountCircles + okCountCircles + mehCountCircles));
+                    deviationOnCircles = Math.Sqrt(((greatCountCircles + okCountCircles) * DiffUtils.Pow(deviationOnCircles, 2) + mehCountCircles * mehVariance) / (greatCountCircles + okCountCircles + mehCountCircles));
 
                     return deviationOnCircles;
                 }
@@ -521,7 +521,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 }
 
                 double greatProbabilitySlider = greatCountSliders / (sliderCount + 1.0);
-                double deviationOnSliders = mehHitWindow / (Math.Sqrt(2) * DifficultyCalculationUtils.ErfInv(greatProbabilitySlider));
+                double deviationOnSliders = mehHitWindow / (DiffUtils.SQRT2 * DiffUtils.ErfInv(greatProbabilitySlider));
 
                 return deviationOnSliders;
             }
@@ -543,8 +543,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
                 // Compute the deviation assuming 300s and 100s are normally distributed, and 50s are uniformly distributed.
                 // Begin with 300s and 100s first. Ignoring 50s, we can be 99% confident that the deviation is not higher than:
-                double deviation = greatHitWindow / (Math.Sqrt(2) * DifficultyCalculationUtils.ErfInv(pLowerBound));
-                double adjustFor100 = Math.Sqrt(2 / Math.PI) * okHitWindow * Math.Exp(-0.5 * Math.Pow(okHitWindow / deviation, 2)) / (deviation * DifficultyCalculationUtils.Erf(okHitWindow / (Math.Sqrt(2) * deviation)));
+                double deviation = greatHitWindow / (DiffUtils.SQRT2 * DiffUtils.ErfInv(pLowerBound));
+                double adjustFor100 = Math.Sqrt(2 / Math.PI) * okHitWindow * Math.Exp(-0.5 * DiffUtils.Pow(okHitWindow / deviation, 2)) / (deviation * DiffUtils.Erf(okHitWindow / (DiffUtils.SQRT2 * deviation)));
 
                 deviation *= Math.Sqrt(1 - adjustFor100);
 
@@ -559,7 +559,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 double mehVariance = (mehHitWindow * mehHitWindow + okHitWindow * mehHitWindow + okHitWindow * okHitWindow) / 3;
 
                 // Find the total deviation.
-                deviation = Math.Sqrt(((countGreat + countOk) * Math.Pow(deviation, 2) + countMeh * mehVariance) / (countGreat + countOk + countMeh));
+                deviation = Math.Sqrt(((countGreat + countOk) * DiffUtils.Pow(deviation, 2) + countMeh * mehVariance) / (countGreat + countOk + countMeh));
 
                 return deviation;
             }

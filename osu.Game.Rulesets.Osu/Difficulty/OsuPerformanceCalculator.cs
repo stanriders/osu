@@ -277,13 +277,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (score.Mods.Any(h => h is OsuModRelax) || totalDeviation == null)
                 return 0.0;
 
-            const double accuracy_pp_multiplier = 210.0;
+            const double accuracy_pp_multiplier = 230.0;
 
             // Due to the nature of the rhythm difficulty (it's almost never zero) we want to use rhythm factor non-linearly.
-            double tappingDifficultyFactor = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * DiffUtils.Smootherstep(attributes.RhythmFactor, 1, 0), 0.35);
+            double tappingDifficultyFactor = DiffUtils.Pow(0.98 + Math.Sqrt(attributes.SpeedDifficulty) * DiffUtils.Smootherstep(attributes.RhythmFactor, 1, 0.25), 0.35);
 
             double accuracyValue = accuracy_pp_multiplier *
-                                   DiffUtils.Pow(DiffUtils.Erf(11 / totalDeviation.Value), 5) *
+                                   DiffUtils.Pow(DiffUtils.Erf(10.0 / totalDeviation.Value), 4) *
                                    tappingDifficultyFactor;
 
             int amountHitObjectsWithAccuracy = attributes.HitCircleCount;

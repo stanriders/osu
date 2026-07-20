@@ -277,12 +277,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             if (score.Mods.Any(h => h is OsuModRelax) || deviation == null)
                 return 0.0;
 
-            const double accuracy_pp_multiplier = 200.0;
+            const double accuracy_pp_multiplier = 210.0;
 
             double tappingDifficultyFactor = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
 
             double accuracyValue = accuracy_pp_multiplier *
-                                   Math.Pow(DiffUtils.Erf(11.0 / deviation.Value), 5) *
+                                   DiffUtils.Pow(DiffUtils.Erf(11 / deviation.Value), 5) *
                                    tappingDifficultyFactor;
 
             int amountHitObjectsWithAccuracy = attributes.HitCircleCount;
@@ -293,6 +293,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             accuracyValue *= amountHitObjectsWithAccuracy < 1000
                 ? Math.Pow(amountHitObjectsWithAccuracy / 1000.0, 0.25)
                 : Math.Pow(amountHitObjectsWithAccuracy / 1000.0, 0.1);
+
+            // Deviation represents only the tapping variance on objects that were actually tapped, but we want misses to have an effect on accuracy pp as well.
+            if (effectiveMissCount > 0)
+                accuracyValue *= DiffUtils.Pow(1 - effectiveMissCount / totalHits, 10);
 
             // Increasing the accuracy value by object count for Blinds isn't ideal, so the minimum buff is given.
             if (score.Mods.Any(m => m is OsuModBlinds))

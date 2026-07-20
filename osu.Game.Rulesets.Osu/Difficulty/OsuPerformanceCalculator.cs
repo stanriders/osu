@@ -279,7 +279,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             const double accuracy_pp_multiplier = 210.0;
 
-            double tappingDifficultyFactor = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * (1 - attributes.RhythmFactor), 0.35);
+            // Due to the nature of the rhythm difficulty (it's almost never zero) we want to use rhythm factor non-linearly.
+            double tappingDifficultyFactor = DiffUtils.Pow(1 + Math.Sqrt(attributes.SpeedDifficulty) * DiffUtils.Smootherstep(attributes.RhythmFactor, 1, 0), 0.35);
 
             double accuracyValue = accuracy_pp_multiplier *
                                    DiffUtils.Pow(DiffUtils.Erf(11 / totalDeviation.Value), 5) *

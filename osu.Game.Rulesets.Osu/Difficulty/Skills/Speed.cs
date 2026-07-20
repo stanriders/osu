@@ -20,19 +20,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Speed : Skill
     {
-        public readonly bool WithRhythm;
-
         private double skillMultiplier => 1.16;
 
         private readonly List<double> sliderStrains = new List<double>();
+        private readonly List<double> noRhythmStrains = new List<double>();
 
         private double currentStrain;
         private double harmonicWeightSum;
 
-        public Speed(Mod[] mods, bool withRhythm)
+        public Speed(Mod[] mods)
             : base(mods)
         {
-            this.WithRhythm = withRhythm;
         }
 
         private double strainDecay(double ms) => DiffUtils.Pow(0.3, ms / 1000);
@@ -49,12 +47,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentStrain *= decay;
             currentStrain += calculateAdjustedDifficulty(current) * (1 - decay) * skill_multiplier;
 
-            double currentRhythm = WithRhythm ? RhythmEvaluator.EvaluateDifficultyOf(current) : 1;
+            double currentRhythm = RhythmEvaluator.EvaluateDifficultyOf(current);
 
             double totalStrain = currentStrain * currentRhythm;
 
             if (current.BaseObject is Slider)
                 sliderStrains.Add(totalStrain);
+
+            noRhythmStrains.Add(currentStrain);
 
             return totalStrain;
         }
@@ -123,6 +123,34 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             // Use a weighted sum of all notes. Constants are arbitrary and give nice values
             return sliderStrains.Sum(s => DiffUtils.Logistic(s / consistentTopObject, 0.88, 10, 1.1));
+        }
+
+        public double CalculateNoRhythmDifficulty()
+        {
+            return Aggregate(noRhythmStrains, HarmonicScale, DecayExponent).difficulty;
+        }
+
+        public static (double difficulty, double weigthSum) Aggregate(List<double> difficulties, double harmonicScale = 1.0, double decayExponent = 0.9)
+        {
+            if (difficulties.Count == 0)
+                return (0, 0);
+
+            double difficulty = 0;
+            int index = 0;
+            double objectWeightSum = 0;
+
+            foreach (double obj in difficulties.OrderDescending().Where(v => v > 0))
+            {
+                // Use a harmonic sum that considers each object of the map according to a predefined weight.
+                double weight = (1 + (harmonicScale / (1 + index))) / (DiffUtils.Pow(index, decayExponent) + 1 + (harmonicScale / (1 + index)));
+
+                objectWeightSum += weight;
+
+                difficulty += obj * weight;
+                index += 1;
+            }
+
+            return (difficulty, objectWeightSum);
         }
     }
 }

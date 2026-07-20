@@ -68,7 +68,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private double calculateAdjustedDifficulty(DifficultyHitObject current)
         {
             const double skill_multiplier_snap = 70.9;
-            const double skill_multiplier_agility = 2.35;
+            const double skill_multiplier_agility = 2.3;
             const double skill_multiplier_flow = 242.0;
 
             double snapDifficulty = SnapAimEvaluator.EvaluateDifficultyOf(current, IncludeSliders) * skill_multiplier_snap;

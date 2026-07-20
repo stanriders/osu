@@ -77,7 +77,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 // Acute angles are also hard to flow
                 flowDifficulty += currVelocity *
                                   SnapAimEvaluator.CalcAngleAcuteness(osuCurrObj.Angle.Value) *
-                                  overlappedNotesWeight;
+                                  overlappedNotesWeight
+                                  * 0.6;
             }
 
             if (Math.Max(prevVelocity, currVelocity) != 0)

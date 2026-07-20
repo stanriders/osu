@@ -24,23 +24,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double agilityDifficulty = 1000 / osuCurrObj.AdjustedDeltaTime;
 
-            if (osuLastObj != null && Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
+            if (osuLastObj != null && Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)
+                < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
             {
+                var acuteAngleBonus = Math.Max(1, (DiffUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2) - 150) / 125); //1 + DiffUtils.Smootherstep(DiffUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400);
+
                 if (osuCurrObj.Angle != null && osuLastObj.Angle != null)
                 {
-                    double currAngle = osuCurrObj.Angle.Value;
-                    double lastAngle = osuLastObj.Angle.Value;
-
-                    var acuteAngleBonus = 1.0;
-
-                    // Penalize angle repetition. It is important to do it _before_ multiplying by anything because we compare raw acuteness here
-                    var repetitionNerf = 1 + (0.08 + 0.92 * (1 - Math.Min(SnapAimEvaluator.CalcAngleAcuteness(currAngle), DiffUtils.Pow(SnapAimEvaluator.CalcAngleAcuteness(lastAngle), 3))));
-
-                    // Apply acute angle bonus for BPM above 300 1/2 and distance more than one diameter
-                    acuteAngleBonus *= 1 + DiffUtils.Smootherstep(DiffUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400);
-
-                    agilityDifficulty *= Math.Max(1, acuteAngleBonus * 0.6 * repetitionNerf);
+                    acuteAngleBonus *= 1 + 1 - Math.Min(SnapAimEvaluator.CalcAngleAcuteness(osuCurrObj.Angle.Value), DiffUtils.Pow(SnapAimEvaluator.CalcAngleAcuteness(osuLastObj.Angle.Value), 3));
                 }
+
+                agilityDifficulty *= Math.Max(1, acuteAngleBonus * 0.6);
             }
 
             agilityDifficulty *= DiffUtils.Pow(osuCurrObj.SmallCircleBonus, 1.5);

@@ -24,8 +24,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double agilityDifficulty = 1000 / osuCurrObj.AdjustedDeltaTime;
 
-            if (osuLastObj != null && Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)
-                < 1.25 * Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime)) // If rhythms are the same.
+            if (osuLastObj != null)
             {
                 var acuteAngleBonus = Math.Max(1, (DiffUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2) - 150) / 125); //1 + DiffUtils.Smootherstep(DiffUtils.MillisecondsToBPM(osuCurrObj.AdjustedDeltaTime, 2), 300, 400);
 
@@ -34,7 +33,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                     acuteAngleBonus *= 1 + 1 - Math.Min(SnapAimEvaluator.CalcAngleAcuteness(osuCurrObj.Angle.Value), DiffUtils.Pow(SnapAimEvaluator.CalcAngleAcuteness(osuLastObj.Angle.Value), 3));
                 }
 
-                agilityDifficulty *= Math.Max(1, acuteAngleBonus * 0.6);
+                agilityDifficulty *= Math.Max(1, acuteAngleBonus * 0.5);
             }
 
             agilityDifficulty *= DiffUtils.Pow(osuCurrObj.SmallCircleBonus, 1.5);

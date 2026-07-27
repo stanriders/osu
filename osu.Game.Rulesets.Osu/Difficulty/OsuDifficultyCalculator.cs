@@ -42,6 +42,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double aimDifficultyValue = aim.DifficultyValue();
             double aimNoSlidersDifficultyValue = aimWithoutSliders.DifficultyValue();
             double speedDifficultyValue = speed.DifficultyValue();
+            double speedNoRhythmDifficultyValue = speed.CalculateNoRhythmDifficulty();
             double readingDifficultyValue = reading.DifficultyValue();
 
             double aimDifficultStrainCount = aim.CountTopWeightedStrains(aimDifficultyValue);
@@ -68,16 +69,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimRating = calculateAimDifficultyRating(aimDifficultyValue);
             double aimNoSlidersRating = calculateAimDifficultyRating(aimNoSlidersDifficultyValue);
+            double speedRating = calculateDifficultyRating(speedDifficultyValue);
+            double speedNoRhythmRating = calculateDifficultyRating(speedNoRhythmDifficultyValue);
+            double readingRating = calculateAimDifficultyRating(readingDifficultyValue);
 
-            double sliderFactor = aimDifficultyValue > 0
-                ? aimNoSlidersRating / aimRating
-                : 1;
-
-            double rhythmFactor = speedDifficultyValue > 0
-                ? calculateDifficultyRating(speed.CalculateNoRhythmDifficulty()) / calculateDifficultyRating(speedDifficultyValue)
-                : 1;
-
-            var osuRatingCalculator = new OsuRatingCalculator(mods, totalHits, overallDifficulty);
+            double sliderFactor = aimDifficultyValue > 0 ? aimNoSlidersRating / aimRating : 1;
+            double rhythmFactor = speedDifficultyValue > 0 ? speedNoRhythmRating / speedRating : 1;
 
             double flashlightRating = 0.0;
 

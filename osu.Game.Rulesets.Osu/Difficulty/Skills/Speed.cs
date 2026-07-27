@@ -20,13 +20,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
     /// </summary>
     public class Speed : Skill
     {
-        private double skillMultiplier => 1.16;
-
         private readonly List<double> sliderStrains = new List<double>();
         private readonly List<double> noRhythmStrains = new List<double>();
 
         private double currentStrain;
         private double harmonicWeightSum;
+
+        private const int harmonic_scale = 20;
 
         public Speed(Mod[] mods)
             : base(mods)
@@ -74,7 +74,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             if (ObjectDifficulties.Count == 0)
                 return 0;
 
-            (double difficulty, harmonicWeightSum) = HarmonicSeries.Aggregate(ObjectDifficulties, harmonicScale: 20);
+            (double difficulty, harmonicWeightSum) = HarmonicSeries.Aggregate(ObjectDifficulties, harmonicScale: harmonic_scale);
 
             return difficulty;
         }
@@ -127,30 +127,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         public double CalculateNoRhythmDifficulty()
         {
-            return Aggregate(noRhythmStrains, HarmonicScale, DecayExponent).difficulty;
-        }
-
-        public static (double difficulty, double weigthSum) Aggregate(List<double> difficulties, double harmonicScale = 1.0, double decayExponent = 0.9)
-        {
-            if (difficulties.Count == 0)
-                return (0, 0);
-
-            double difficulty = 0;
-            int index = 0;
-            double objectWeightSum = 0;
-
-            foreach (double obj in difficulties.OrderDescending().Where(v => v > 0))
-            {
-                // Use a harmonic sum that considers each object of the map according to a predefined weight.
-                double weight = (1 + (harmonicScale / (1 + index))) / (DiffUtils.Pow(index, decayExponent) + 1 + (harmonicScale / (1 + index)));
-
-                objectWeightSum += weight;
-
-                difficulty += obj * weight;
-                index += 1;
-            }
-
-            return (difficulty, objectWeightSum);
+            return HarmonicSeries.Aggregate(noRhythmStrains, harmonicScale: harmonic_scale).difficulty;
         }
     }
 }

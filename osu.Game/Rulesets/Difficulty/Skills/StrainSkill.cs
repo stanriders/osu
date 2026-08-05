@@ -167,5 +167,23 @@ namespace osu.Game.Rulesets.Difficulty.Skills
                 TopWeightedStrainsCount = CountTopWeightedStrains(difficulty)
             };
         }
+
+        public virtual IEnumerable<TimedSkillAttributes> ProcessTimed()
+        {
+            foreach (var difficultyHitObject in DifficultyHitObjects)
+            {
+                objectDifficulties.Add(ProcessObject(difficultyHitObject));
+
+                double difficulty = Aggregate();
+
+                yield return new TimedSkillAttributes(new StrainSkillAttributes
+                {
+                    Difficulty = difficulty,
+                    ObjectDifficulties = objectDifficulties,
+                    StrainPeaks = GetCurrentStrainPeaks().ToList(),
+                    TopWeightedStrainsCount = CountTopWeightedStrains(difficulty)
+                }, difficultyHitObject.EndTime);
+            }
+        }
     }
 }

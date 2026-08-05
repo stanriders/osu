@@ -120,6 +120,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         public override ISkillAttributes Process() => new ReadingAttributes((HarmonicSkillAttributes)base.Process());
 
+        public override IEnumerable<TimedSkillAttributes> ProcessTimed()
+        {
+            foreach (var baseTimedAttributes in base.ProcessTimed())
+            {
+                var baseAttributes = (HarmonicSkillAttributes)baseTimedAttributes.Attributes;
+
+                yield return new TimedSkillAttributes(new ReadingAttributes(baseAttributes), baseTimedAttributes.Time);
+            }
+        }
+
         protected override double CountTopWeightedObjectDifficulties(List<double> objectDifficulties, double difficultyValue)
         {
             if (objectDifficulties.Count == 0)

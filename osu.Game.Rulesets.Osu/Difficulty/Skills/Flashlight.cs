@@ -2,6 +2,7 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Skills;
@@ -89,6 +90,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         public override ISkillAttributes Process()
         {
             return new FlashlightAttributes((StrainSkillAttributes)base.Process());
+        }
+
+        public override IEnumerable<TimedSkillAttributes> ProcessTimed()
+        {
+            foreach (var baseTimedAttributes in base.ProcessTimed())
+            {
+                var baseAttributes = (StrainSkillAttributes)baseTimedAttributes.Attributes;
+
+                yield return new TimedSkillAttributes(new FlashlightAttributes(baseAttributes), baseTimedAttributes.Time);
+            }
         }
 
         protected override double Aggregate()

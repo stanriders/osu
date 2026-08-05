@@ -19,7 +19,7 @@ namespace osu.Game.Rulesets.Pippidon
         {
         }
 
-        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, ISkillAttributes[] skills)
+        protected override DifficultyAttributes CreateDifficultyAttributes(IBeatmap beatmap, Mod[] mods, IReadOnlyList<ISkillAttributes> skills)
         {
             return new DifficultyAttributes(mods, 0);
         }

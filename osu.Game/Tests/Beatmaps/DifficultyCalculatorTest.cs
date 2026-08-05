@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using osu.Framework.Extensions.ObjectExtensions;
@@ -26,6 +27,15 @@ namespace osu.Game.Tests.Beatmaps
         protected void Test(double? expectedStarRating, int expectedMaxCombo, string name, params Mod[] mods)
         {
             var attributes = CreateDifficultyCalculator(GetBeatmap(name)).Calculate(mods);
+
+            // Platform-dependent math functions (Pow, Cbrt, Exp, etc) may result in minute differences.
+            Assert.That(attributes.StarRating, Is.EqualTo(expectedStarRating).Within(0.00001));
+            Assert.That(attributes.MaxCombo, Is.EqualTo(expectedMaxCombo));
+        }
+
+        protected void TestTimed(double? expectedStarRating, int expectedMaxCombo, string name, params Mod[] mods)
+        {
+            var attributes = CreateDifficultyCalculator(GetBeatmap(name)).CalculateTimed(mods).Last().Attributes;
 
             // Platform-dependent math functions (Pow, Cbrt, Exp, etc) may result in minute differences.
             Assert.That(attributes.StarRating, Is.EqualTo(expectedStarRating).Within(0.00001));

@@ -75,6 +75,25 @@ namespace osu.Game.Rulesets.Difficulty.Skills
             };
         }
 
+        public virtual IEnumerable<TimedSkillAttributes> ProcessTimed()
+        {
+            var objectDifficulties = new List<double>();
+
+            foreach (var difficultyHitObject in DifficultyHitObjects)
+            {
+                objectDifficulties.Add(ObjectDifficultyOf(difficultyHitObject));
+
+                double difficulty = aggregate(objectDifficulties);
+
+                yield return new TimedSkillAttributes(new HarmonicSkillAttributes
+                {
+                    Difficulty = difficulty,
+                    ObjectDifficulties = objectDifficulties,
+                    TopWeightedObjectDifficultiesCount = CountTopWeightedObjectDifficulties(objectDifficulties, difficulty)
+                }, difficultyHitObject.EndTime);
+            }
+        }
+
         private double aggregate(List<double> objectDifficulties)
         {
             if (objectDifficulties.Count == 0)

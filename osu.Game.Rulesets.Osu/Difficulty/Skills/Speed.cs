@@ -90,6 +90,20 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             };
         }
 
+        public override IEnumerable<TimedSkillAttributes> ProcessTimed()
+        {
+            foreach (var baseTimedAttributes in base.ProcessTimed())
+            {
+                var baseAttributes = (HarmonicSkillAttributes)baseTimedAttributes.Attributes;
+
+                yield return new TimedSkillAttributes(new SpeedAttributes(baseAttributes)
+                {
+                    RelevantObjectCount = relevantObjectCount(baseAttributes.ObjectDifficulties),
+                    TopWeightedSlidersCount = countTopWeightedSliders(baseAttributes.Difficulty)
+                }, baseTimedAttributes.Time);
+            }
+        }
+
         private double relevantObjectCount(List<double> objectDifficulties)
         {
             if (objectDifficulties.Count == 0)

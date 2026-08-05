@@ -167,6 +167,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             };
         }
 
+        public override IEnumerable<TimedSkillAttributes> ProcessTimed()
+        {
+            foreach (var baseTimedAttributes in base.ProcessTimed())
+            {
+                var baseAttributes = (VariableLengthStrainSkillAttributes)baseTimedAttributes.Attributes;
+
+                yield return new TimedSkillAttributes(new AimAttributes(baseAttributes)
+                {
+                    WithSliders = IncludeSliders,
+                    DifficultSlidersCount = getDifficultSliders(),
+                    TopWeightedSlidersCount = countTopWeightedSliders(baseAttributes.Difficulty)
+                }, baseTimedAttributes.Time);
+            }
+        }
+
         private double getDifficultSliders()
         {
             if (sliderStrains.Count == 0)

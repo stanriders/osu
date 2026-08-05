@@ -43,8 +43,8 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
         /// <summary>
         /// The number of `MaxSectionLength` sections calculated such that enough of the difficulty value is preserved.
-        /// WARNING: This should be overridden if strains are ever used outside of <see cref="Skill.DifficultyValue"/>,
-        /// or if <see cref="Skill.DifficultyValue"/> is overridden to not use the default geometric sum. This should be removed
+        /// WARNING: This should be overridden if strains are ever used outside of <see cref="Aggregate"/>,
+        /// or if <see cref="Aggregate"/> is overridden to not use the default geometric sum. This should be removed
         /// in the future when a better memory-saving technique is implemented.
         /// </summary>
         private readonly double maxStoredLength;
@@ -265,6 +265,23 @@ namespace osu.Game.Rulesets.Difficulty.Skills
                 ObjectDifficulties = objectDifficulties,
                 TopWeightedStrainsCount = CountTopWeightedStrains(difficulty)
             };
+        }
+
+        public virtual IEnumerable<TimedSkillAttributes> ProcessTimed()
+        {
+            foreach (var difficultyHitObject in DifficultyHitObjects)
+            {
+                objectDifficulties.Add(ProcessObject(difficultyHitObject));
+
+                double difficulty = Aggregate();
+
+                yield return new TimedSkillAttributes(new VariableLengthStrainSkillAttributes
+                {
+                    Difficulty = difficulty,
+                    ObjectDifficulties = objectDifficulties,
+                    TopWeightedStrainsCount = CountTopWeightedStrains(difficulty)
+                }, difficultyHitObject.EndTime);
+            }
         }
 
         /// <summary>

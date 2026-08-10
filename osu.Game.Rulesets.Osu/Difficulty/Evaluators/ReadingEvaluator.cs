@@ -61,18 +61,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             const double density_multiplier = 1.75;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 15.0;
+            const double intersections_multiplier = 22.0;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
+
+            double intersectionsDifficulty = calculatePathIntersections(visibleObjects, currentObject, nextObj) * intersections_multiplier;
 
             if (nextObj != null)
             {
                 // Reduce difficulty if movement to next object is small
                 futureObjectDifficultyInfluence *= DiffUtils.Smootherstep(nextObj.LazyJumpDistance, 15, distance_influence_threshold);
+                //intersectionsDifficulty *= DiffUtils.Smootherstep(nextObj.LazyJumpDistance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
             }
-
-            double intersectionsDifficulty = calculatePathIntersections(visibleObjects, currentObject, nextObj) * intersections_multiplier;
 
             // Value higher note densities exponentially
             double noteDensityDifficulty = DiffUtils.Pow(pastObjectDifficultyInfluence + futureObjectDifficultyInfluence, 1.7) * 0.4 * constantAngleNerfFactor * velocity;
@@ -294,22 +295,24 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var currBase = (OsuHitObject)currentObject.BaseObject;
             var nextBase = (OsuHitObject)nextObject.BaseObject;
 
+            float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)currBase.Radius;
+
             var currentPosition = currBase.StackedPosition;
             var nextPosition = nextBase.StackedPosition;
             var nextVector = currentPosition - nextPosition;
-            float movementDistance = ((nextPosition - currentPosition) / (float)(2.0f * currBase.Radius)).Length;
+            float movementDistance = (nextPosition - currentPosition).Length * scalingFactor;
 
             // calculate amount of circles intersecting the movement excluding current and next circles
             foreach (OsuDifficultyHitObject visibleObject in visibleObjects)
             {
                 var visibleObjectPosition = ((OsuHitObject)visibleObject.BaseObject).StackedPosition;
                 var visibleToCurrentVector = currentPosition - visibleObjectPosition;
-                float visibleToNextDistance = ((nextPosition - visibleObjectPosition) / (float)(2 * currBase.Radius)).Length;
+                float visibleToNextDistance = (nextPosition - visibleObjectPosition).Length * scalingFactor;
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
-                double intersectionBonus = checkMovementIntersect(nextVector, nextBase.Radius * 2, visibleToCurrentVector) *
-                                           DiffUtils.Logistic((movementDistance - 3) / 0.7) *
-                                           DiffUtils.Logistic((3 - visibleToNextDistance) / 0.7);
+                double intersectionBonus = checkMovementIntersect(nextVector, OsuDifficultyHitObject.NORMALISED_RADIUS, visibleToCurrentVector) *
+                                           DiffUtils.Smootherstep(movementDistance, OsuDifficultyHitObject.NORMALISED_DIAMETER * 6, 0) *
+                                           DiffUtils.Smootherstep(visibleToNextDistance, 0, OsuDifficultyHitObject.NORMALISED_DIAMETER * 6);
 
                 // this is temp until sliders get proper reading impl
                 if (visibleObject.BaseObject is Slider)

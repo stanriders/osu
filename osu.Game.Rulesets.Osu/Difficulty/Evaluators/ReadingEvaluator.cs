@@ -39,8 +39,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double preemptDifficulty = calculatePreemptDifficulty(velocity, constantAngleNerfFactor, currObj.Preempt);
 
-            //double intersectionsDifficulty = DiffUtils.Pow(calculateAimReading(objects, currObj, nextObj, hidden), 0.05);
-
             double readingDifficulty = DiffUtils.Norm(1.5, preemptDifficulty, hiddenDifficulty, noteDensityDifficulty);
 
             // Having less time to process information is harder
@@ -61,7 +59,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calculateDensityDifficulty(OsuDifficultyHitObject? nextObj, double velocity, double constantAngleNerfFactor,
                                                          double pastObjectDifficultyInfluence, double currentVisibleObjectDensity, List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject)
         {
-            const double density_multiplier = 2.2;
+            const double density_multiplier = 1.75;
             const double density_difficulty_base = 2.5;
             const double intersections_multiplier = 15.0;
 
@@ -77,7 +75,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double intersectionsDifficulty = calculatePathIntersections(visibleObjects, currentObject, nextObj) * intersections_multiplier;
 
             // Value higher note densities exponentially
-            double noteDensityDifficulty = DiffUtils.Pow(pastObjectDifficultyInfluence + futureObjectDifficultyInfluence, 1.7) * 0.4 * constantAngleNerfFactor * velocity + intersectionsDifficulty;
+            double noteDensityDifficulty = DiffUtils.Pow(pastObjectDifficultyInfluence + futureObjectDifficultyInfluence, 1.7) * 0.4 * constantAngleNerfFactor * velocity;
 
             // Award only denser than average maps.
             noteDensityDifficulty = Math.Max(0, noteDensityDifficulty - density_difficulty_base);
@@ -85,7 +83,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // Apply a soft cap to general density reading to account for partial memorization
             noteDensityDifficulty = DiffUtils.Pow(noteDensityDifficulty, 0.45) * density_multiplier;
 
-            return noteDensityDifficulty;
+            return noteDensityDifficulty + intersectionsDifficulty;
         }
 
         /// <summary>

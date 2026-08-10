@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double velocity = Math.Max(1, currObj.LazyJumpDistance / currObj.AdjustedDeltaTime); // Only allow velocity to buff
 
-            (double visibleObjectCount, List<OsuDifficultyHitObject> objects) = retrieveCurrentVisibleObjectDensity(currObj);
+            (double visibleObjectCount, List<OsuDifficultyHitObject> objects) = retrieveCurrentVisibleObjectDensity(currObj, hidden);
             double pastObjectDifficultyInfluence = getPastObjectDifficultyInfluence(currObj);
 
             double constantAngleNerfFactor = getConstantAngleNerfFactor(currObj);
@@ -59,9 +59,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calculateDensityDifficulty(OsuDifficultyHitObject? nextObj, double velocity, double constantAngleNerfFactor,
                                                          double pastObjectDifficultyInfluence, double currentVisibleObjectDensity, List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject)
         {
-            const double density_multiplier = 2.0;
+            const double density_multiplier = 1.85;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 10.0;
+            const double intersections_multiplier = 17.0;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
@@ -183,7 +183,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         }
 
         // Returns the density of objects visible at the point in time the current object needs to be clicked capped by the reading window.
-        private static (double visibleObjectCount, List<OsuDifficultyHitObject> objects) retrieveCurrentVisibleObjectDensity(OsuDifficultyHitObject current)
+        private static (double visibleObjectCount, List<OsuDifficultyHitObject> objects) retrieveCurrentVisibleObjectDensity(OsuDifficultyHitObject current, bool hidden)
         {
             double visibleObjectCount = 0;
             List<OsuDifficultyHitObject> objects = new List<OsuDifficultyHitObject>();
@@ -202,7 +202,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double visibility = hitObject.OpacityAt(current.BaseObject.StartTime, false) * timeNerfFactor;
                 visibleObjectCount += visibility;
 
-                if (visibility > 0.1) // 0.0 maybe?
+                double visibilityWithHidden = hitObject.OpacityAt(current.BaseObject.StartTime, hidden);
+                if (visibilityWithHidden > 0.0) // 0.0 maybe?
                     objects.Add(hitObject);
 
                 hitObject = (OsuDifficultyHitObject?)hitObject.Next(0);
@@ -298,6 +299,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             var currentPosition = currBase.StackedPosition;
             var nextPosition = nextBase.StackedPosition;
+
             var nextVector = currentPosition - nextPosition;
             float movementDistance = (nextPosition - currentPosition).Length * scalingFactor;
 
@@ -315,7 +317,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 // this is temp until sliders get proper reading impl
                 if (visibleObject.BaseObject is Slider)
-                    intersectionBonus *= 2.0;
+                    intersectionBonus *= 1.5;
 
                 // TODO: approach circle intersections
 

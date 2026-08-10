@@ -26,7 +26,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double velocity = Math.Max(1, currObj.LazyJumpDistance / currObj.AdjustedDeltaTime); // Only allow velocity to buff
 
-            (double visibleObjectCount, List<OsuDifficultyHitObject> objects) = retrieveCurrentVisibleObjectDensity(currObj, hidden);
+            double visibleObjectCount = retrieveCurrentVisibleObjectDensity(currObj, hidden, out var objects);
             double pastObjectDifficultyInfluence = getPastObjectDifficultyInfluence(currObj);
 
             double constantAngleNerfFactor = getConstantAngleNerfFactor(currObj);
@@ -183,10 +183,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         }
 
         // Returns the density of objects visible at the point in time the current object needs to be clicked capped by the reading window.
-        private static (double visibleObjectCount, List<OsuDifficultyHitObject> objects) retrieveCurrentVisibleObjectDensity(OsuDifficultyHitObject current, bool hidden)
+        private static double retrieveCurrentVisibleObjectDensity(OsuDifficultyHitObject current, bool hidden, out List<OsuDifficultyHitObject> objects)
         {
             double visibleObjectCount = 0;
-            List<OsuDifficultyHitObject> objects = new List<OsuDifficultyHitObject>();
+            objects = new List<OsuDifficultyHitObject>();
 
             OsuDifficultyHitObject? hitObject = (OsuDifficultyHitObject)current.Next(0);
 
@@ -209,7 +209,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 hitObject = (OsuDifficultyHitObject?)hitObject.Next(0);
             }
 
-            return (visibleObjectCount, objects);
+            return visibleObjectCount;
         }
 
         // Returns a factor of how often the current object's angle has been repeated in a certain time frame.

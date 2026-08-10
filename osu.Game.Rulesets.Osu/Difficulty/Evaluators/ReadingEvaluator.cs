@@ -59,20 +59,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calculateDensityDifficulty(OsuDifficultyHitObject? nextObj, double velocity, double constantAngleNerfFactor,
                                                          double pastObjectDifficultyInfluence, double currentVisibleObjectDensity, List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject)
         {
-            const double density_multiplier = 1.75;
+            const double density_multiplier = 2.0;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 22.0;
+            const double intersections_multiplier = 10.0;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
 
-            double intersectionsDifficulty = calculatePathIntersections(visibleObjects, currentObject, nextObj) * intersections_multiplier;
+            double intersectionsDifficulty = calculatePathIntersections(visibleObjects, currentObject, nextObj) * intersections_multiplier * constantAngleNerfFactor;
 
             if (nextObj != null)
             {
                 // Reduce difficulty if movement to next object is small
                 futureObjectDifficultyInfluence *= DiffUtils.Smootherstep(nextObj.LazyJumpDistance, 15, distance_influence_threshold);
-                //intersectionsDifficulty *= DiffUtils.Smootherstep(nextObj.LazyJumpDistance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
             }
 
             // Value higher note densities exponentially
@@ -203,7 +202,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double visibility = hitObject.OpacityAt(current.BaseObject.StartTime, false) * timeNerfFactor;
                 visibleObjectCount += visibility;
 
-                if (visibility > 0.0) // 0.0 maybe?
+                if (visibility > 0.1) // 0.0 maybe?
                     objects.Add(hitObject);
 
                 hitObject = (OsuDifficultyHitObject?)hitObject.Next(0);
@@ -311,8 +310,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
                 double intersectionBonus = checkMovementIntersect(nextVector, OsuDifficultyHitObject.NORMALISED_RADIUS, visibleToCurrentVector) *
-                                           DiffUtils.Smootherstep(movementDistance, OsuDifficultyHitObject.NORMALISED_DIAMETER * 6, 0) *
-                                           DiffUtils.Smootherstep(visibleToNextDistance, 0, OsuDifficultyHitObject.NORMALISED_DIAMETER * 6);
+                                           DiffUtils.Smootherstep(movementDistance, 0, distance_influence_threshold) *
+                                           DiffUtils.Smootherstep(visibleToNextDistance, 0, distance_influence_threshold);
 
                 // this is temp until sliders get proper reading impl
                 if (visibleObject.BaseObject is Slider)

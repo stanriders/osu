@@ -38,12 +38,40 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             double preemptDifficulty = calculatePreemptDifficulty(velocity, constantAngleNerfFactor, currObj.Preempt);
 
-            double readingDifficulty = DiffUtils.Norm(1.5, preemptDifficulty, hiddenDifficulty, noteDensityDifficulty);
+            double sliderDifficulty = calculateSliderDifficulty(currObj, velocity);
+
+            double readingDifficulty = DiffUtils.Norm(1.5, preemptDifficulty, hiddenDifficulty, noteDensityDifficulty, sliderDifficulty);
 
             // Having less time to process information is harder
             readingDifficulty *= highBpmBonus(currObj.AdjustedDeltaTime);
 
             return readingDifficulty;
+        }
+
+        private static double calculateSliderDifficulty(OsuDifficultyHitObject currObj, double velocity)
+        {
+            const double length_ratio_multiplier = 15.0;
+
+            double sliderDifficulty = 0;
+
+            if (currObj.BaseObject is Slider && currObj.LazyTravelDistance > OsuDifficultyHitObject.ASSUMED_SLIDER_RADIUS)
+            {
+                double pathLengthToMovementLengthRatio = Math.Clamp(currObj.LazyTravelDistance / currObj.PathTravelDistance, 0, 1);
+
+                double sliderVelocity = currObj.LazyTravelDistance / currObj.TravelTime;
+
+                double ratioMultiplier = DiffUtils.Pow(1 - 1 * pathLengthToMovementLengthRatio, 2);
+                sliderDifficulty = ratioMultiplier * Math.Sqrt(sliderVelocity) * length_ratio_multiplier;
+            }
+
+            var prevObj = (OsuDifficultyHitObject)currObj.Previous();
+
+            if (prevObj.BaseObject is Slider prevSlider)
+            {
+                sliderDifficulty += velocity * prevSlider.RepeatCount;
+            }
+
+            return sliderDifficulty;
         }
 
         /// <summary>

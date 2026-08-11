@@ -25,7 +25,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         public const int MIN_DELTA_TIME = 25;
 
         private const float maximum_slider_radius = NORMALISED_RADIUS * 2.4f;
-        private const float assumed_slider_radius = NORMALISED_RADIUS * 1.8f;
+        public const float ASSUMED_SLIDER_RADIUS = NORMALISED_RADIUS * 1.8f;
 
         protected new OsuHitObject BaseObject => (OsuHitObject)base.BaseObject;
         protected new OsuHitObject LastObject => (OsuHitObject)base.LastObject;
@@ -132,6 +132,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double OverallDifficulty => (79.5 - HitWindowGreat / 2) / 6;
 
+        public double PathTravelDistance { get; private set; }
+
         public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
@@ -197,10 +199,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
         private void setDistances(double clockRate)
         {
-            if (BaseObject is Slider currentSlider)
+            if (BaseObject is Slider)
             {
-                // Bonus for repeat sliders until a better per nested object strain system can be achieved.
-                TravelDistance = LazyTravelDistance * Math.Max(1, DiffUtils.Pow(currentSlider.RepeatCount, 0.3));
+                TravelDistance = LazyTravelDistance;
                 TravelTime = Math.Max(LazyTravelTime / clockRate, MIN_DELTA_TIME);
             }
 
@@ -250,7 +251,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 //
 
                 float tailJumpDistance = Vector2.Subtract(lastSlider.TailCircle.StackedPosition, BaseObject.StackedPosition).Length * scalingFactor;
-                MinimumJumpDistance = Math.Max(0, Math.Min(LazyJumpDistance - (maximum_slider_radius - assumed_slider_radius), tailJumpDistance - maximum_slider_radius));
+                MinimumJumpDistance = Math.Max(0, Math.Min(LazyJumpDistance - (maximum_slider_radius - ASSUMED_SLIDER_RADIUS), tailJumpDistance - maximum_slider_radius));
             }
 
             if (lastLastDifficultyObject != null && lastLastDifficultyObject.BaseObject is not Spinner)
@@ -267,6 +268,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 NormalisedVectorAngle = Math.Atan2(Math.Abs(v.Y), Math.Abs(v.X));
 
                 Angle = Math.Min(angle, sliderAngle);
+            }
+
+            if (BaseObject is Slider slider)
+            {
+                PathTravelDistance = slider.Path.Distance * scalingFactor;
             }
         }
 
@@ -344,7 +350,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 double currMovementLength = scalingFactor * currMovement.Length;
 
                 // Amount of movement required so that the cursor position needs to be updated.
-                double requiredMovement = assumed_slider_radius;
+                double requiredMovement = ASSUMED_SLIDER_RADIUS;
 
                 if (i == nestedObjects.Count - 1)
                 {

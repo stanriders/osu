@@ -68,7 +68,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             if (prevObj.BaseObject is Slider prevSlider)
             {
-                sliderDifficulty += velocity * prevSlider.RepeatCount;
+                sliderDifficulty += velocity * DiffUtils.Pow(prevSlider.RepeatCount, 2) * 0.05;
             }
 
             return sliderDifficulty;

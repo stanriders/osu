@@ -297,7 +297,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             // Deviation represents only the tapping variance on objects that were actually tapped, but we want misses to have an effect on accuracy pp as well.
             if (effectiveMissCount > 0)
-                accuracyValue *= DiffUtils.Pow(1 - effectiveMissCount / totalHits, 10);
+                accuracyValue *= 0.98 * DiffUtils.Pow(1 - effectiveMissCount / totalHits, 15);
 
             // Increasing the accuracy value by object count for Blinds isn't ideal, so the minimum buff is given.
             if (score.Mods.Any(m => m is OsuModBlinds))

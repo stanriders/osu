@@ -71,7 +71,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double aimNoSlidersRating = calculateAimDifficultyRating(aimNoSlidersDifficultyValue);
             double speedRating = calculateDifficultyRating(speedDifficultyValue);
             double speedNoRhythmRating = calculateDifficultyRating(speedNoRhythmDifficultyValue);
-            double readingRating = calculateAimDifficultyRating(readingDifficultyValue);
+            double readingRating = calculateDifficultyRating(readingDifficultyValue);
 
             double sliderFactor = aimDifficultyValue > 0 ? aimNoSlidersRating / aimRating : 1;
             double rhythmFactor = speedDifficultyValue > 0 ? speedNoRhythmRating / speedRating : 1;

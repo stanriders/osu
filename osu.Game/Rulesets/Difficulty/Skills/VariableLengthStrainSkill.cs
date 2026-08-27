@@ -11,13 +11,6 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public class VariableLengthStrainSkillAttributes : ISkillAttributes
-    {
-        public required double Difficulty { get; init; }
-        public required List<double> ObjectDifficulties { get; init; }
-        public required double TopWeightedStrainsCount { get; init; }
-    }
-
     /// <summary>
     /// Similar to <see cref="StrainSkill"/>, but instead of strains having a fixed length, strains can be any length.
     /// A new <see cref="StrainPeak"/> is created for each <see cref="DifficultyHitObject"/>.
@@ -270,10 +263,11 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
             double difficulty = Aggregate();
 
-            return new VariableLengthStrainSkillAttributes
+            return new StrainSkillAttributes
             {
                 Difficulty = difficulty,
                 ObjectDifficulties = objectDifficulties,
+                StrainPeaks = GetCurrentStrainPeaks().ToList(),
                 TopWeightedStrainsCount = CountTopWeightedStrains(objectDifficulties, difficulty)
             };
         }
@@ -288,31 +282,14 @@ namespace osu.Game.Rulesets.Difficulty.Skills
 
                 double difficulty = Aggregate();
 
-                yield return new TimedSkillAttributes(new VariableLengthStrainSkillAttributes
+                yield return new TimedSkillAttributes(new StrainSkillAttributes
                 {
                     Difficulty = difficulty,
                     ObjectDifficulties = objectDifficulties,
+                    StrainPeaks = GetCurrentStrainPeaks().ToList(),
                     TopWeightedStrainsCount = CountTopWeightedStrains(objectDifficulties, difficulty)
                 }, difficultyHitObject.EndTime);
             }
-        }
-
-        /// <summary>
-        /// Used to store the difficulty of a section of a map.
-        /// </summary>
-        public readonly record struct StrainPeak : IComparable<StrainPeak>
-        {
-            public StrainPeak(double value, double sectionLength)
-            {
-                Value = value;
-                SectionLength = Math.Round(sectionLength);
-            }
-
-            public double Value { get; }
-            public double SectionLength { get; }
-
-            // Reverse sort, highest is first.
-            public int CompareTo(StrainPeak other) => other.Value.CompareTo(Value);
         }
     }
 }

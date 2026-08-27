@@ -164,10 +164,10 @@ namespace osu.Game.Rulesets.Taiko.Difficulty
                                                out double consistencyFactor)
         {
             List<double> peaks = combinePeaks(
-                rhythmAttributes.StrainPeaks,
-                readingAttributes.StrainPeaks,
-                colourAttributes.StrainPeaks,
-                staminaAttributes.StrainPeaks
+                rhythmAttributes.StrainPeaks.Select(x => x.Value).ToList(),
+                readingAttributes.StrainPeaks.Select(x => x.Value).ToList(),
+                colourAttributes.StrainPeaks.Select(x => x.Value).ToList(),
+                staminaAttributes.StrainPeaks.Select(x => x.Value).ToList()
             );
 
             if (peaks.Count == 0)

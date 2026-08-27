@@ -107,9 +107,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             }
         }
 
-        protected override double Aggregate()
+        protected override double Aggregate(List<StrainPeak> difficulties)
         {
-            double sum = GetCurrentStrainPeaks().Sum();
+            double sum = difficulties.Sum(x => x.Value);
 
             // Account for shorter maps having a higher ratio of 0 combo/100 combo flashlight radius.
             sum *= 0.7 + 0.1 * Math.Min(1.0, totalObjects / 200.0) +

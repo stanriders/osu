@@ -10,14 +10,6 @@ using osu.Game.Rulesets.Mods;
 
 namespace osu.Game.Rulesets.Difficulty.Skills
 {
-    public class StrainSkillAttributes : ISkillAttributes
-    {
-        public required double Difficulty { get; init; }
-        public required List<double> ObjectDifficulties { get; init; }
-        public required List<double> StrainPeaks { get; init; }
-        public required double TopWeightedStrainsCount { get; init; }
-    }
-
     /// <summary>
     /// Used to processes strain values of <see cref="DifficultyHitObject"/>s, keep track of strain levels caused by the processed objects
     /// and to calculate a final difficulty value representing the difficulty of hitting all the processed objects.
@@ -37,7 +29,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         private double currentSectionPeak; // We also keep track of the peak strain level in the current section.
         private double currentSectionEnd;
 
-        private readonly List<double> strainPeaks = new List<double>();
+        private readonly List<StrainPeak> strainPeaks = new List<StrainPeak>();
 
         public IReadOnlyList<Mod> Mods { get; init; }
         public IReadOnlyList<DifficultyHitObject> DifficultyHitObjects { get; init; }
@@ -98,7 +90,7 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// </summary>
         private void saveCurrentPeak()
         {
-            strainPeaks.Add(currentSectionPeak);
+            strainPeaks.Add(new StrainPeak(currentSectionPeak, SectionLength));
         }
 
         /// <summary>
@@ -125,25 +117,21 @@ namespace osu.Game.Rulesets.Difficulty.Skills
         /// Returns a live enumerable of the peak strains for each <see cref="SectionLength"/> section of the beatmap,
         /// including the peak of the current section.
         /// </summary>
-        protected IEnumerable<double> GetCurrentStrainPeaks() => strainPeaks.Append(currentSectionPeak);
+        protected IEnumerable<StrainPeak> GetCurrentStrainPeaks() => strainPeaks.Append(new StrainPeak(currentSectionPeak, SectionLength));
 
         /// <summary>
         /// Returns the calculated difficulty value representing all <see cref="DifficultyHitObject"/>s that have been processed up to this point.
         /// </summary>
-        protected virtual double Aggregate()
+        protected virtual double Aggregate(List<StrainPeak> peaks)
         {
             double difficulty = 0;
             double weight = 1;
 
-            // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
-            // These sections will not contribute to the difficulty.
-            var peaks = GetCurrentStrainPeaks().Where(p => p > 0);
-
             // Difficulty is the weighted sum of the highest strains from every section.
-            // We're sorting from highest to lowest strain.
-            foreach (double strain in peaks.OrderDescending())
+            // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
+            foreach (var strain in peaks.Where(p => p.Value > 0).OrderDescending())
             {
-                difficulty += strain * weight;
+                difficulty += strain.Value * weight;
                 weight *= DecayWeight;
             }
 
@@ -159,13 +147,15 @@ namespace osu.Game.Rulesets.Difficulty.Skills
                 objectDifficulties.Add(ProcessObject(difficultyHitObject));
             }
 
-            double difficulty = Aggregate();
+            var currentStrainPeaks = GetCurrentStrainPeaks().ToList();
+
+            double difficulty = Aggregate(currentStrainPeaks);
 
             return new StrainSkillAttributes
             {
                 Difficulty = difficulty,
                 ObjectDifficulties = objectDifficulties,
-                StrainPeaks = GetCurrentStrainPeaks().ToList(),
+                StrainPeaks = currentStrainPeaks,
                 TopWeightedStrainsCount = CountTopWeightedStrains(objectDifficulties, difficulty)
             };
         }
@@ -178,13 +168,15 @@ namespace osu.Game.Rulesets.Difficulty.Skills
             {
                 objectDifficulties.Add(ProcessObject(difficultyHitObject));
 
-                double difficulty = Aggregate();
+                var currentStrainPeaks = GetCurrentStrainPeaks().ToList();
+
+                double difficulty = Aggregate(currentStrainPeaks);
 
                 yield return new TimedSkillAttributes(new StrainSkillAttributes
                 {
                     Difficulty = difficulty,
                     ObjectDifficulties = objectDifficulties,
-                    StrainPeaks = GetCurrentStrainPeaks().ToList(),
+                    StrainPeaks = currentStrainPeaks,
                     TopWeightedStrainsCount = CountTopWeightedStrains(objectDifficulties, difficulty)
                 }, difficultyHitObject.EndTime);
             }

@@ -21,17 +21,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
 
-            double agilityDifficulty = DiffUtils.Pow(1000 / osuCurrObj.AdjustedDeltaTime, 2);
-
-            double distanceScaled = Math.Min(distance, distance_cap) / distance_cap;
+            double numerator = 1;
 
             if (osuCurrObj.Angle != null && osuPrevObj?.Angle != null)
             {
                 // angle switching bonus
-                distanceScaled += 0.5 * (1 - Math.Min(AngleUtils.CalculateAcuteness(osuCurrObj.Angle.Value), DiffUtils.Pow(AngleUtils.CalculateAcuteness(osuPrevObj.Angle.Value), 3)));
+                numerator += 0.5 * (1 - Math.Min(AngleUtils.CalculateAcuteness(osuCurrObj.Angle.Value), DiffUtils.Pow(AngleUtils.CalculateAcuteness(osuPrevObj.Angle.Value), 3)));
             }
 
-            double agilityDifficulty = distanceScaled / DiffUtils.Pow(osuCurrObj.AdjustedDeltaTime, 3);
+            double agilityDifficulty = numerator / DiffUtils.Pow(osuCurrObj.AdjustedDeltaTime, 3);
 
             agilityDifficulty *= DiffUtils.Pow(osuCurrObj.SmallCircleBonus, 1.5);
 

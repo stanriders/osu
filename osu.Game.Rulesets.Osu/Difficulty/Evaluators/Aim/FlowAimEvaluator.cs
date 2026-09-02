@@ -24,7 +24,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             if (current.BaseObject is Spinner || current.Index <= 1 || osuLastObj.BaseObject is Spinner)
                 return 0;
 
-            const double velocity_change_multiplier = 0.3;
+            const double velocity_change_multiplier = 0.0;
 
             var osuLastLastObj = (OsuDifficultyHitObject)current.Previous(1);
 

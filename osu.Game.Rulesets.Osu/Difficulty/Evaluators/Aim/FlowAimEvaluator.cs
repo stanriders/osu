@@ -25,7 +25,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             if (current.BaseObject is Spinner || current.Index <= 1 || osuLastObj.BaseObject is Spinner)
                 return 0;
 
-            const double velocity_change_multiplier = 0.5;
+            const double velocity_change_multiplier = 0.3;
             const double rhythm_change_cap = 0.1;
             const double acute_angle_multiplier = 1.3;
 
@@ -95,10 +95,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 //
                 // In both examples the first object in a flow pattern is evaluated as acute (likely snap) and the rest are wide (likely flow).
                 if (currAcuteness < nextAcuteness)
-                {
+            {
                     acuteness = currAcuteness;
                     overlapWeight = calculateOverlapWeight(osuCurrObj, osuLastObj, osuLastLastObj);
-                }
+            }
                 else
                 {
                     acuteness = nextAcuteness;

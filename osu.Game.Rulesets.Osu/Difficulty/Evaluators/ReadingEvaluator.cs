@@ -62,7 +62,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             const double density_multiplier = 1.95;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 5.1;
+            const double intersections_multiplier = 5.7;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);

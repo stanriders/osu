@@ -60,14 +60,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calculateDensityDifficulty(OsuDifficultyHitObject? nextObj, double velocity, double constantAngleNerfFactor,
                                                          double pastObjectDifficultyInfluence, double currentVisibleObjectDensity, List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject)
         {
-            const double density_multiplier = 2.0;
+            const double density_multiplier = 2.2;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 4.5;
+            const double intersections_multiplier = 5.5;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
 
-            double intersectionsDifficulty = DiffUtils.Pow(calculatePathIntersections(visibleObjects, currentObject, nextObj), 1.3) * intersections_multiplier * constantAngleNerfFactor;
+            double intersectionsDifficulty = calculatePathIntersections(visibleObjects, currentObject, nextObj) * intersections_multiplier * constantAngleNerfFactor;
 
             if (nextObj != null)
             {
@@ -321,6 +321,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                                                 DiffUtils.Smootherstep(nextVector.Length, 0, distance_influence_threshold) *
                                                 DiffUtils.Smootherstep(visibleToNextDistance, 0, distance_influence_threshold);
 
+                intersectionDifficulty = DiffUtils.Pow(intersectionDifficulty, 3);
+
                 // assume sliders are always taking more space and hence more likely to overlap with other objects
                 if (visibleObject.BaseObject is Slider)
                     intersectionDifficulty *= 1.2;
@@ -340,7 +342,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double t = Math.Clamp(-Vector2.Dot(originToCenter, movement) / movement.LengthSquared, 0, 1);
             double closestDistance = (originToCenter + movement * (float)t).Length;
 
-            return DiffUtils.Smootherstep(closestDistance, OsuDifficultyHitObject.NORMALISED_RADIUS, 0);
+            return DiffUtils.ReverseLerp(closestDistance, OsuDifficultyHitObject.NORMALISED_RADIUS, 0);
         }
     }
 }

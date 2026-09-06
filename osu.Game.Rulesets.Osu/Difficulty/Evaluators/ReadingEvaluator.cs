@@ -309,7 +309,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 if (visibleObject == nextObject)
                     continue;
 
-                var visibleObjectPosition = ((OsuHitObject)visibleObject.BaseObject).StackedPosition;
+                var visibleBase = (OsuHitObject)visibleObject.BaseObject;
+                var visibleObjectPosition = visibleBase.StackedPosition;
+
                 var visibleToCurrentVector = (currentPosition - visibleObjectPosition) * scalingFactor;
                 float visibleToNextDistance = (nextPosition - visibleObjectPosition).Length * scalingFactor;
 

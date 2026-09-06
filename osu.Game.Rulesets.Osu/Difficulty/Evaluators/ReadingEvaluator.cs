@@ -60,9 +60,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calculateDensityDifficulty(OsuDifficultyHitObject? nextObj, double velocity, double constantAngleNerfFactor,
                                                          double pastObjectDifficultyInfluence, double currentVisibleObjectDensity, List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject)
         {
-            const double density_multiplier = 1.85;
+            const double density_multiplier = 1.95;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 6.0;
+            const double intersections_multiplier = 5.1;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
@@ -204,7 +204,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 visibleObjectCount += visibility;
 
                 double visibilityWithHidden = hitObject.OpacityAt(current.BaseObject.StartTime, hidden);
-                if (visibilityWithHidden > 0.0) // 0.0 maybe?
+                if (visibilityWithHidden > 0.0)
                     objects.Add(hitObject);
 
                 hitObject = (OsuDifficultyHitObject?)hitObject.Next(0);

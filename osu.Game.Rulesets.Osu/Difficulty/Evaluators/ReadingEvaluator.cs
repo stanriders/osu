@@ -60,14 +60,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calculateDensityDifficulty(OsuDifficultyHitObject? nextObj, double velocity, double constantAngleNerfFactor,
                                                          double pastObjectDifficultyInfluence, double currentVisibleObjectDensity, List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject)
         {
-            const double density_multiplier = 1.95;
+            const double density_multiplier = 2.0;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 5.7;
+            const double intersections_multiplier = 4.5;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
 
-            double intersectionsDifficulty = calculatePathIntersections(visibleObjects, currentObject, nextObj) * intersections_multiplier * constantAngleNerfFactor;
+            double intersectionsDifficulty = DiffUtils.Pow(calculatePathIntersections(visibleObjects, currentObject, nextObj), 1.3) * intersections_multiplier * constantAngleNerfFactor;
 
             if (nextObj != null)
             {
@@ -288,7 +288,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (nextObject == null)
                 return 0;
 
-            if (visibleObjects.Count == 0)
+            // visibleObjects includes nextObject
+            if (visibleObjects.Count <= 1)
                 return 0;
 
             double difficulty = 0.0;
@@ -322,7 +323,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 // assume sliders are always taking more space and hence more likely to overlap with other objects
                 if (visibleObject.BaseObject is Slider)
-                    intersectionDifficulty *= 1.5;
+                    intersectionDifficulty *= 1.2;
 
                 difficulty += intersectionDifficulty;
             }

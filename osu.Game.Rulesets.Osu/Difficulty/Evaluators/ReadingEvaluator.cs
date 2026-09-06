@@ -291,7 +291,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             if (visibleObjects.Count == 0)
                 return 0;
 
-            double intersections = 0.0;
+            double difficulty = 0.0;
 
             var currBase = (OsuHitObject)currentObject.BaseObject;
             var nextBase = (OsuHitObject)nextObject.BaseObject;
@@ -313,32 +313,31 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 var visibleToCurrentVector = (currentPosition - visibleObjectPosition) * scalingFactor;
                 float visibleToNextDistance = (nextPosition - visibleObjectPosition).Length * scalingFactor;
 
-                // scale the bonus by distance of movement and distance between intersected object and movement end object
-                double intersectionBonus = checkMovementIntersect(nextVector, visibleToCurrentVector) *
-                                           DiffUtils.Smootherstep(nextVector.Length, 0, distance_influence_threshold) *
-                                           DiffUtils.Smootherstep(visibleToNextDistance, 0, distance_influence_threshold);
+                // scale the difficulty by distance of movement and distance between intersected object and movement end object
+                double intersectionDifficulty = calculateMovementIntersection(nextVector, visibleToCurrentVector) *
+                                                DiffUtils.Smootherstep(nextVector.Length, 0, distance_influence_threshold) *
+                                                DiffUtils.Smootherstep(visibleToNextDistance, 0, distance_influence_threshold);
 
-                // this is temp until sliders get proper reading impl
+                // assume sliders are always taking more space and hence more likely to overlap with other objects
                 if (visibleObject.BaseObject is Slider)
-                    intersectionBonus *= 1.5;
+                    intersectionDifficulty *= 1.5;
 
-                // TODO: approach circle intersections
-
-                intersections += intersectionBonus;
+                difficulty += intersectionDifficulty;
             }
 
-            return intersections;
+            return difficulty;
         }
 
-        private static double checkMovementIntersect(Vector2 movement, Vector2 originToCenter)
+        private static double calculateMovementIntersection(Vector2 movement, Vector2 originToCenter)
         {
             if (movement.LengthSquared == 0)
                 return 0.0;
 
+            // find where along the movement the cursor comes closest to the object
             double t = Math.Clamp(-Vector2.Dot(originToCenter, movement) / movement.LengthSquared, 0, 1);
-            double distance = (originToCenter + movement * (float)t).Length;
+            double closestDistance = (originToCenter + movement * (float)t).Length;
 
-            return 1.0 - DiffUtils.Smootherstep(distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
+            return DiffUtils.Smootherstep(closestDistance, OsuDifficultyHitObject.NORMALISED_RADIUS, 0);
         }
     }
 }

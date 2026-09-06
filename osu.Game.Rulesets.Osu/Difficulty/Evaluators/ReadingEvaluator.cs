@@ -62,7 +62,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             const double density_multiplier = 1.85;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 22.0;
+            const double intersections_multiplier = 6.0;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
@@ -301,19 +301,21 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var currentPosition = currBase.StackedPosition;
             var nextPosition = nextBase.StackedPosition;
 
-            var nextVector = (currentPosition - nextPosition) * scalingFactor;
-            float movementDistance = (nextPosition - currentPosition).Length * scalingFactor;
+            var nextVector = (nextPosition - currentPosition) * scalingFactor;
 
-            // calculate amount of circles intersecting the movement excluding current and next circles
-            foreach (OsuDifficultyHitObject visibleObject in visibleObjects.Skip(1))
+            // calculate amount of circles intersecting the movement excluding next circle
+            foreach (OsuDifficultyHitObject visibleObject in visibleObjects)
             {
+                if (visibleObject == nextObject)
+                    continue;
+
                 var visibleObjectPosition = ((OsuHitObject)visibleObject.BaseObject).StackedPosition;
                 var visibleToCurrentVector = (currentPosition - visibleObjectPosition) * scalingFactor;
                 float visibleToNextDistance = (nextPosition - visibleObjectPosition).Length * scalingFactor;
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
                 double intersectionBonus = checkMovementIntersect(nextVector, visibleToCurrentVector) *
-                                           DiffUtils.Smootherstep(movementDistance, 0, distance_influence_threshold) *
+                                           DiffUtils.Smootherstep(nextVector.Length, 0, distance_influence_threshold) *
                                            DiffUtils.Smootherstep(visibleToNextDistance, 0, distance_influence_threshold);
 
                 // this is temp until sliders get proper reading impl
@@ -328,39 +330,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             return intersections;
         }
 
-        private static double checkMovementIntersect(Vector2 direction, Vector2 endPoint)
+        private static double checkMovementIntersect(Vector2 movement, Vector2 originToCenter)
         {
-            double a = Vector2.Dot(direction, direction);
-            double b = 2 * Vector2.Dot(endPoint, direction);
-            double c = Vector2.Dot(endPoint, endPoint) - DiffUtils.Pow(OsuDifficultyHitObject.NORMALISED_RADIUS, 2);
-
-            double discriminant = b * b - 4 * a * c;
-
-            if (discriminant < 0)
-            {
-                // no intersection
+            if (movement.LengthSquared == 0)
                 return 0.0;
-            }
 
-            discriminant = Math.Sqrt(discriminant);
+            double t = Math.Clamp(-Vector2.Dot(originToCenter, movement) / movement.LengthSquared, 0, 1);
+            double distance = (originToCenter + movement * (float)t).Length;
 
-            double t1 = (-b - discriminant) / (2 * a);
-            double t2 = (-b + discriminant) / (2 * a);
-
-            if (t1 >= 0 && t1 <= 1)
-            {
-                // t1 is the intersection, and it's closer than t2
-                return t1;
-            }
-
-            // here t1 didn't intersect so we are either started
-            // inside the sphere or completely past it
-            if (t2 >= 0 && t2 <= 1)
-            {
-                return t2 / 2.0;
-            }
-
-            return 0.0;
+            return 1.0 - DiffUtils.Smootherstep(distance, 0, OsuDifficultyHitObject.NORMALISED_RADIUS);
         }
     }
 }

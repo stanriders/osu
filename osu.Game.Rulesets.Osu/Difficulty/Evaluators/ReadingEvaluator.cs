@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Difficulty.Preprocessing;
@@ -61,7 +62,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             const double density_multiplier = 1.85;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 17.0;
+            const double intersections_multiplier = 22.0;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
@@ -300,18 +301,18 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             var currentPosition = currBase.StackedPosition;
             var nextPosition = nextBase.StackedPosition;
 
-            var nextVector = currentPosition - nextPosition;
+            var nextVector = (currentPosition - nextPosition) * scalingFactor;
             float movementDistance = (nextPosition - currentPosition).Length * scalingFactor;
 
             // calculate amount of circles intersecting the movement excluding current and next circles
-            foreach (OsuDifficultyHitObject visibleObject in visibleObjects)
+            foreach (OsuDifficultyHitObject visibleObject in visibleObjects.Skip(1))
             {
                 var visibleObjectPosition = ((OsuHitObject)visibleObject.BaseObject).StackedPosition;
-                var visibleToCurrentVector = currentPosition - visibleObjectPosition;
+                var visibleToCurrentVector = (currentPosition - visibleObjectPosition) * scalingFactor;
                 float visibleToNextDistance = (nextPosition - visibleObjectPosition).Length * scalingFactor;
 
                 // scale the bonus by distance of movement and distance between intersected object and movement end object
-                double intersectionBonus = checkMovementIntersect(nextVector, OsuDifficultyHitObject.NORMALISED_RADIUS, visibleToCurrentVector) *
+                double intersectionBonus = checkMovementIntersect(nextVector, visibleToCurrentVector) *
                                            DiffUtils.Smootherstep(movementDistance, 0, distance_influence_threshold) *
                                            DiffUtils.Smootherstep(visibleToNextDistance, 0, distance_influence_threshold);
 
@@ -324,14 +325,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 intersections += intersectionBonus;
             }
 
-            return intersections; // / visibleObjects.Count;
+            return intersections;
         }
 
-        private static double checkMovementIntersect(Vector2 direction, double radius, Vector2 endPoint)
+        private static double checkMovementIntersect(Vector2 direction, Vector2 endPoint)
         {
             double a = Vector2.Dot(direction, direction);
             double b = 2 * Vector2.Dot(endPoint, direction);
-            double c = Vector2.Dot(endPoint, endPoint) - radius * radius;
+            double c = Vector2.Dot(endPoint, endPoint) - DiffUtils.Pow(OsuDifficultyHitObject.NORMALISED_RADIUS, 2);
 
             double discriminant = b * b - 4 * a * c;
 
@@ -361,7 +362,5 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             return 0.0;
         }
-
-        private static double l2Norm(Vector2 vector) => Math.Sqrt(DiffUtils.Pow(vector.X, 2) + DiffUtils.Pow(vector.Y, 2));
     }
 }

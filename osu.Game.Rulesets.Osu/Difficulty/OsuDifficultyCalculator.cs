@@ -66,11 +66,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             int totalHits = beatmap.HitObjects.Count;
 
+            double aimRating = calculateAimDifficultyRating(aimDifficultyValue);
+            double aimNoSlidersRating = calculateAimDifficultyRating(aimNoSlidersDifficultyValue);
+
             double sliderFactor = aimDifficultyValue > 0
-                ? calculateAimDifficultyRating(aimNoSlidersDifficultyValue) / calculateAimDifficultyRating(aimDifficultyValue)
+                ? aimNoSlidersRating / aimRating
                 : 1;
 
-            double aimRating = calculateAimDifficultyRating(aimDifficultyValue);
             double speedRating = calculateDifficultyRating(speedDifficultyValue);
             double readingRating = calculateDifficultyRating(readingDifficultyValue);
 
@@ -86,8 +88,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             var scoreAttributes = simulator.Simulate(WorkingBeatmap, beatmap);
 
             double baseAimPerformance = OsuPerformanceCalculator.DifficultyToPerformance(aimRating);
-            double baseSpeedPerformance = HarmonicSkill.DifficultyToPerformance(speedRating);
-            double baseReadingPerformance = HarmonicSkill.DifficultyToPerformance(readingRating);
+            double baseSpeedPerformance = OsuPerformanceCalculator.DifficultyToPerformance(speedRating);
+            double baseReadingPerformance = OsuPerformanceCalculator.DifficultyToPerformance(readingRating);
             double baseFlashlightPerformance = Flashlight.DifficultyToPerformance(flashlightRating);
             double baseCognitionPerformance = SumCognitionDifficulty(baseReadingPerformance, baseFlashlightPerformance);
 

@@ -275,21 +275,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             return Math.Clamp(2 / constantAngleCount, 0.2, 1);
         }
 
-        // Returns a nerfing factor for when objects are very distant in time, affecting reading less.
-        private static double getTimeNerfFactor(double deltaTime)
-        {
-            return Math.Clamp(2 - deltaTime / (reading_window_size / 2), 0, 1);
-        }
-
-        private static double highBpmBonus(double ms) => 1 / (1 - DiffUtils.Pow(0.8, ms / 1000));
-
+        /// <summary>
+        /// Returns how many times a path from <paramref name="currentObject"/> to <paramref name="nextObject"/> gets intersected by <paramref name="visibleObjects"/>.
+        /// </summary>
         private static double calculatePathIntersections(List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject, OsuDifficultyHitObject? nextObject)
         {
             if (nextObject == null)
                 return 0;
 
             // visibleObjects includes nextObject
-            if (visibleObjects.Count <= 1)
+            if (visibleObjects.Count < 2)
                 return 0;
 
             double difficulty = 0.0;
@@ -314,6 +309,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 double intersectionDifficulty = calculateMovementIntersection(nextVector, visibleToCurrentVector) *
                                                 DiffUtils.Smootherstep(nextVector.Length, OsuDifficultyHitObject.NORMALISED_RADIUS, distance_influence_threshold);
 
+                // exclude slight intersections
                 intersectionDifficulty = DiffUtils.Pow(intersectionDifficulty, 3);
 
                 // assume sliders are always taking more space and hence more likely to overlap with other objects
@@ -337,5 +333,13 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             return DiffUtils.ReverseLerp(closestDistance, OsuDifficultyHitObject.NORMALISED_RADIUS, 0);
         }
+
+        // Returns a nerfing factor for when objects are very distant in time, affecting reading less.
+        private static double getTimeNerfFactor(double deltaTime)
+        {
+            return Math.Clamp(2 - deltaTime / (reading_window_size / 2), 0, 1);
+        }
+
+        private static double highBpmBonus(double ms) => 1 / (1 - DiffUtils.Pow(0.8, ms / 1000));
     }
 }

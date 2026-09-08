@@ -62,7 +62,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         {
             const double density_multiplier = 2.05;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 2.35;
+            const double intersections_multiplier = 8.7;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
@@ -319,7 +319,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 difficulty += intersectionDifficulty;
             }
 
-            return difficulty;
+            return Math.Log10(1 + difficulty); // soft cap the amount of intersections
         }
 
         private static double calculateMovementIntersection(Vector2 movement, Vector2 originToCenter)

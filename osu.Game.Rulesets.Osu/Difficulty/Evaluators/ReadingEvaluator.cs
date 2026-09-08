@@ -60,9 +60,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
         private static double calculateDensityDifficulty(OsuDifficultyHitObject? nextObj, double velocity, double constantAngleNerfFactor,
                                                          double pastObjectDifficultyInfluence, double currentVisibleObjectDensity, List<OsuDifficultyHitObject> visibleObjects, OsuDifficultyHitObject currentObject)
         {
-            const double density_multiplier = 2.2;
+            const double density_multiplier = 2.05;
             const double density_difficulty_base = 2.5;
-            const double intersections_multiplier = 5.5;
+            const double intersections_multiplier = 4.15;
 
             // Consider future densities too because it can make the path the cursor takes less clear
             double futureObjectDifficultyInfluence = Math.Sqrt(currentVisibleObjectDensity);
@@ -295,14 +295,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double difficulty = 0.0;
 
             var currBase = (OsuHitObject)currentObject.BaseObject;
+            var currentPosition = currBase.StackedPosition;
+
             var nextBase = (OsuHitObject)nextObject.BaseObject;
 
             float scalingFactor = OsuDifficultyHitObject.NORMALISED_RADIUS / (float)currBase.Radius;
-
-            var currentPosition = currBase.StackedPosition;
-            var nextPosition = nextBase.StackedPosition;
-
-            var nextVector = (nextPosition - currentPosition) * scalingFactor;
+            var nextVector = (nextBase.StackedPosition - currentPosition) * scalingFactor;
 
             // calculate amount of circles intersecting the movement excluding next circle
             foreach (OsuDifficultyHitObject visibleObject in visibleObjects)
@@ -311,15 +309,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                     continue;
 
                 var visibleBase = (OsuHitObject)visibleObject.BaseObject;
-                var visibleObjectPosition = visibleBase.StackedPosition;
+                var visibleToCurrentVector = (currentPosition - visibleBase.StackedPosition) * scalingFactor;
 
-                var visibleToCurrentVector = (currentPosition - visibleObjectPosition) * scalingFactor;
-                float visibleToNextDistance = (nextPosition - visibleObjectPosition).Length * scalingFactor;
-
-                // scale the difficulty by distance of movement and distance between intersected object and movement end object
                 double intersectionDifficulty = calculateMovementIntersection(nextVector, visibleToCurrentVector) *
-                                                DiffUtils.Smootherstep(nextVector.Length, 0, distance_influence_threshold) *
-                                                DiffUtils.Smootherstep(visibleToNextDistance, 0, distance_influence_threshold);
+                                                DiffUtils.Smootherstep(nextVector.Length, OsuDifficultyHitObject.NORMALISED_RADIUS, distance_influence_threshold);
 
                 intersectionDifficulty = DiffUtils.Pow(intersectionDifficulty, 3);
 

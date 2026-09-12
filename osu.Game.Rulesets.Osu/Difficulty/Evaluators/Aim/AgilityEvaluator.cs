@@ -17,6 +17,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         /// </summary>
         public static double EvaluateDifficultyOf(DifficultyHitObject current)
         {
+            const double previous_delta_influence = 0.75;
+
             if (current.BaseObject is Spinner)
                 return 0;
 
@@ -32,7 +34,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 numerator += AngleUtils.CalculateWideness(osuCurrObj.Angle.Value);
             }
 
-            double agilityDifficulty = numerator / DiffUtils.Pow(osuCurrObj.AdjustedDeltaTime, 3);
+            double previousDelta = osuPrevObj?.AdjustedDeltaTime * DiffUtils.ReverseLerp(osuPrevObj?.LazyJumpDistance ?? 0, OsuDifficultyHitObject.NORMALISED_RADIUS, 0) ?? 0;
+
+            double combinedDelta = osuCurrObj.AdjustedDeltaTime + previousDelta * previous_delta_influence;
+
+            double agilityDifficulty = numerator / DiffUtils.Pow(combinedDelta, 3);
 
             agilityDifficulty *= osuCurrObj.SmallCircleBonus;
 

@@ -125,8 +125,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime),
                     Math.Abs(prevVelocity - currVelocity));
 
-                flowDifficulty += overlapVelocityBuff *
-                                  distRatio *
+                double velocityChangeBonus = overlapVelocityBuff * distRatio;
+
+                velocityChangeBonus *= DiffUtils.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 3);
+
+                flowDifficulty += velocityChangeBonus *
                                   calculateOverlapWeight(osuCurrObj, osuLastObj, osuLastLastObj) *
                                   velocity_change_multiplier;
             }

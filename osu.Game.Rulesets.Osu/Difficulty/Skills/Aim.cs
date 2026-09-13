@@ -92,8 +92,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             if (Mods.Any(m => m is OsuModTouchDevice))
             {
-                // we don't adjust agility here since agility represents TD difficulty in a decent enough way
-                snapDifficulty = DiffUtils.Pow(snapDifficulty, 0.89);
+                agilityDifficulty = DiffUtils.Pow(agilityDifficulty, 0.9);
+                snapDifficulty = DiffUtils.Pow(snapDifficulty, 0.93);
                 combinedSnapDifficulty = DiffUtils.Norm(combined_snap_norm_exponent, snapDifficulty, agilityDifficulty);
             }
 

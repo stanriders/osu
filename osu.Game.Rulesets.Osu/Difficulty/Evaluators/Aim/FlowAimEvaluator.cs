@@ -118,6 +118,10 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                     currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
                 }
 
+                // Cap velocity to 1.5 diameter distance
+                currVelocity = Math.Min(currVelocity, OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.5 / osuCurrObj.AdjustedDeltaTime);
+                prevVelocity = Math.Min(prevVelocity, OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.5 / osuLastObj.AdjustedDeltaTime);
+
                 // Scale with ratio of difference compared to 0.5 * max dist.
                 double distRatio = DiffUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
 

@@ -105,8 +105,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             }
 
             // cap velocity to at least 1 radius distance to only award snap patterns
-            currVelocity = Math.Max(currVelocity, OsuDifficultyHitObject.NORMALISED_RADIUS / osuCurrObj.AdjustedDeltaTime);
-            prevVelocity = Math.Max(prevVelocity, OsuDifficultyHitObject.NORMALISED_RADIUS / osuLastObj.AdjustedDeltaTime);
+            currVelocity = Math.Max(currVelocity, OsuDifficultyHitObject.NORMALISED_DIAMETER / osuCurrObj.AdjustedDeltaTime);
+            prevVelocity = Math.Max(prevVelocity, OsuDifficultyHitObject.NORMALISED_DIAMETER / osuLastObj.AdjustedDeltaTime);
 
             // Scale with ratio of difference compared to 0.5 * max dist.
             double distRatio = DiffUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);

@@ -209,8 +209,11 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             double aimValue = DifficultyToPerformance(aimDifficulty);
 
-            double lengthBonus = 0.95 + 0.35 * Math.Min(1.0, totalHits / 2000.0) +
-                                 (totalHits > 2000 ? Math.Log10(totalHits / 2000.0) * 0.5 : 0.0);
+            double maxComboScaling = attributes.MaxCombo / (double)totalHits;
+            double scoreComboRescaled = scoreMaxCombo / maxComboScaling;
+
+            double lengthBonus = 0.95 + 0.35 * Math.Min(1.0, scoreComboRescaled / 2000.0) +
+                                 (scoreComboRescaled > 2000 ? Math.Log10(scoreComboRescaled / 2000.0) * 0.5 : 0.0);
             aimValue *= lengthBonus;
 
             if (effectiveMissCount > 0)

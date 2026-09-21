@@ -34,7 +34,15 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                 numerator += AngleUtils.CalculateWideness(osuCurrObj.Angle.Value);
             }
 
-            double previousDelta = osuPrevObj?.AdjustedDeltaTime * DiffUtils.ReverseLerp(osuPrevObj?.LazyJumpDistance ?? 0, OsuDifficultyHitObject.NORMALISED_RADIUS, 0) ?? 0;
+            // For objects that are stacked we want to reduce the agility difficulty slightly by combining delta times of both objects together
+            // Because we can assume that they likely would be done in one movement.
+            double previousDelta = 0;
+
+            if (osuPrevObj != null)
+            {
+                previousDelta = osuPrevObj.AdjustedDeltaTime *
+                                DiffUtils.ReverseLerp(osuPrevObj.LazyJumpDistance, OsuDifficultyHitObject.NORMALISED_RADIUS, 0);
+            }
 
             double combinedDelta = osuCurrObj.AdjustedDeltaTime + previousDelta * previous_delta_influence;
 

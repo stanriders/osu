@@ -138,7 +138,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         private static double calculateVelocityChangeBonus(bool withSliderTravelDistance, double prevVelocity, double currVelocity,
                                                            double currDistance, OsuDifficultyHitObject osuCurrObj, OsuDifficultyHitObject osuLastObj)
         {
-            const double velocity_change_multiplier = 0.9;
+            const double velocity_change_multiplier = 1.0;
 
             if (Math.Max(prevVelocity, currVelocity) == 0)
                 return 0;
@@ -150,8 +150,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             }
 
             // Cap velocity to at least 1 radius distance to only award snap patterns
-            currVelocity = Math.Max(currVelocity, OsuDifficultyHitObject.NORMALISED_RADIUS / osuCurrObj.AdjustedDeltaTime);
-            prevVelocity = Math.Max(prevVelocity, OsuDifficultyHitObject.NORMALISED_RADIUS / osuLastObj.AdjustedDeltaTime);
+            const double cap = OsuDifficultyHitObject.NORMALISED_RADIUS * 1.0;
+            currVelocity = Math.Max(currVelocity, cap / osuCurrObj.AdjustedDeltaTime);
+            prevVelocity = Math.Max(prevVelocity, cap / osuLastObj.AdjustedDeltaTime);
 
             // Scale with ratio of difference compared to 0.5 * max dist.
             double distRatio = DiffUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
@@ -162,7 +163,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double velocityChangeBonus = overlapVelocityBuff * distRatio;
 
             // Penalize for rhythm changes.
-            velocityChangeBonus *= DiffUtils.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 2);
+            velocityChangeBonus *= DiffUtils.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 3);
 
             return velocityChangeBonus * velocity_change_multiplier;
         }

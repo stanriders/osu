@@ -25,7 +25,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             if (current.BaseObject is Spinner || current.Index <= 1 || osuLastObj.BaseObject is Spinner)
                 return 0;
 
-            const double velocity_change_multiplier = 1.5;
+            const double velocity_change_multiplier = 0.7;
             const double rhythm_change_cap = 0.1;
             const double acute_angle_multiplier = 1.3;
 
@@ -118,16 +118,16 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
                     currVelocity = currDistance / osuCurrObj.AdjustedDeltaTime;
                 }
 
-                // Cap velocity to 1.3 diameter distance
-                currVelocity = Math.Min(currVelocity, OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.3 / osuCurrObj.AdjustedDeltaTime);
-                prevVelocity = Math.Min(prevVelocity, OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.3 / osuLastObj.AdjustedDeltaTime);
-
                 // Scale with ratio of difference compared to 0.5 * max dist.
                 double distRatio = DiffUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
 
-                double velocityChangeBonus = Math.Abs(prevVelocity - currVelocity) * distRatio;
+                // Reward for % distance up to 125 / strainTime for overlaps where velocity is still changing.
+                double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime),
+                    Math.Abs(prevVelocity - currVelocity));
 
-                velocityChangeBonus *= DiffUtils.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 2);
+                double velocityChangeBonus = overlapVelocityBuff * distRatio;
+
+                velocityChangeBonus *= DiffUtils.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 3);
 
                 flowDifficulty += velocityChangeBonus *
                                   distRatio *

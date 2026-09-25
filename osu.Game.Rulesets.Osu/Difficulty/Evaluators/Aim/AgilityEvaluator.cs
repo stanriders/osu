@@ -29,9 +29,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             if (osuCurrObj.Angle != null && osuPrevObj?.Angle != null)
             {
+                double addition = 0;
+
                 // angle switching bonus
-                baseDifficulty += 0.5 * (1 - Math.Min(AngleUtils.CalculateAcuteness(osuCurrObj.Angle.Value), DiffUtils.Pow(AngleUtils.CalculateAcuteness(osuPrevObj.Angle.Value), 3)));
-                baseDifficulty += AngleUtils.CalculateWideness(osuCurrObj.Angle.Value);
+                addition += 0.75 * (1 - Math.Min(AngleUtils.CalculateAcuteness(osuCurrObj.Angle.Value), DiffUtils.Pow(AngleUtils.CalculateAcuteness(osuPrevObj.Angle.Value), 3)));
+
+                addition += AngleUtils.CalculateWideness(osuCurrObj.Angle.Value);
+
+                // Penalize rhythm changes.
+                addition *= DiffUtils.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuPrevObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuPrevObj.AdjustedDeltaTime), 3);
+
+                baseDifficulty += addition;
             }
 
             // For objects that are stacked we want to reduce the agility difficulty slightly by combining delta times of both objects together
@@ -46,7 +54,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double combinedDelta = osuCurrObj.AdjustedDeltaTime + previousDelta * previous_delta_influence;
 
-            double agilityDifficulty = baseDifficulty * 1_000_000 / DiffUtils.Pow(combinedDelta, 3);
+            double agilityDifficulty = baseDifficulty * 10_000_000 / DiffUtils.Pow(combinedDelta, 3.1);
 
             agilityDifficulty *= osuCurrObj.SmallCircleBonus;
 

@@ -111,8 +111,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                     if (deltaDifference > deltaDifferenceEpsilon)
                     {
                         // bpm change is into slider, this is easy acc window
-                        if (currObj.BaseObject is Slider)
-                            effectiveDifficulty *= 0.5;
+                        //if (currObj.BaseObject is Slider)
+                        //    effectiveDifficulty *= 0.5;
 
                         // repeated island polarity (2 -> 4, 3 -> 5)
                         if (island.IsSimilarPolarity(previousIsland, deltaDifferenceEpsilon))
@@ -182,8 +182,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                     firstDeltaSwitch = true;
 
                     // bpm change is into slider, this is easy acc window
-                    if (currObj.BaseObject is Slider)
-                        effectiveDifficulty *= 0.6;
+                    //if (currObj.BaseObject is Slider)
+                    //    effectiveDifficulty *= 0.6;
 
                     // bpm change was from a slider, this is easier typically than circle -> circle
                     // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders

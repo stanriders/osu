@@ -187,8 +187,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
                     // bpm change was from a slider, this is easier typically than circle -> circle
                     // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                    if (prevObj.BaseObject is Slider)
-                        effectiveDifficulty *= 0.6;
+                    //if (prevObj.BaseObject is Slider)
+                    //    effectiveDifficulty *= 0.6;
 
                     startDifficulty = effectiveDifficulty;
 

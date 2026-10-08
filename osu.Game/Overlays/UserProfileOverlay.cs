@@ -132,9 +132,22 @@ namespace osu.Game.Overlays
             {
                 userReq = user.OnlineID > 1 ? new GetUserRequest(user.OnlineID, ruleset) : new GetUserRequest(user.Username, ruleset);
                 userReq.Success += u => userLoadComplete(u, ruleset);
+                userReq.Failure += userLoadFailure;
 
                 API.Queue(userReq);
                 loadingLayer.Show();
+            }
+        }
+
+        private void userLoadFailure(Exception e)
+        {
+            Header.User.Value = null;
+
+            if (e.InnerException?.Message == @"NotFound")
+            {
+                Header.ShowUserNotFound();
+                tabs?.Hide();
+                loadingLayer.Hide();
             }
         }
 
@@ -152,6 +165,7 @@ namespace osu.Game.Overlays
 
             var userProfile = new UserProfileData(loadedUser, actualRuleset);
             Header.User.Value = userProfile;
+            tabs.Show();
 
             if (loadedUser.ProfileOrder != null)
             {

@@ -2,14 +2,18 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System.Diagnostics;
+using osu.Framework.Allocation;
 using osu.Framework.Bindables;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
+using osu.Framework.Graphics.Sprites;
 using osu.Framework.Localisation;
 using osu.Game.Graphics;
+using osu.Game.Graphics.Sprites;
 using osu.Game.Overlays.Profile.Header;
 using osu.Game.Overlays.Profile.Header.Components;
 using osu.Game.Resources.Localisation.Web;
+using osuTK;
 
 namespace osu.Game.Overlays.Profile
 {
@@ -21,6 +25,9 @@ namespace osu.Game.Overlays.Profile
         private DetailHeaderContainer detailHeaderContainer;
 
         private TopHeaderContainer topHeaderContainer = null!;
+
+        private FillFlowContainer userInfoContainer;
+        private FillFlowContainer userNotFoundContainer;
 
         public ProfileHeader()
         {
@@ -34,47 +41,100 @@ namespace osu.Game.Overlays.Profile
             // Haphazardly guaranteed by OverlayHeader constructor (see CreateBackground / CreateContent).
             Debug.Assert(centreHeaderContainer != null);
             Debug.Assert(detailHeaderContainer != null);
+            Debug.Assert(userInfoContainer != null);
+            Debug.Assert(userNotFoundContainer != null);
+        }
+
+        [BackgroundDependencyLoader]
+        private void load()
+        {
+            User.BindValueChanged(x =>
+            {
+                if (x.NewValue != null)
+                {
+                    userNotFoundContainer.Hide();
+                    TabControlContainer.Show();
+                    userInfoContainer.Show();
+                }
+            });
+        }
+
+        public void ShowUserNotFound()
+        {
+            userNotFoundContainer.Show();
+            TabControlContainer.Hide();
+            userInfoContainer.Hide();
         }
 
         protected override Drawable CreateBackground() => Empty();
 
-        protected override Drawable CreateContent() => new FillFlowContainer
+        protected override Drawable CreateContent() => new Container
         {
             RelativeSizeAxes = Axes.X,
             AutoSizeAxes = Axes.Y,
-            Direction = FillDirection.Vertical,
             Children = new Drawable[]
             {
-                topHeaderContainer = new TopHeaderContainer
+                userInfoContainer = new FillFlowContainer
                 {
                     RelativeSizeAxes = Axes.X,
-                    User = { BindTarget = User },
+                    AutoSizeAxes = Axes.Y,
+                    Direction = FillDirection.Vertical,
+                    Children = new Drawable[]
+                    {
+                        topHeaderContainer = new TopHeaderContainer
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            User = { BindTarget = User },
+                        },
+                        new BannerHeaderContainer
+                        {
+                            User = { BindTarget = User },
+                        },
+                        new BadgeHeaderContainer
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            User = { BindTarget = User },
+                        },
+                        detailHeaderContainer = new DetailHeaderContainer
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            User = { BindTarget = User },
+                        },
+                        new ProfileProcessingNotice(),
+                        centreHeaderContainer = new CentreHeaderContainer
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            User = { BindTarget = User },
+                        },
+                        new BottomHeaderContainer
+                        {
+                            RelativeSizeAxes = Axes.X,
+                            User = { BindTarget = User },
+                        },
+                    }
                 },
-                new BannerHeaderContainer
-                {
-                    User = { BindTarget = User },
-                },
-                new BadgeHeaderContainer
+                userNotFoundContainer = new FillFlowContainer
                 {
                     RelativeSizeAxes = Axes.X,
-                    User = { BindTarget = User },
-                },
-                detailHeaderContainer = new DetailHeaderContainer
-                {
-                    RelativeSizeAxes = Axes.X,
-                    User = { BindTarget = User },
-                },
-                new ProfileProcessingNotice(),
-                centreHeaderContainer = new CentreHeaderContainer
-                {
-                    RelativeSizeAxes = Axes.X,
-                    User = { BindTarget = User },
-                },
-                new BottomHeaderContainer
-                {
-                    RelativeSizeAxes = Axes.X,
-                    User = { BindTarget = User },
-                },
+                    AutoSizeAxes = Axes.Y,
+                    Direction = FillDirection.Vertical,
+                    Padding = new MarginPadding { Vertical = 20, Horizontal = 50 },
+                    Spacing = new Vector2(10),
+                    Alpha = 0,
+                    Children = new Drawable[]
+                    {
+                        new OsuSpriteText
+                        {
+                            Font = FontUsage.Default.With(size: 30),
+                            Text = UsersStrings.ShowNotFoundTitle
+                        },
+                        new OsuSpriteText
+                        {
+                            Font = FontUsage.Default,
+                            Text = UsersStrings.ShowNotFoundReason2 // other reasons only make sense in the context of web
+                        }
+                    }
+                }
             }
         };
 

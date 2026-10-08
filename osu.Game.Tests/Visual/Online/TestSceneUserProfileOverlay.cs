@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using NUnit.Framework;
 using osu.Framework.Allocation;
 using osu.Framework.Configuration;
@@ -266,6 +267,52 @@ namespace osu.Game.Tests.Visual.Online
             AddStep("show user", () => profile.ShowUser(new APIUser { Id = 1 }));
             AddStep("set language", () => configManager.SetValue(FrameworkSetting.Locale, "ko"));
             AddStep("restore language", () => configManager.SetValue(FrameworkSetting.Locale, string.Empty));
+        }
+
+        [Test]
+        public void TestNotFound()
+        {
+            GetUserRequest pendingRequest = null!;
+
+            AddStep("set up request handling", () =>
+            {
+                dummyAPI.HandleRequest = req =>
+                {
+                    if (dummyAPI.State.Value == APIState.Online && req is GetUserRequest getUserRequest)
+                    {
+                        pendingRequest = getUserRequest;
+                        return true;
+                    }
+
+                    return false;
+                };
+            });
+
+            AddStep("show nonexistent user", () => profile.ShowUser(new APIUser { Id = 99999 }));
+            AddStep("complete not found request", () => pendingRequest.TriggerFailure(new AggregateException(new WebException("NotFound"))));
+
+            AddStep("show existing user", () => profile.ShowUser(new APIUser { Id = 1 }));
+            AddStep("complete existing request", () => pendingRequest.TriggerSuccess(TEST_USER));
+        }
+
+        [Test]
+        public void TestAPIFailure()
+        {
+            AddStep("set up request handling", () =>
+            {
+                dummyAPI.HandleRequest = req =>
+                {
+                    if (dummyAPI.State.Value == APIState.Online && req is GetUserRequest getUserRequest)
+                    {
+                        getUserRequest.TriggerFailure(new Exception());
+                        return true;
+                    }
+
+                    return false;
+                };
+            });
+            AddStep("show user", () => profile.ShowUser(new APIUser { Id = 1 }));
+            AddToggleStep("toggle visibility", visible => profile.State.Value = visible ? Visibility.Visible : Visibility.Hidden);
         }
 
         public static readonly APIUser TEST_USER = new APIUser

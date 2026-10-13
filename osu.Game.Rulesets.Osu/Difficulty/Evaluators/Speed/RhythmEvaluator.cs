@@ -23,12 +23,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
             const int history_time_max = 5 * 1000; // 5 seconds
             const int history_objects_max = 32;
-            const double rhythm_overall_multiplier = 1.15;
+            const double rhythm_overall_multiplier = 1.3;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
             double rhythmComplexitySum = 0;
 
-            double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat * 0.3;
+            double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat * 0.5;
 
             double startDifficulty = 0; // store the difficulty of the current start of an island to buff for tighter rhythms
 
@@ -75,7 +75,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
                 double windowPenalty = Math.Clamp((deltaDifference - deltaDifferenceEpsilon) / deltaDifferenceEpsilon, 0, 1);
 
-                double effectiveDifficulty = getEffectiveDifficulty(deltaDifferenceRatio) * windowPenalty * differenceMultiplier;
+                double effectiveDifficulty = getEffectiveDifficulty(deltaDifferenceRatio);
 
                 // if previous object is a slider it might be easier to tap since you don't have to do a whole tapping motion
                 // while a full deltatime might end up some weird ratio the "unpress->tap" motion might be simple
@@ -91,6 +91,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                     double sliderEffectiveDifficulty = Math.Min(getEffectiveDifficulty(sliderLazyDeltaDifferenceRatio), getEffectiveDifficulty(sliderRealDeltaDifferenceRatio));
                     effectiveDifficulty = Math.Min(sliderEffectiveDifficulty, effectiveDifficulty);
                 }
+
+                effectiveDifficulty *= windowPenalty * differenceMultiplier;
 
                 var currIsland = currObj.Island;
                 var prevIsland = currIsland?.PreviousIsland;
@@ -131,7 +133,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                                 if (iterationIsland.AlmostEquals(currIsland, deltaDifferenceEpsilon))
                                 {
                                     // what the fuck??
-                                    if (prevIsland.AlmostEquals(currIsland, deltaDifferenceEpsilon))
+                                    //if (prevIsland.AlmostEquals(currIsland, deltaDifferenceEpsilon))
                                         occurrences++;
                                 }
                             }
@@ -174,7 +176,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                         // scale down the difficulty if the object is double-tappable
                         effectiveDifficulty *= 1 - prevObj.CalculateDoubleTapFeasibility(currObj) * 0.75;
 
-                        if (currIsland.DeltaCount > 1)
+                        if (true)
                         {
                             rhythmComplexitySum += Math.Sqrt(effectiveDifficulty * startDifficulty) * currHistoricalDecay;
                         }
@@ -220,7 +222,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double getEffectiveDifficulty(double deltaDifferenceRatio)
         {
-            const double rhythm_ratio_difficulty_multiplier = 26.0;
+            const double rhythm_ratio_difficulty_multiplier = 20.0;
 
             // Take only the fractional part of the value since we're only interested in punishing multiples
             double deltaDifferenceFraction = deltaDifferenceRatio - Math.Truncate(deltaDifferenceRatio);

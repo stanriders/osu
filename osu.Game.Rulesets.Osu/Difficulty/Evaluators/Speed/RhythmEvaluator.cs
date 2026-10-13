@@ -2,7 +2,6 @@
 // See the LICENCE file in the repository root for full licence text.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 using osu.Game.Rulesets.Difficulty.Utils;
@@ -23,12 +22,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
             const int history_time_max = 5 * 1000; // 5 seconds
             const int history_objects_max = 32;
-            const double rhythm_overall_multiplier = 1.3;
+            const double rhythm_overall_multiplier = 1.25;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
             double rhythmComplexitySum = 0;
 
-            double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat * 0.5;
+            double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat * 0.3;
 
             double startDifficulty = 0; // store the difficulty of the current start of an island to buff for tighter rhythms
 
@@ -222,7 +221,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double getEffectiveDifficulty(double deltaDifferenceRatio)
         {
-            const double rhythm_ratio_difficulty_multiplier = 20.0;
+            const double rhythm_ratio_difficulty_multiplier = 28.0;
 
             // Take only the fractional part of the value since we're only interested in punishing multiples
             double deltaDifferenceFraction = deltaDifferenceRatio - Math.Truncate(deltaDifferenceRatio);

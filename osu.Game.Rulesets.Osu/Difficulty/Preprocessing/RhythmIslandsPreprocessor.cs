@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using osu.Game.Rulesets.Difficulty.Preprocessing;
 
 namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
@@ -14,7 +13,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         {
             var islands = new List<Island>();
 
-            var currIsland = new Island(int.MaxValue);
+            Island? currIsland = null;
+            Island? prevIsland = null;
 
             foreach (var currObj in difficultyHitObjects)
             {
@@ -24,36 +24,37 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 if (osuPrevObj == null)
                     continue;
 
-                // Use custom cap value to ensure that at this point delta time is actually zero
-                const double delta_min_value = 1e-7;
-
-                double currDelta = Math.Max(osuCurrObj.DeltaTime, delta_min_value);
-                double prevDelta = Math.Max(osuPrevObj.DeltaTime, delta_min_value);
+                int currDelta = (int)osuCurrObj.DeltaTime;
+                int prevDelta = (int)osuPrevObj.DeltaTime;
 
                 double deltaDifference = Math.Abs(prevDelta - currDelta);
                 double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat * 0.3;
 
-                if (currIsland.Delta == int.MaxValue)
+                if (currIsland == null)
                 {
-                    currIsland = new Island((int)currDelta)
-                    {
-                        PreviousIsland = islands.LastOrDefault()
-                    };
+                    currIsland = new Island(currDelta);
                     islands.Add(currIsland);
                 }
 
                 if (deltaDifference <= deltaDifferenceEpsilon)
                 {
                     // island is still progressing
-                    currIsland.AddDelta((int)currDelta);
+                    currIsland.AddDelta(currDelta);
                 }
 
                 if (deltaDifference > deltaDifferenceEpsilon)
                 {
-                    currIsland = new Island((int)currDelta)
+                    currIsland = new Island(currDelta)
                     {
-                        PreviousIsland = islands.LastOrDefault()
+                        PreviousIsland = prevIsland
                     };
+
+                    bool speedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
+
+                    // FIXME: this is here just to preserve legacy values. it is incorrect.
+                    if (!speedingUp)
+                        prevIsland = currIsland;
+
                     islands.Add(currIsland);
                 }
 

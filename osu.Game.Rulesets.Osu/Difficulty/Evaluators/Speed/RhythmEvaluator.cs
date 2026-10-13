@@ -192,6 +192,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
                     startDifficulty = effectiveDifficulty;
 
+                    previousIsland = island;
                     island = new Island((int)currDelta);
                 }
 

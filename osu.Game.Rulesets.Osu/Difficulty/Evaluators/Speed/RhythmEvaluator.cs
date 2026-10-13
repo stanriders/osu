@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
             const int history_time_max = 5 * 1000; // 5 seconds
             const int history_objects_max = 32;
-            const double rhythm_overall_multiplier = 1.0;
+            const double rhythm_overall_multiplier = 1.1;
 
             double rhythmComplexitySum = 0;
 
@@ -107,6 +107,41 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                     }
                 }
 
+                // do the same thing to the prev-prevprev object too
+                if (prevPrevObj.BaseObject is Slider)
+                {
+                    double sliderLazyEndDelta = prevObj.MinimumJumpTime;
+                    double sliderLazyDeltaDifferenceRatio = Math.Max(sliderLazyEndDelta, prevDelta) / Math.Min(sliderLazyEndDelta, prevDelta);
+                    double sliderLazyEffectiveDifficulty = getEffectiveDifficulty(sliderLazyDeltaDifferenceRatio);
+
+                    double sliderRealEndDelta = prevObj.LastObjectEndDeltaTime;
+                    double sliderRealDeltaDifferenceRatio = Math.Max(sliderRealEndDelta, prevDelta) / Math.Min(sliderRealEndDelta, prevDelta);
+                    double sliderRealEffectiveDifficulty = getEffectiveDifficulty(sliderRealDeltaDifferenceRatio);
+
+                    double sliderEndDelta;
+                    double sliderEffectiveDifficulty;
+
+                    if (sliderLazyEffectiveDifficulty < sliderRealEffectiveDifficulty)
+                    {
+                        sliderEndDelta = sliderLazyEndDelta;
+                        sliderEffectiveDifficulty = sliderLazyEffectiveDifficulty;
+                    }
+                    else
+                    {
+                        sliderEndDelta = sliderRealEndDelta;
+                        sliderEffectiveDifficulty = sliderRealEffectiveDifficulty;
+                    }
+
+                    double prevPrevDelta = Math.Max(prevPrevObj.DeltaTime, delta_min_value);
+                    double prevEffectiveDifficulty = getEffectiveDifficulty(Math.Max(prevDelta, prevPrevDelta) / Math.Min(prevDelta, prevPrevDelta));
+
+                    if (sliderEffectiveDifficulty < prevEffectiveDifficulty)
+                    {
+                        // if slider effective difficulty is easier switch prevDelta to slider delta
+                        prevDelta = sliderEndDelta;
+                    }
+                }
+
                 double deltaDifference = Math.Abs(prevDelta - currDelta);
 
                 double windowPenalty = Math.Clamp((deltaDifference - deltaDifferenceEpsilon) / deltaDifferenceEpsilon, 0, 1);
@@ -132,7 +167,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                     {
                         // bpm change is into slider, this is easy acc window
                         if (currObj.BaseObject is Slider)
-                            effectiveDifficulty *= 0.5;
+                            effectiveDifficulty *= 0.75;
 
                         // repeated island polarity (2 -> 4, 3 -> 5)
                         if (island.IsSimilarPolarity(previousIsland, deltaDifferenceEpsilon))
@@ -203,12 +238,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
                     // bpm change is into slider, this is easy acc window
                     if (currObj.BaseObject is Slider)
-                        effectiveDifficulty *= 0.6;
-
-                    // bpm change was from a slider, this is easier typically than circle -> circle
-                    // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                    if (prevObj.BaseObject is Slider)
-                        effectiveDifficulty *= 0.6;
+                        effectiveDifficulty *= 0.75;
 
                     startDifficulty = effectiveDifficulty;
 
@@ -228,7 +258,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double getEffectiveDifficulty(double deltaDifferenceRatio)
         {
-            const double rhythm_ratio_difficulty_multiplier = 26.0;
+            const double rhythm_ratio_difficulty_multiplier = 28.0;
 
             // Take only the fractional part of the value since we're only interested in punishing multiples
             double deltaDifferenceFraction = deltaDifferenceRatio - Math.Truncate(deltaDifferenceRatio);

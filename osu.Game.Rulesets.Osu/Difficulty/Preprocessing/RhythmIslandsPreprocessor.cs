@@ -49,11 +49,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                         PreviousIsland = prevIsland
                     };
 
-                    bool speedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
-
-                    // FIXME: this is here just to preserve legacy values. it is incorrect.
-                    if (!speedingUp)
-                        prevIsland = currIsland;
+                    prevIsland = currIsland;
 
                     islands.Add(currIsland);
                 }

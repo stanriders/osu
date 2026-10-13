@@ -22,7 +22,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
             const int history_time_max = 5 * 1000; // 5 seconds
             const int history_objects_max = 32;
-            const double rhythm_overall_multiplier = 1.25;
+            const double rhythm_overall_multiplier = 0.72;
 
             var osuCurrObj = (OsuDifficultyHitObject)current;
             double rhythmComplexitySum = 0;
@@ -30,8 +30,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
             double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat * 0.3;
 
             double startDifficulty = 0; // store the difficulty of the current start of an island to buff for tighter rhythms
-
-            bool firstDeltaSwitch = false;
 
             int historicalNoteCount = Math.Min(current.Index, history_objects_max);
 
@@ -96,114 +94,53 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                 var currIsland = currObj.Island;
                 var prevIsland = currIsland?.PreviousIsland;
 
-                if (firstDeltaSwitch)
+                if (deltaDifference > deltaDifferenceEpsilon)
                 {
-                    if (deltaDifference > deltaDifferenceEpsilon)
-                    {
-                        // bpm change is into slider, this is easy acc window
-                        if (currObj.BaseObject is Slider)
-                            effectiveDifficulty *= 0.5;
-
-                        // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
-                        if (Math.Max(prevPrevObj.DeltaTime, delta_min_value) > prevDelta + deltaDifferenceEpsilon && prevDelta > currDelta + deltaDifferenceEpsilon)
-                            effectiveDifficulty *= 0.125;
-
-                        if (currIsland != null && prevIsland != null)
-                        {
-                            // repeated island polarity (2 -> 4, 3 -> 5)
-                            if (currIsland.IsSimilarPolarity(prevIsland, deltaDifferenceEpsilon))
-                                effectiveDifficulty *= 0.5;
-
-                            // repeated island size (ex: triplet -> triplet)
-                            // TODO: remove this nerf since its staying here only for balancing purposes because of the flawed ratio calculation
-                            if (prevIsland.DeltaCount == currIsland.DeltaCount)
-                                effectiveDifficulty *= 0.5;
-
-                            var iterationIsland = prevIsland;
-                            int occurrences = 0;
-
-                            for (int j = 0; j < 5; j++)
-                            {
-                                iterationIsland = iterationIsland.PreviousIsland;
-
-                                if (iterationIsland == null)
-                                    break;
-
-                                if (iterationIsland.AlmostEquals(currIsland, deltaDifferenceEpsilon))
-                                {
-                                    // what the fuck??
-                                    //if (prevIsland.AlmostEquals(currIsland, deltaDifferenceEpsilon))
-                                        occurrences++;
-                                }
-                            }
-
-                            if (occurrences > 0)
-                            {
-                                // repeated island (ex: triplet -> triplet)
-                                double power = DiffUtils.Logistic(currIsland.Delta, maxValue: 2.75, multiplier: 0.24, midpointOffset: 58.33);
-                                effectiveDifficulty *= Math.Min(3.0 / occurrences, DiffUtils.Pow(1.0 / occurrences, power));
-                            }
-                        }
-
-                        bool isSpeedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
-
-                        if (isSpeedingUp)
-                            effectiveDifficulty *= 0.65;
-
-                        /*
-                        bool found = false;
-                                                foreach (var existingIsland in islands)
-                                                {
-                                                    if (existingIsland.AlmostEquals(island, deltaDifferenceEpsilon))
-                                                    {
-                                                        // only increase island occurrences if they're going one after another
-                                                        if (previousIsland.AlmostEquals(island, deltaDifferenceEpsilon))
-                                                            existingIsland.Occurrences++;
-
-                                                        // repeated island (ex: triplet -> triplet)
-                                                        double power = DiffUtils.Logistic(island.Delta, maxValue: 2.75, multiplier: 0.24, midpointOffset: 58.33);
-                                                        effectiveDifficulty *= Math.Min(3.0 / existingIsland.Occurrences, DiffUtils.Pow(1.0 / existingIsland.Occurrences, power));
-
-                                                        found = true;
-                                                        break;
-                                                    }
-                                                }
-
-                                                if (!found && currObj.Island.DeltaCount > 0)
-                                                    islands.Add(island);
-                        */
-                        // scale down the difficulty if the object is double-tappable
-                        effectiveDifficulty *= 1 - prevObj.CalculateDoubleTapFeasibility(currObj) * 0.75;
-
-                        if (true)
-                        {
-                            rhythmComplexitySum += Math.Sqrt(effectiveDifficulty * startDifficulty) * currHistoricalDecay;
-                        }
-                        else
-                        {
-                            // constant difficulty for single-note islands
-                            rhythmComplexitySum += 0.7 * currHistoricalDecay;
-                        }
-
-                        startDifficulty = effectiveDifficulty;
-
-                        if (prevDelta + deltaDifferenceEpsilon < currDelta) // we're slowing down, stop counting
-                            firstDeltaSwitch = false; // if we're speeding up, this stays true and we keep counting island size.
-                    }
-                }
-                else if (prevDelta > currDelta + deltaDifferenceEpsilon) // we're speeding up
-                {
-                    // Begin counting island until we change speed again.
-                    firstDeltaSwitch = true;
-
                     // bpm change is into slider, this is easy acc window
                     if (currObj.BaseObject is Slider)
-                        effectiveDifficulty *= 0.6;
+                        effectiveDifficulty *= 0.5;
 
-                    // bpm change was from a slider, this is easier typically than circle -> circle
-                    // unintentional side effect is that bursts with kicksliders at the ends might have lower difficulty than bursts without sliders
-                    if (prevObj.BaseObject is Slider)
-                        effectiveDifficulty *= 0.6;
+                    // previous increase happened a note ago, 1/1->1/2-1/4, dont want to buff this.
+                    if (Math.Max(prevPrevObj.DeltaTime, delta_min_value) > prevDelta + deltaDifferenceEpsilon && prevDelta > currDelta + deltaDifferenceEpsilon)
+                        effectiveDifficulty *= 0.125;
+
+                    if (currIsland != null && prevIsland != null)
+                    {
+                        // repeated island polarity (2 -> 4, 3 -> 5)
+                        if (currIsland.IsSimilarPolarity(prevIsland, deltaDifferenceEpsilon))
+                            effectiveDifficulty *= 0.5;
+
+                        var iterationIsland = prevIsland;
+                        int occurrences = 0;
+
+                        for (int j = 0; j < 5; j++)
+                        {
+                            iterationIsland = iterationIsland.PreviousIsland;
+
+                            if (iterationIsland == null)
+                                break;
+
+                            if (iterationIsland.AlmostEquals(currIsland, deltaDifferenceEpsilon))
+                            {
+                                occurrences++;
+                            }
+                        }
+
+                        if (occurrences > 0)
+                        {
+                            // repeated island (ex: triplet -> triplet)
+                            double power = DiffUtils.Logistic(currIsland.Delta, maxValue: 2.75, multiplier: 0.24, midpointOffset: 58.33);
+                            effectiveDifficulty *= Math.Min(3.0 / occurrences, DiffUtils.Pow(1.0 / occurrences, power));
+                        }
+                    }
+
+                    bool isSpeedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
+
+
+                    // scale down the difficulty if the object is double-tappable
+                    effectiveDifficulty *= 1 - prevObj.CalculateDoubleTapFeasibility(currObj) * 0.75;
+
+                    rhythmComplexitySum += Math.Sqrt(effectiveDifficulty * startDifficulty) * currHistoricalDecay;
 
                     startDifficulty = effectiveDifficulty;
                 }
@@ -221,7 +158,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static double getEffectiveDifficulty(double deltaDifferenceRatio)
         {
-            const double rhythm_ratio_difficulty_multiplier = 28.0;
+            const double rhythm_ratio_difficulty_multiplier = 20.0;
 
             // Take only the fractional part of the value since we're only interested in punishing multiples
             double deltaDifferenceFraction = deltaDifferenceRatio - Math.Truncate(deltaDifferenceRatio);

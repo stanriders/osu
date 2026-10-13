@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
 
             const int history_time_max = 5 * 1000; // 5 seconds
             const int history_objects_max = 32;
-            const double rhythm_overall_multiplier = 0.95;
+            const double rhythm_overall_multiplier = 1.0;
 
             double rhythmComplexitySum = 0;
 
@@ -68,22 +68,9 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                 double currDelta = Math.Max(currObj.DeltaTime, delta_min_value);
                 double prevDelta = Math.Max(prevObj.DeltaTime, delta_min_value);
 
-                double deltaDifference = Math.Abs(prevDelta - currDelta);
-
-                // Make sure to always have the current island initialised - if we don't do it here it will only initialise on the next rhythm change
-                if (island.Delta == int.MaxValue)
-                    island = new Island((int)currDelta);
-
                 // calculate how much current delta difference deserves a rhythm bonus
                 // this function is meant to reduce rhythm bonus for deltas that are multiples of each other (i.e 100 and 200)
-                double deltaDifferenceRatio = Math.Max(prevDelta, currDelta) / Math.Min(prevDelta, currDelta);
-
-                // reduce ratio bonus if delta difference is too big
-                double differenceMultiplier = Math.Clamp(2.0 - deltaDifferenceRatio / 8.0, 0.0, 1.0);
-
-                double windowPenalty = Math.Clamp((deltaDifference - deltaDifferenceEpsilon) / deltaDifferenceEpsilon, 0, 1);
-
-                double effectiveDifficulty = getEffectiveDifficulty(deltaDifferenceRatio);
+                double effectiveDifficulty = getEffectiveDifficulty(Math.Max(prevDelta, currDelta) / Math.Min(prevDelta, currDelta));
 
                 // if previous object is a slider it might be easier to tap since you don't have to do a whole tapping motion
                 // while a full deltatime might end up some weird ratio the "unpress->tap" motion might be simple
@@ -92,15 +79,46 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                 {
                     double sliderLazyEndDelta = currObj.MinimumJumpTime;
                     double sliderLazyDeltaDifferenceRatio = Math.Max(sliderLazyEndDelta, currDelta) / Math.Min(sliderLazyEndDelta, currDelta);
+                    double sliderLazyEffectiveDifficulty = getEffectiveDifficulty(sliderLazyDeltaDifferenceRatio);
 
                     double sliderRealEndDelta = currObj.LastObjectEndDeltaTime;
                     double sliderRealDeltaDifferenceRatio = Math.Max(sliderRealEndDelta, currDelta) / Math.Min(sliderRealEndDelta, currDelta);
+                    double sliderRealEffectiveDifficulty = getEffectiveDifficulty(sliderRealDeltaDifferenceRatio);
 
-                    double sliderEffectiveDifficulty = Math.Min(getEffectiveDifficulty(sliderLazyDeltaDifferenceRatio), getEffectiveDifficulty(sliderRealDeltaDifferenceRatio));
-                    effectiveDifficulty = Math.Min(sliderEffectiveDifficulty, effectiveDifficulty);
+                    double sliderEndDelta;
+                    double sliderEffectiveDifficulty;
+
+                    if (sliderLazyEffectiveDifficulty < sliderRealEffectiveDifficulty)
+                    {
+                        sliderEndDelta = sliderLazyEndDelta;
+                        sliderEffectiveDifficulty = sliderLazyEffectiveDifficulty;
+                    }
+                    else
+                    {
+                        sliderEndDelta = sliderRealEndDelta;
+                        sliderEffectiveDifficulty = sliderRealEffectiveDifficulty;
+                    }
+
+                    if (sliderEffectiveDifficulty < effectiveDifficulty)
+                    {
+                        // if slider effective difficulty is easier switch currDelta to slider delta
+                        currDelta = sliderEndDelta;
+                        effectiveDifficulty = sliderEffectiveDifficulty;
+                    }
                 }
 
+                double deltaDifference = Math.Abs(prevDelta - currDelta);
+
+                double windowPenalty = Math.Clamp((deltaDifference - deltaDifferenceEpsilon) / deltaDifferenceEpsilon, 0, 1);
+
+                // reduce ratio bonus if delta difference is too big
+                double differenceMultiplier = Math.Clamp(2.0 - Math.Max(prevDelta, currDelta) / Math.Min(prevDelta, currDelta) / 8.0, 0.0, 1.0);
+
                 effectiveDifficulty *= windowPenalty * differenceMultiplier;
+
+                // Make sure to always have the current island initialised - if we don't do it here it will only initialise on the next rhythm change
+                if (island.Delta == int.MaxValue)
+                    island = new Island((int)currDelta);
 
                 if (deltaDifference < deltaDifferenceEpsilon)
                 {

@@ -134,9 +134,6 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Speed
                         }
                     }
 
-                    bool isSpeedingUp = prevDelta > currDelta + deltaDifferenceEpsilon;
-
-
                     // scale down the difficulty if the object is double-tappable
                     effectiveDifficulty *= 1 - prevObj.CalculateDoubleTapFeasibility(currObj) * 0.75;
 

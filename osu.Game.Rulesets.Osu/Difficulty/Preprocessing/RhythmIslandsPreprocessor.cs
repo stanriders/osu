@@ -28,7 +28,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 int prevDelta = (int)osuPrevObj.DeltaTime;
 
                 double deltaDifference = Math.Abs(prevDelta - currDelta);
-                double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat * 0.3;
+                double deltaDifferenceEpsilon = osuCurrObj.HitWindowGreat;
 
                 if (currIsland == null)
                 {

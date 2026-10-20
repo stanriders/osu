@@ -105,7 +105,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
         private static double calculateVelocityChangeBonus(bool withSliderTravelDistance, double prevVelocity, double currVelocity,
                                                            double currDistance, OsuDifficultyHitObject osuCurrObj, OsuDifficultyHitObject osuLastObj)
         {
-            const double velocity_change_multiplier = 0.85;
+            const double velocity_change_multiplier = 1;
 
             if (Math.Max(prevVelocity, currVelocity) == 0)
                 return 0;
@@ -127,6 +127,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double overlapVelocityBuff = Math.Min(OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25 / Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), Math.Abs(prevVelocity - currVelocity));
 
             double velocityChangeBonus = overlapVelocityBuff * distRatio;
+
+            velocityChangeBonus = Math.Min(0.5, velocityChangeBonus); // just hard cap who gives a fuck at this point man
 
             // Penalize for rhythm changes.
             velocityChangeBonus *= DiffUtils.Pow(Math.Min(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime) / Math.Max(osuCurrObj.AdjustedDeltaTime, osuLastObj.AdjustedDeltaTime), 3);

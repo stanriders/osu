@@ -165,7 +165,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double overlappedNotesWeight,
             bool withSliderTravelDistance)
         {
-            const double velocity_change_multiplier = 1.4;
+            const double velocity_change_multiplier = 1.5;
 
             if (Math.Max(prevVelocity, currVelocity) == 0)
                 return 0;
@@ -183,7 +183,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
 
             double velocityChangeBonus = Math.Abs(prevVelocity - currVelocity) * distRatio;
 
-            velocityChangeBonus = Math.Min(0.75, velocityChangeBonus); // just hard cap who gives a fuck at this point man
+            velocityChangeBonus = Math.Min(0.65, velocityChangeBonus); // just hard cap who gives a fuck at this point man
 
             velocityChangeBonus *= DiffUtils.Pow(Math.Min(current.AdjustedDeltaTime, previous.AdjustedDeltaTime) / Math.Max(current.AdjustedDeltaTime, previous.AdjustedDeltaTime), 3);
 

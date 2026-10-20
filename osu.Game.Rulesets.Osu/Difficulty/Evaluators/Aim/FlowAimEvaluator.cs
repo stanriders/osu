@@ -165,7 +165,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double overlappedNotesWeight,
             bool withSliderTravelDistance)
         {
-            const double velocity_change_multiplier = 1.5;
+            const double velocity_change_multiplier = 1.4;
 
             if (Math.Max(prevVelocity, currVelocity) == 0)
                 return 0;
@@ -173,7 +173,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             if (withSliderTravelDistance)
                 currVelocity = currDistance / current.AdjustedDeltaTime;
 
-            const double velocity_distance_cap = OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.1;
+            const double velocity_distance_cap = OsuDifficultyHitObject.NORMALISED_DIAMETER * 1.25;
 
             currVelocity = Math.Min(currVelocity, velocity_distance_cap / current.AdjustedDeltaTime);
             prevVelocity = Math.Min(prevVelocity, velocity_distance_cap / previous.AdjustedDeltaTime);
@@ -182,6 +182,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double distRatio = DiffUtils.Smoothstep(Math.Abs(prevVelocity - currVelocity) / Math.Max(prevVelocity, currVelocity), 0, 1);
 
             double velocityChangeBonus = Math.Abs(prevVelocity - currVelocity) * distRatio;
+
+            velocityChangeBonus = Math.Min(0.75, velocityChangeBonus); // just hard cap who gives a fuck at this point man
 
             velocityChangeBonus *= DiffUtils.Pow(Math.Min(current.AdjustedDeltaTime, previous.AdjustedDeltaTime) / Math.Max(current.AdjustedDeltaTime, previous.AdjustedDeltaTime), 3);
 

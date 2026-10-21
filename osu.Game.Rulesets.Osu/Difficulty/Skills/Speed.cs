@@ -44,19 +44,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             currentStrain *= decay;
             currentStrain += calculateAdjustedDifficulty(current) * (1 - decay) * skill_multiplier;
 
-            double currentRhythm = RhythmEvaluator.EvaluateDifficultyOf(current);
-
-            double totalStrain = currentStrain * currentRhythm;
-
             if (current.BaseObject is Slider)
-                sliderStrains.Add(totalStrain);
+                sliderStrains.Add(currentStrain);
 
-            return totalStrain;
+            return currentStrain;
         }
 
         private double calculateAdjustedDifficulty(DifficultyHitObject current)
         {
             double difficulty = SpeedEvaluator.EvaluateDifficultyOf(current);
+
+            difficulty *= RhythmEvaluator.EvaluateDifficultyOf(current);
 
             if (Mods.Any(m => m is OsuModAutopilot))
                 difficulty *= 0.5;

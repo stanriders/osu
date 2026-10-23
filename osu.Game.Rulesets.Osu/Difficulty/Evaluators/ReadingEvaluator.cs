@@ -23,7 +23,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 return 0;
 
             var currObj = (OsuDifficultyHitObject)current;
-            var nextObj = (OsuDifficultyHitObject)current.Next(0);
+            var nextObj = (OsuDifficultyHitObject)current.Next();
 
             double velocity = Math.Max(1, currObj.JumpDistance / currObj.AdjustedDeltaTime); // Only allow velocity to buff
 
@@ -136,7 +136,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             // Apply a soft cap to general HD reading to account for partial memorization
             hiddenDifficulty = DiffUtils.Pow(hiddenDifficulty, 0.4) * hidden_multiplier;
 
-            var previousObj = (OsuDifficultyHitObject)currObj.Previous(0);
+            var previousObj = (OsuDifficultyHitObject)currObj.Previous();
 
             // Buff perfect stacks only if current note is completely invisible at the time you click the previous note.
             if (currObj.LazyJumpDistance == 0 && currObj.OpacityAt(previousObj.BaseObject.StartTime, true) == 0 && previousObj.StartTime > currObj.StartTime - currObj.Preempt)
@@ -189,7 +189,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             double visibleObjectCount = 0;
             objects = new List<OsuDifficultyHitObject>();
 
-            OsuDifficultyHitObject? hitObject = (OsuDifficultyHitObject)current.Next(0);
+            OsuDifficultyHitObject? hitObject = (OsuDifficultyHitObject)current.Next();
 
             while (hitObject != null)
             {
@@ -207,7 +207,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
                 if (visibilityWithHidden > 0.0)
                     objects.Add(hitObject);
 
-                hitObject = (OsuDifficultyHitObject?)hitObject.Next(0);
+                hitObject = (OsuDifficultyHitObject?)hitObject.Next();
             }
 
             return visibleObjectCount;

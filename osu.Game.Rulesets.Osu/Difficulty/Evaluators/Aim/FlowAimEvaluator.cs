@@ -213,7 +213,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double o2 = calculateOverlapFactor(current, lastLast);
             double o3 = calculateOverlapFactor(previous, lastLast);
 
-            return 1 - o1 * o2 * o3;
+            return 1 - Math.Pow(o1 * o2 * o3, 1.0 / 3.0);
         }
 
         private static double calculateOverlapFactor(OsuDifficultyHitObject first, OsuDifficultyHitObject second)

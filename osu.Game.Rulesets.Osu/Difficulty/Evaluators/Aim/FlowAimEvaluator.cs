@@ -165,7 +165,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double overlappedNotesWeight,
             bool withSliderTravelDistance)
         {
-            const double velocity_change_multiplier = 1.9;
+            const double velocity_change_multiplier = 1.8;
 
             if (Math.Max(prevVelocity, currVelocity) == 0)
                 return 0;
@@ -223,7 +223,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double objectRadius = firstBase.Radius;
 
             double distance = Vector2.Distance(firstBase.StackedPosition, secondBase.StackedPosition);
-            return Math.Clamp(1 - DiffUtils.Pow(Math.Max(distance - objectRadius, 0) / objectRadius, 2), 0, 1);
+            return Math.Clamp(1 - DiffUtils.Pow(Math.Max(distance - objectRadius, 0) / objectRadius, 3), 0, 1);
         }
     }
 }

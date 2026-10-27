@@ -171,7 +171,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             float playfieldLength = OsuPlayfield.BASE_SIZE.Length;
             float playfieldUsageLength = (max - min).Length;
 
-            double playfieldUsageRatio = playfieldUsageLength / playfieldLength;
+            double playfieldUsageRatio = Math.Clamp(playfieldUsageLength / playfieldLength, 0, 1);
 
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.

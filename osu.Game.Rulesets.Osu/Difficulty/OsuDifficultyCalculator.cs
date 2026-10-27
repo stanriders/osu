@@ -15,7 +15,9 @@ using osu.Game.Rulesets.Osu.Difficulty.Skills;
 using osu.Game.Rulesets.Osu.Difficulty.Utils;
 using osu.Game.Rulesets.Osu.Mods;
 using osu.Game.Rulesets.Osu.Objects;
+using osu.Game.Rulesets.Osu.UI;
 using osu.Game.Utils;
+using osuTK;
 
 namespace osu.Game.Rulesets.Osu.Difficulty
 {
@@ -153,13 +155,29 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             List<DifficultyHitObject> objects = new List<DifficultyHitObject>(beatmap.HitObjects.Count);
 
+            if (beatmap.HitObjects.Count == 0)
+                return objects;
+
             double clockRate = ModUtils.CalculateRateWithMods(mods);
+
+            float minX = beatmap.HitObjects.Cast<OsuHitObject>().MinBy(x => x.StackedPosition.X)!.StackedPosition.X;
+            float minY = beatmap.HitObjects.Cast<OsuHitObject>().MinBy(x => x.StackedPosition.Y)!.StackedPosition.Y;
+            float maxX = beatmap.HitObjects.Cast<OsuHitObject>().MaxBy(x => x.StackedPosition.X)!.StackedPosition.X;
+            float maxY = beatmap.HitObjects.Cast<OsuHitObject>().MaxBy(x => x.StackedPosition.Y)!.StackedPosition.Y;
+
+            var min = new Vector2(minX, minY);
+            var max = new Vector2(maxX, maxY);
+
+            float playfieldLength = OsuPlayfield.BASE_SIZE.Length;
+            float playfieldUsageLength = (max - min).Length;
+
+            double playfieldUsageRatio = playfieldUsageLength / playfieldLength;
 
             // The first jump is formed by the first two hitobjects of the map.
             // If the map has less than two OsuHitObjects, the enumerator will not return anything.
             for (int i = 1; i < beatmap.HitObjects.Count; i++)
             {
-                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], clockRate, objects, objects.Count));
+                objects.Add(new OsuDifficultyHitObject(beatmap.HitObjects[i], beatmap.HitObjects[i - 1], clockRate, objects, objects.Count, playfieldUsageRatio));
             }
 
             return objects;

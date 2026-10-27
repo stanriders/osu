@@ -132,12 +132,19 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
         /// </summary>
         public double OverallDifficulty => (79.5 - HitWindowGreat / 2) / 6;
 
-        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index)
+        /// <summary>
+        /// We want to account for maps that use high circle size but utilise only a small portion of the playfield to make the map easier.
+        /// This is a ratio of playfield-to-playfield-usage that is used to adjust object's base (not normalised) radius.
+        /// </summary>
+        private readonly double playfieldUsageRadiusMultiplier;
+
+        public OsuDifficultyHitObject(HitObject hitObject, HitObject lastObject, double clockRate, List<DifficultyHitObject> objects, int index, double playfieldUsageRatio = 1.0)
             : base(hitObject, lastObject, clockRate, objects, index)
         {
             // Capped to 25ms to prevent difficulty calculation breaking from simultaneous objects.
             AdjustedDeltaTime = Math.Max(DeltaTime, MIN_DELTA_TIME);
             LastObjectEndDeltaTime = Previous() is DifficultyHitObject last ? Math.Max(StartTime - last.EndTime, MIN_DELTA_TIME) : AdjustedDeltaTime;
+            playfieldUsageRadiusMultiplier = 0.75 + 0.25 * playfieldUsageRatio;
 
             computeSliderCursorPosition();
             setDistances(clockRate);
@@ -212,7 +219,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 return;
 
             // We will scale distances by this factor, so we can assume a uniform CircleSize among beatmaps.
-            float scalingFactor = NORMALISED_RADIUS / (float)BaseObject.Radius;
+            double scalingFactor = NORMALISED_RADIUS / (BaseObject.Radius / playfieldUsageRadiusMultiplier);
 
             var lastDifficultyObject = Previous() as OsuDifficultyHitObject;
             var lastLastDifficultyObject = Previous(1) as OsuDifficultyHitObject;
@@ -250,7 +257,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
                 // Thus, the player is assumed to jump the minimum of these two distances in all cases.
                 //
 
-                float tailJumpDistance = Vector2.Subtract(lastSlider.TailCircle.StackedPosition, BaseObject.StackedPosition).Length * scalingFactor;
+                double tailJumpDistance = Vector2.Subtract(lastSlider.TailCircle.StackedPosition, BaseObject.StackedPosition).Length * scalingFactor;
                 MinimumJumpDistance = Math.Max(0, Math.Min(LazyJumpDistance - (maximum_slider_radius - assumed_slider_radius), tailJumpDistance - maximum_slider_radius));
             }
 
@@ -335,7 +342,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Preprocessing
 
             Vector2 currCursorPosition = slider.StackedPosition;
 
-            double scalingFactor = NORMALISED_RADIUS / slider.Radius; // lazySliderDistance is coded to be sensitive to scaling, this makes the maths easier with the thresholds being used.
+            double scalingFactor = NORMALISED_RADIUS / (slider.Radius / playfieldUsageRadiusMultiplier); // lazySliderDistance is coded to be sensitive to scaling, this makes the maths easier with the thresholds being used.
 
             for (int i = 1; i < nestedObjects.Count; i++)
             {

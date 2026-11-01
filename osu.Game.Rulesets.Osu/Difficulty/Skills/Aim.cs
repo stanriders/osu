@@ -83,7 +83,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         private double calculateTotalValue(double snapDifficulty, double agilityDifficulty, double flowDifficulty)
         {
-            const double skill_multiplier_total = 1.045;
+            const double skill_multiplier_total = 1.09;
             const double combined_snap_norm_exponent = 1.5;
 
             // We compare flow to combined snap and agility because snap by itself doesn't have enough difficulty to be above flow on streams
@@ -166,9 +166,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double difficulty = 0;
             double time = 0;
 
-            var strains = GetCurrentStrainPeaks()
-                          .Where(p => p.Value > 0)
-                          .ToList();
+            var strains = getReducedStrainPeaks();
 
             // Difficulty is a continuous weighted sum of the sorted strains
             foreach (StrainPeak strain in strains)
@@ -208,7 +206,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         private IEnumerable<StrainPeak> getReducedStrainPeaks()
         {
             const int reduced_section_time = 4000;
-            const double reduced_strain_baseline = 0.727;
+            const double reduced_strain_baseline = 0.85;
 
             // Sections with 0 strain are excluded to avoid worst-case time complexity of the following sort (e.g. /b/2351871).
             // These sections will not contribute to the difficulty.

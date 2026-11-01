@@ -144,7 +144,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         {
             // Legacy length bonus. This should eventually be replaced by summation improvements.
             // It's intentionally put here instead of the Aim skill to make sure difficult strain count (and miss penalty by extension) doesn't get affected by the length bonus.
-            difficultyValue *= 0.975 + 0.18 * Math.Min(1.0, totalHits / 2000.0) + (totalHits > 2000 ? Math.Log10(totalHits / 2000.0) * 0.2 : 0.0);
+            //difficultyValue *= 0.975 + 0.18 * Math.Min(1.0, totalHits / 2000.0) + (totalHits > 2000 ? Math.Log10(totalHits / 2000.0) * 0.2 : 0.0);
 
             return DiffUtils.Pow(difficultyValue, 0.63) * 0.02275;
         }

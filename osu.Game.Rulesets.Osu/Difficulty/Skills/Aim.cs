@@ -58,7 +58,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             const double skill_multiplier_snap = 78.3;
             const double skill_multiplier_agility = 32.5;
-            const double skill_multiplier_flow = 251.0;
+            const double skill_multiplier_flow = 252.0;
             const double skill_multiplier_spinner = 22.0;
 
             if (current.BaseObject is Spinner)
@@ -79,14 +79,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             totalDifficulty *= 0.985 + DiffUtils.Pow(Math.Max(0, ((OsuDifficultyHitObject)current).OverallDifficulty), 2) / 4000;
 
             // Legacy length bonus. This should eventually be replaced by summation improvements.
-            totalDifficulty *= 0.975 + 0.18 * Math.Min(1.0, current.Index / 2000.0) + (current.Index > 2000 ? Math.Log10(current.Index / 2000.0) * 0.2 : 0.0);
+            totalDifficulty *= 0.96 + 0.2 * Math.Min(1.0, current.Index / 2000.0) + (current.Index > 2000 ? Math.Log10(current.Index / 2000.0) * 0.2 : 0.0);
 
             return totalDifficulty;
         }
 
         private double calculateTotalValue(double snapDifficulty, double agilityDifficulty, double flowDifficulty)
         {
-            const double skill_multiplier_total = 1.13;
+            const double skill_multiplier_total = 1.14;
             const double combined_snap_norm_exponent = 1.5;
 
             // We compare flow to combined snap and agility because snap by itself doesn't have enough difficulty to be above flow on streams

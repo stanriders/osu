@@ -167,11 +167,14 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         protected override Skill[] CreateSkills(IBeatmap beatmap, Mod[] mods)
         {
+            int hitCircleCount = beatmap.HitObjects.Count(h => h is HitCircle);
+            int sliderCount = beatmap.HitObjects.Count(h => h is Slider);
+
             var skills = new List<Skill>
             {
                 new Aim(mods, true),
                 new Aim(mods, false),
-                new Speed(mods),
+                new Speed(mods, hitCircleCount, sliderCount),
                 new Reading(mods)
             };
 

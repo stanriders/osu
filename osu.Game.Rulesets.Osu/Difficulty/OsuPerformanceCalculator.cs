@@ -60,6 +60,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         private double drainRate;
 
         private double? speedDeviation;
+        private double? totalDeviation;
 
         private double aimEstimatedSliderBreaks;
         private double speedEstimatedSliderBreaks;
@@ -151,6 +152,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
                 effectiveMissCount = Math.Min(effectiveMissCount + countOk * okMultiplier + countMeh * mehMultiplier, totalHits);
             }
 
+            totalDeviation = calculateTotalDeviation(osuAttributes);
             speedDeviation = calculateSpeedDeviation(osuAttributes);
 
             double aimValue = computeAimValue(score, osuAttributes);
@@ -161,7 +163,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double flashlightValue = computeFlashlightValue(score, osuAttributes);
             double cognitionValue = OsuDifficultyCalculator.SumCognitionDifficulty(readingValue, flashlightValue);
 
-            double totalValue = DiffUtils.Norm(PERFORMANCE_NORM_EXPONENT, aimValue, speedValue, accuracyValue, cognitionValue) * multiplier;
+            double totalValue = DiffUtils.Norm(PERFORMANCE_NORM_EXPONENT, aimValue, speedValue, cognitionValue) * multiplier;
 
             return new OsuPerformanceAttributes
             {
@@ -236,7 +238,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
         private double computeSpeedValue(ScoreInfo score, OsuDifficultyAttributes attributes)
         {
-            if (score.Mods.Any(h => h is OsuModRelax) || speedDeviation == null)
+            if (score.Mods.Any(h => h is OsuModRelax) || totalDeviation == null)
                 return 0.0;
 
             double speedDifficulty = attributes.SpeedDifficulty * calculateSpeedHighDeviationNerf(attributes);
@@ -261,7 +263,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
             double effectiveHitWindow = 20 * DiffUtils.Pow(4 / speedDifficulty, 0.35);
 
             // Find the proportion of 300s on speed notes assuming the hit window was the effective hit window.
-            double effectiveAccuracy = DiffUtils.Erf(effectiveHitWindow / (double)speedDeviation);
+            double effectiveAccuracy = DiffUtils.Erf(effectiveHitWindow / (double)totalDeviation);
 
             // Scale speed value by normalized accuracy.
             speedValue *= DiffUtils.Pow(effectiveAccuracy, 2);
@@ -413,6 +415,50 @@ namespace osu.Game.Rulesets.Osu.Difficulty
         }
 
         /// <summary>
+        /// Estimates the player's total tapping deviation.
+        /// </summary>
+        private double? calculateTotalDeviation(OsuDifficultyAttributes attributes)
+        {
+            if (totalSuccessfulHits == 0)
+                return null;
+
+            if (!usingClassicSliderAccuracy)
+                return calculateDeviation(countGreat, countOk, countMeh);
+
+            int circleCount = attributes.HitCircleCount;
+            int missCountCircles = Math.Min(countMiss, circleCount);
+            int mehCountCircles = Math.Min(countMeh, circleCount - missCountCircles);
+            int okCountCircles = Math.Min(countOk, circleCount - missCountCircles - mehCountCircles);
+            int greatCountCircles = Math.Max(0, circleCount - missCountCircles - mehCountCircles - okCountCircles);
+
+            // Assume 100s, 50s, and misses happen on circles. If there are less non-300s on circles than 300s,
+            // compute the deviation on circles.
+            if (greatCountCircles > 0)
+            {
+                return calculateDeviation(greatCountCircles, okCountCircles, mehCountCircles);
+            }
+
+            // If there are more non-300s than there are circles, compute the deviation on sliders instead.
+            // Here, all that matters is whether or not the slider was missed, since it is impossible
+            // to get a 100 or 50 on a slider by mis-tapping it.
+            int sliderCount = attributes.SliderCount;
+            int missCountSliders = Math.Min(sliderCount, countMiss - missCountCircles);
+            int greatCountSliders = sliderCount - missCountSliders;
+
+            // We only get here if nothing was hit. In this case, there is no estimate for deviation.
+            // Note that this is never negative, so checking if this is only equal to 0 makes sense.
+            if (greatCountSliders == 0)
+            {
+                return null;
+            }
+
+            double greatProbabilitySlider = greatCountSliders / (sliderCount + 1.0);
+            double deviationOnSliders = mehHitWindow / (DiffUtils.SQRT2 * DiffUtils.ErfInv(greatProbabilitySlider));
+
+            return deviationOnSliders;
+        }
+
+        /// <summary>
         /// Estimates player's deviation on speed notes using <see cref="calculateDeviation"/>, assuming worst-case.
         /// Treats all speed notes as hit circles.
         /// </summary>
@@ -423,7 +469,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty
 
             // Calculate accuracy assuming the worst case scenario
             double speedNoteCount = attributes.SpeedNoteCount;
-            speedNoteCount += (totalHits - attributes.SpeedNoteCount) * 0.1;
+            //speedNoteCount += (totalHits - attributes.SpeedNoteCount) * 0.1;
 
             // Assume worst case: all mistakes were on speed notes
             double relevantCountMiss = Math.Min(countMiss, speedNoteCount);

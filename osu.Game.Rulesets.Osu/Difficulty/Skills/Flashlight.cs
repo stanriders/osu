@@ -34,7 +34,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
         protected override double StrainValueAt(DifficultyHitObject current)
         {
-            const double skill_multiplier = 0.058;
+            const double skill_multiplier = 0.059;
 
             if (!Mods.Any(m => m is OsuModFlashlight))
                 return 0;
@@ -79,9 +79,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
         {
             double sum = GetCurrentStrainPeaks().Sum();
 
-            // Account for shorter maps having a higher ratio of 0 combo/100 combo flashlight radius.
-            sum *= 0.7 + 0.1 * Math.Min(1.0, totalObjects / 200.0) +
-                   (totalObjects > 200 ? 0.2 * Math.Min(1.0, (totalObjects - 200) / 200.0) : 0.0);
+            // Short maps are easier to learn.
+            sum *= 0.9 + 0.1 * Math.Min(1.0, (totalObjects - 200) / 200.0);
 
             return sum;
         }

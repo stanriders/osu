@@ -46,6 +46,12 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
             OsuDifficultyHitObject lastObj = osuCurrent;
 
+            var flashlight = mods.OfType<OsuModFlashlight>().First();
+
+            float size = flashlight.DefaultFlashlightSize * flashlight.SizeMultiplier.Value;
+            if (flashlight.ComboBasedSize.Value)
+                size *= getComboScaleFor(current.Index + 1);
+
             double angleRepeatCount = 0.0;
 
             // This is iterating backwards in time from the current object.
@@ -60,7 +66,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
 
                 // We want to nerf objects that can be easily seen within the Flashlight circle radius.
                 if (i == 0)
-                    smallDistNerf = Math.Min(1.0, jumpDistance / 75.0);
+                    smallDistNerf = Math.Min(1.0, jumpDistance / size);
 
                 // We also want to nerf stacks so that only the first object of the stack is accounted for.
                 double stackNerf = Math.Min(1.0, (currentObj.LazyJumpDistance / scalingFactor) / 25.0);
@@ -110,6 +116,17 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators
             flashlightDifficulty += sliderBonus * slider_multiplier;
 
             return flashlightDifficulty;
+        }
+
+        // https://github.com/ppy/osu/blob/efe47bc175ab83401905c61d69c374961d08d21c/osu.Game/Rulesets/Mods/ModFlashlight.cs#L190
+        private static float getComboScaleFor(int combo)
+        {
+            if (combo >= 200)
+                return 0.625f; // = 2.0 / 3.2
+            if (combo >= 100)
+                return 0.8125f; // = 2.6 / 3.2
+
+            return 1.0f;
         }
     }
 }

@@ -98,7 +98,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Evaluators.Aim
             double angleDifferenceAdjusted = Math.Sin(angleDifference / 2) * 180.0;
             double angularVelocity = angleDifferenceAdjusted / (current.AdjustedDeltaTime * 0.1);
 
-            return 0.78 + Math.Log(1 + angularVelocity / 8.0, 40);
+            return 0.75 + 0.3 * Math.Log10(1 + angularVelocity / 2.0);
         }
 
         private static double calculateAcuteAngleBonus(

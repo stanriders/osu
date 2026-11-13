@@ -80,7 +80,7 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
             double sum = GetCurrentStrainPeaks().Sum();
 
             // Short maps are easier to learn.
-            sum *= 0.9 + 0.1 * Math.Min(1.0, totalObjects / 400.0);
+            sum *= 0.8 + 0.2 * Math.Min(1.0, totalObjects / 400.0);
 
             return sum;
         }

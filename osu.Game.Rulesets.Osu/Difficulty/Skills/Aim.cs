@@ -78,6 +78,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             totalDifficulty *= 0.985 + DiffUtils.Pow(Math.Max(0, ((OsuDifficultyHitObject)current).OverallDifficulty), 2) / 4000;
 
+            totalDifficulty += Math.Cbrt(DiffUtils.Pow(1.52163, ((OsuDifficultyHitObject)current).OverallDifficulty) * 2.83) / 4;
+
             return totalDifficulty;
         }
 

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using osu.Game.Rulesets.Difficulty.Aggregation;
@@ -60,6 +61,8 @@ namespace osu.Game.Rulesets.Osu.Difficulty.Skills
 
             if (Mods.Any(m => m is OsuModAutopilot))
                 difficulty *= 0.5;
+
+            difficulty += Math.Cbrt(DiffUtils.Pow(1.52163, ((OsuDifficultyHitObject)current).OverallDifficulty) * 2.83) / 4;
 
             return difficulty;
         }
